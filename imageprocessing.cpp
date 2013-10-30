@@ -51,4 +51,25 @@ void ImageProcessing::threshold(Mat &image, Mat &result, int value)
 {
     cvtColor(image, result, CV_RGB2GRAY);   
     cv::threshold(result, result, value, 256, THRESH_BINARY );
+    cvtColor(result, result, CV_GRAY2RGB);
+}
+
+void ImageProcessing::dilate(Mat &image, Mat &result, int dilationSize)
+{
+    
+    Mat element =  cv::getStructuringElement(
+                MORPH_ELLIPSE,
+                cv::Size(2*dilationSize + 1, 2*dilationSize + 1),
+                cv::Point( dilationSize, dilationSize));
+    
+    cv::dilate(image, result, element);
+}
+
+void ImageProcessing::erode(Mat &image, Mat &result, int erosionSize)
+{
+    Mat element =  cv::getStructuringElement(
+                MORPH_ELLIPSE,
+                cv::Size(2*erosionSize + 1, 2*erosionSize + 1),
+                cv::Point( erosionSize, erosionSize));
+    cv::erode(image, result, element);
 }

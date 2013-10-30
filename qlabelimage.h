@@ -20,7 +20,7 @@ public:
     explicit QLabelImage(QWidget *parent = 0);
     // возвращает рамку
     QRect frame();
-    
+
 
 private:
     // рамка
@@ -64,10 +64,12 @@ protected:
 
     void paintEvent(QPaintEvent *);
     void drawFrame2(QPainter &p);
+    
 
     void mousePressEvent(QMouseEvent *);
     void mouseReleaseEvent(QMouseEvent *);
     void mouseMoveEvent(QMouseEvent *);
+
 };
 
 #endif // QLABELIMAGE_H

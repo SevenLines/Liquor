@@ -23,8 +23,8 @@ void QLabelImage::setFrame(QRect rectangle)
     rectangle = rectangle.normalized();
     gFrame.setLeft(qMax(rectangle.left(),0));
     gFrame.setTop(qMax(rectangle.top(),0));
-    gFrame.setRight(qMin(rectangle.right(),width()));
-    gFrame.setBottom(qMin(rectangle.bottom(),height()));
+    gFrame.setRight(qMin(rectangle.right(),width()-1));
+    gFrame.setBottom(qMin(rectangle.bottom(),height()-1));
 }
 
 void QLabelImage::moveFrame(QPoint offset)
@@ -46,6 +46,8 @@ void QLabelImage::moveHolder(QPoint offset)
     if (gSelectedHolder == egInside) {
         moveFrame(offset);
     }
+    
+    setFrame(gFrame);
 }
 
 void QLabelImage::moveLeftTop(QPoint offset)
@@ -153,6 +155,8 @@ void QLabelImage::mousePressEvent(QMouseEvent *e)
             gShowFrame = true;
             setFrame(QRect(pPressed, pPressed));
             update();
+        } else {
+            gShowFrame = true;
         }
        
     }
@@ -186,3 +190,4 @@ void QLabelImage::mouseMoveEvent(QMouseEvent *e)
     gLastSelectedHolder = gCurrentSelectedHolder;
     pLast = pCurrent;
 }
+

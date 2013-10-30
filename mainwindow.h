@@ -39,10 +39,35 @@ private slots:
     void loadIni();
     void saveIni();
     
+
+    void on_actionZoom_Out_triggered();
+    
+    void on_actionZoom_In_triggered();
+    
+    void on_pushButton_7_clicked();
+    
+    void on_pushButton_8_clicked();
+    
+    void on_sldErode_valueChanged(int value);
+    
+    void on_sldDilate_actionTriggered(int action);
+    
+    void on_sldDilate_valueChanged(int value);
+    
+    void on_actionExit_triggered();
+    
+    void on_sldThreshold_valueChanged(int value);
+    
+    void on_btnSaveImageStack_clicked();
+    
+    void on_btnFindCircles_clicked();
+    
+    void on_btnClearBG_clicked();
     
 private:
     Ui::MainWindow *ui;
     Mat mImage;
+    Mat lastShowedImage;
     QString lastImagePath;
 };
 

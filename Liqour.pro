@@ -16,12 +16,16 @@ CONFIG += console
 SOURCES += main.cpp\
         mainwindow.cpp \
         qlabelimage.cpp \
-    imageprocessing.cpp
+    imageprocessing.cpp \
+    mgraphicsview.cpp \
+    emisionanalyzer.cpp
 
 HEADERS  += mainwindow.h \
             qlabelimage.h \
     imageprocessing.h \
-    histogram1d.h
+    histogram1d.h \
+    mgraphicsview.h \
+    emisionanalyzer.h
 
 FORMS    += mainwindow.ui
 
