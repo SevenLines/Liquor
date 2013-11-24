@@ -5,6 +5,9 @@
 #include <opencv/cv.h>
 #include <opencv/highgui.h>
 
+#include "imagestack.h"
+#include "opencvutils.h"
+
 class QSettings;
 
 using namespace cv;
@@ -19,22 +22,29 @@ class MainWindow : public QMainWindow
 
 public:
     explicit MainWindow(QString imagePath, QWidget *parent = 0);
+    Mat QPixmapToMat(QPixmap pixmap);
+    QPixmap currentImage();
+    
+    
     ~MainWindow();
 
 private slots:
     void on_pushButton_clicked();
     void showImage(Mat image);
-    void loadImage(QString path);
-
-    void on_pushButton_2_clicked();
-
-    void on_pushButton_3_clicked();
+    void showImage(QPixmap pixmap);
+    void showImage(QImage image);
+    QImage loadImage(QString path, bool setActive = true);
+    void analyze();
+    void pushCurrentImage(int index = -1);
     
-    void on_pushButton_4_clicked();
+    void setCurrentImage(QPixmap pixmap);
+    
+    void threshold(int value);
+    void erode(int value);
+    void median(int value);
+   
     
     void on_pushButton_5_clicked();
-    
-    void on_pushButton_6_clicked();
     
     void loadIni();
     void saveIni();
@@ -44,31 +54,23 @@ private slots:
     
     void on_actionZoom_In_triggered();
     
-    void on_pushButton_7_clicked();
-    
-    void on_pushButton_8_clicked();
-    
-    void on_sldErode_valueChanged(int value);
-    
-    void on_sldDilate_actionTriggered(int action);
-    
-    void on_sldDilate_valueChanged(int value);
-    
     void on_actionExit_triggered();
-    
-    void on_sldThreshold_valueChanged(int value);
     
     void on_btnSaveImageStack_clicked();
     
-    void on_btnFindCircles_clicked();
+    void on_actionSave_Image_triggered();
     
-    void on_btnClearBG_clicked();
+    void on_lstImageStack_clicked(const QModelIndex &index);
     
 private:
     Ui::MainWindow *ui;
-    Mat mImage;
     Mat lastShowedImage;
     QString lastImagePath;
+    ImageStack imageStack;
+    
+    QPixmap mImage;
+    
+    int lastImageIndex;
 };
 
 #endif // MAINWINDOW_H

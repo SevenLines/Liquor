@@ -18,16 +18,23 @@ SOURCES += main.cpp\
         qlabelimage.cpp \
     imageprocessing.cpp \
     mgraphicsview.cpp \
-    emisionanalyzer.cpp
+    emisionanalyzer.cpp \
+    horizontalsliderex.cpp \
+    imagestack.cpp \
+    opencvutils.cpp
 
 HEADERS  += mainwindow.h \
             qlabelimage.h \
     imageprocessing.h \
     histogram1d.h \
     mgraphicsview.h \
-    emisionanalyzer.h
+    emisionanalyzer.h \
+    horizontalsliderex.h \
+    imagestack.h \
+    opencvutils.h
 
-FORMS    += mainwindow.ui
+FORMS    += mainwindow.ui \
+    horizontalsliderex.ui
 
 unix {
     INCLUDEPATH += /usr/locale/lib
@@ -35,4 +42,4 @@ unix {
     PKGCONFIG += opencv
 }
 
-LIBS += -lopencv_core -lopencv_highgui
+LIBS += -lopencv_core -lopencv_highgui -lopencv_superres
