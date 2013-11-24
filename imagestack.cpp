@@ -77,8 +77,8 @@ void ImageStack::push(QPixmap pixmap, QString title, int pos)
 
 bool ImageStack::setData(const QModelIndex &index, const QVariant &value, int role)
 {
-    if(index.isValid() && role == Qt::DisplayRole) {
-        stack.value(index.row()).Title = value.toString();
+    if(index.isValid() && role == Qt::EditRole) {
+        stack[index.row()].Title = value.toString();
         emit dataChanged(index, index);
         return true;
     }

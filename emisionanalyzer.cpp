@@ -118,6 +118,13 @@ int EmisionAnalyzer::isInsideCircle(Point pos)
     
     int offset = 0;
     do {
+        if (   pos.y - offset < 0 
+            || pos.x - offset < 0 
+            || pos.x + offset >= in.cols 
+            || pos.y + offset >= in.rows) {
+            break;
+        }
+        
         if ( in(pos.y + offset, pos.x)[0] != 0 ) break; // to right
         if ( in(pos.y - offset, pos.x)[0] != 0 ) break; // to left
         if ( in(pos.y,          pos.x - offset)[0] != 0 ) break; // to top

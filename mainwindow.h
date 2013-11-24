@@ -30,19 +30,22 @@ public:
 
 private slots:
     void on_pushButton_clicked();
+    
     void showImage(Mat image);
     void showImage(QPixmap pixmap);
     void showImage(QImage image);
+    
     QImage loadImage(QString path, bool setActive = true);
     void analyze();
-    void pushCurrentImage(int index = -1);
+    void pushCurrentImage(QString title, int index = -1);
     
     void setCurrentImage(QPixmap pixmap);
     
     void threshold(int value);
     void erode(int value);
     void median(int value);
-   
+    void hsv(int channel);
+  
     
     void on_pushButton_5_clicked();
     
@@ -61,6 +64,12 @@ private slots:
     void on_actionSave_Image_triggered();
     
     void on_lstImageStack_clicked(const QModelIndex &index);
+    
+    void on_btnHue_clicked();
+    
+    void on_btnSatturation_clicked();
+    
+    void on_btnValue_clicked();
     
 private:
     Ui::MainWindow *ui;

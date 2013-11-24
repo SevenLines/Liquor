@@ -24,7 +24,7 @@ MainWindow::MainWindow(QString imagePath, QWidget *parent) :
 {
     ui->setupUi(this);
     
-    ui->lblImage->addAction(ui->actionSave_Image);
+    ui->graphicsView->addAction(ui->actionSave_Image);
     
     lastImageIndex = -1;
     
@@ -92,7 +92,7 @@ void MainWindow::showImage(Mat image)
 
 void MainWindow::showImage(QPixmap pixmap)
 {
-    ui->lblImage->setPixmap(pixmap); 
+    ui->graphicsView->setPixmap(pixmap);     
 }
 
 void MainWindow::showImage(QImage image)
@@ -111,12 +111,13 @@ QImage MainWindow::loadImage(QString path, bool setActive)
     lastImagePath = path;
    
     if (setActive) {
-        mImage = QPixmap::fromImage(temp);
+        mImage = QPixmap::fromImage(temp.copy());
     }
     
     showImage(temp);
+    ui->graphicsView->fitToScreen();
     
-    pushCurrentImage();
+    pushCurrentImage(QFileInfo(path).baseName());
     
     return temp;
 }
@@ -135,15 +136,15 @@ void MainWindow::analyze()
     showImage(out);
 }
 
-void MainWindow::pushCurrentImage(int index)
+void MainWindow::pushCurrentImage(QString title, int index)
 {
-    imageStack.push(currentImage(), "image", index);   
+    imageStack.push(currentImage(), title, index);   
 }
 
 void MainWindow::setCurrentImage(QPixmap pixmap)
 {
     mImage = pixmap;
-    ui->lblImage->setPixmap( pixmap);
+    ui->graphicsView->setPixmap( pixmap);
 }
                 
 void MainWindow::threshold(int value)
@@ -173,6 +174,20 @@ void MainWindow::median(int value)
     showImage(temp);
 }
 
+void MainWindow::hsv(int channel)
+{
+    Mat temp = OpenCVUtils::FromQPixmap(currentImage());
+    
+    cvtColor(temp, temp, CV_BGR2HSV);
+    
+    Mat hsv[3];
+    cv::split(temp, hsv); 
+    
+    cvtColor(hsv[channel], temp, CV_GRAY2BGR);
+    
+    showImage(temp);     
+}
+
 
 void MainWindow::on_pushButton_5_clicked()
 {
@@ -195,18 +210,12 @@ void MainWindow::saveIni()
 
 void MainWindow::on_actionZoom_Out_triggered()
 {
-    QSize size = ui->lblImage->size();
-    size.setWidth(size.width() * 1.5);
-    size.setHeight(size.height() * 1.5);
-    ui->lblImage->resize(size);   
+ 
 }
 
 void MainWindow::on_actionZoom_In_triggered()
 {
-    QSize size = ui->lblImage->size();
-    size.setWidth(size.width() / 1.5);
-    size.setHeight(size.height() / 1.5);
-    ui->lblImage->resize(size);
+
 }
 
 void MainWindow::on_actionExit_triggered()
@@ -216,8 +225,15 @@ void MainWindow::on_actionExit_triggered()
 
 void MainWindow::on_btnSaveImageStack_clicked()
 {
-    setCurrentImage(*ui->lblImage->pixmap());
-    pushCurrentImage(ui->lstImageStack->currentIndex().row());
+    setCurrentImage(ui->graphicsView->pixmap());
+    int row = ui->lstImageStack->currentIndex().row();
+    QString label = "image";
+    if (row == -1) {
+        label += QString::number(ui->lstImageStack->model()->rowCount()+1);
+    } else {
+        label += QString::number(row+1);
+    }
+    pushCurrentImage(label , row);
 }
 
 void MainWindow::on_actionSave_Image_triggered()
@@ -227,10 +243,25 @@ void MainWindow::on_actionSave_Image_triggered()
                                                     QString(),
                                                     tr("Images (*.png)"));
     if (fileName.isNull()) return;
-    ui->lblImage->pixmap()->save(fileName, "png");
+    ui->graphicsView->pixmap().save(fileName, "png");
 }
 
 void MainWindow::on_lstImageStack_clicked(const QModelIndex &index)
 {
     setCurrentImage( this->imageStack.data(index).Pixmap );
+}
+
+void MainWindow::on_btnHue_clicked()
+{
+    hsv(0);
+}
+
+void MainWindow::on_btnSatturation_clicked()
+{
+    hsv(1);
+}
+
+void MainWindow::on_btnValue_clicked()
+{
+    hsv(2);
 }
