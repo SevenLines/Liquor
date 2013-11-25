@@ -71,6 +71,8 @@ public:
     void setMaxRadius(int value);
     int maxRadius();
     
+    bool isInside(Mat &in, cv::Point &p);
+
     Mat findCircles(KeyPoints &keyPoints);
     
     bool isCircle(cv::Point position, int radius);

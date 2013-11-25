@@ -357,7 +357,6 @@ cv::Mat EmisionAnalyzer::findCircles(KeyPoints &keyPoints)
         if ( !(outRef(p.point)[1] & EA_VISITED) ) {
             MKeyPoint key;
             cv::Point pTemp = getCenter(out, p.point);
-
             if (pTemp.x != -1) {
                 key.pos = QPoint(pTemp.x, pTemp.y);
                 key.value = p.value;

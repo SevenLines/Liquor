@@ -258,6 +258,19 @@ cv::Point EmisionAnalyzer::getMaxRadius(Mat &in,
  */
 Point EmisionAnalyzer::getCenter(Mat &in, Point pos, Point center)
 {
+<<<<<<< HEAD
+    Mat_<Vec3b> outRef = in;
+    outRef(pos)[1] |= EA_VISITED; // mark as visited
+    
+    center += pos;
+    for(int i=1;i<=8;++i) {
+        Point neigh = getNeighboor(pos, i);
+        if ( outRef(neigh)[0] == outRef(pos)[0] && !(outRef((neigh))[1]&EA_VISITED) ) {
+            getCenter(in, neigh, center);
+        }
+    }
+    return center;
+=======
     in.at<Vec3b>(pos)[1] |= EA_VISITED; // mark as visited
     
     center.x+=1; // 
@@ -275,6 +288,7 @@ Point EmisionAnalyzer::getCenter(Mat &in, Point pos, Point center)
         }
     }
     return pos;
+>>>>>>> 0524073d6699d5deff12f2de859889bd6444baf5
 }
 
 /**
@@ -335,6 +349,19 @@ cv::Mat EmisionAnalyzer::findCircles(KeyPoints &keyPoints)
             for (int j=-depth;j<depth; ++j) {
                 if (i!=0 || j!=0) {
                     cv::Point nP(p.point.x+j, p.point.y+i);
+<<<<<<< HEAD
+                    if ( outRef(nP)[0] > outRef(p.point)[0] ) {
+                        countOfPointsWithGreaterValue++;
+                        goto stop; // о----+
+                    }                   // |
+                }                       // |
+            }                           // |
+        }                               // |
+        stop:        // <----- there ------+
+        if (countOfPointsWithGreaterValue == 0) {
+            extrePoints.push_back(p);
+            
+=======
                     if (isInside(out, nP)) {
                         if ( outRef(nP)[0] > outRef(p.point)[0] ) {
                             countOfPointsWithGreaterValue++;
@@ -347,6 +374,7 @@ cv::Mat EmisionAnalyzer::findCircles(KeyPoints &keyPoints)
         stop:        // <----- there ----------+
         if (countOfPointsWithGreaterValue == 0) {
             extrePoints.push_back(p);
+>>>>>>> 0524073d6699d5deff12f2de859889bd6444baf5
         }
     }
     
@@ -357,7 +385,12 @@ cv::Mat EmisionAnalyzer::findCircles(KeyPoints &keyPoints)
         if ( !(outRef(p.point)[1] & EA_VISITED) ) {
             MKeyPoint key;
             cv::Point pTemp = getCenter(out, p.point);
-
+<<<<<<< HEAD
+            key.pos = QPoint(pTemp.x, pTemp.y);
+            key.value = p.value;
+            keyPoints.addKey(key);
+            outRef(pTemp)[2] = 255;
+=======
             if (pTemp.x != -1) {
                 key.pos = QPoint(pTemp.x, pTemp.y);
                 key.value = p.value;
@@ -365,6 +398,7 @@ cv::Mat EmisionAnalyzer::findCircles(KeyPoints &keyPoints)
                 outRef(pTemp)[2] = 255;
             }
             //outRef(p.point)[2] = 255;
+>>>>>>> 0524073d6699d5deff12f2de859889bd6444baf5
         }
     }
     

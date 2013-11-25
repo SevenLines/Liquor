@@ -10,7 +10,7 @@ greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
 TARGET = Liqour
 TEMPLATE = app
-CONFIG += console
+CONFIG -= console
 
 
 SOURCES += main.cpp\
@@ -38,10 +38,23 @@ HEADERS  += mainwindow.h \
 FORMS    += mainwindow.ui \
     horizontalsliderex.ui
 
+FORMS    += mainwindow.ui \
+    horizontalsliderex.ui
+
+win32 {
+   INCLUDEPATH += d:/_OpenCV/include/opencv
+   INCLUDEPATH += d:/_OpenCV/include/
+   INCLUDEPATH += d:/Boost/boost_1_54_0/ 
+   LIBS += -Ld:/_OpenCV/build/x86/mingw44/lib/
+   LIBS +=  libopencv_core246.dll \ 
+	    libopencv_highgui246.dll \
+	    libopencv_imgproc246.dll 
+}
+
 unix {
     INCLUDEPATH += /usr/locale/lib
     CONFIG += link_pkgconfig
     PKGCONFIG += opencv
+    LIBS += -lopencv_core -lopencv_highgui -lopencv_superres
 }
 
-LIBS += -lopencv_core -lopencv_highgui -lopencv_superres
