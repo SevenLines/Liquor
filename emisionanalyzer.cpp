@@ -245,11 +245,33 @@ cv::Point EmisionAnalyzer::getMaxRadius(Mat &in,
 }
 
 /**
+ * @brief Обходит всех соседей точки pos иеющие тоже значение
+ * что и pos, и формирует средную точку
+ * @param in
+ * @param pos
+ * @return 
+ */
+Point EmisionAnalyzer::getCenter(Mat &in, Point pos, Point center)
+{
+    Mat_<Vec3b> outRef = in;
+    outRef(pos)[1] |= EA_VISITED; // mark as visited
+    
+    center += pos;
+    for(int i=1;i<=8;++i) {
+        Point neigh = getNeighboor(pos, i);
+        if ( outRef(neigh)[0] == outRef(pos)[0] && !(outRef((neigh))[1]&EA_VISITED) ) {
+            getCenter(in, neigh, center);
+        }
+    }
+    return center;
+}
+
+/**
  * @brief EmisionAnalyzer::findCircles
  * @param in, CV_8UC3 Mat image
  * @return image representaion of findin pixels
  */
-cv::Mat EmisionAnalyzer::findCircles(cv::Mat in)
+cv::Mat EmisionAnalyzer::findCircles(KeyPoints &keyPoints)
 {
     int minValue;
     
@@ -266,9 +288,12 @@ cv::Mat EmisionAnalyzer::findCircles(cv::Mat in)
     Mat_<Vec3b> outRef = out;
     
     
-    QVector<PointValue> points;
+    PointValue p;
+    QVector<PointValue> blackPoints; // черные точки
+    QVector<PointValue> extrePoints; // локальные экстремумы
+    
     /*
-     * 1. проходим по изображению пересчитываем пересчитываю
+     * 1. проходим по изображению пересчитываю
      * симетрические области 
      */
     for(int y = 0; y < iRows; ++y) {
@@ -276,31 +301,24 @@ cv::Mat EmisionAnalyzer::findCircles(cv::Mat in)
             Point p = cv::Point(x, y);
             int value = isInsideCircle(p);
             if ( value ) {
-                points.push_back(PointValue(p, value));
+                blackPoints.push_back(PointValue(p, value));
             }
             outRef(p)[0] = value;
         }
     }
     
+    // размываю точки
     cv::GaussianBlur(out,out,cv::Size(5, 5), 3);
-    
-    /*
-     * 2. Для каждой точки находим точку, 
-     * с наибольшим значениме радиуса
+
+    /**
+     * Ищем точки, в радиусе depth от которых нету 
+     * точек с большим значением
      */
-    PointValue p;
-    /*foreach(p, points) {
-        cv::Point p1 = findMaxPoint(out, p.point, 1);
-        if (p1.x != -1 && p1 != p.point) {
-          outRef(p1)[2] = 255;
-        }
-    }*/
-    
     int countOfPointsWithGreaterValue;
     int depth = 5;
-    foreach (p, points) {
+    foreach (p, blackPoints) {
         countOfPointsWithGreaterValue = 0;
-        outRef(p.point)[1] |= EA_VISITED;
+        //outRef(p.point)[1] |= EA_VISITED;
         
         for (int i=-depth; i<depth; ++i) {
             for (int j=-depth;j<depth; ++j) {
@@ -308,82 +326,32 @@ cv::Mat EmisionAnalyzer::findCircles(cv::Mat in)
                     cv::Point nP(p.point.x+j, p.point.y+i);
                     if ( outRef(nP)[0] > outRef(p.point)[0] ) {
                         countOfPointsWithGreaterValue++;
-                        goto stop;
-                    }
-                }
-            }
-        }
-        stop: ;
-        
-        /*for (int i=0;i<=8;++i) {
-            Point nP = getNeighboor(p.point, i);
-            outRef(nP)[1] |= EA_VISITED;
-        }
-        
-        for (int i=0;i<=8;++i) {
-            Point nP = getNeighboor(p.point, i);
-            outRef(nP)[1] |= EA_VISITED;
-            
-            if (outRef(nP)[0] > p.value) {
-                countOfPointsWithGreaterValue++;
-                continue;
-            }
-            for (int j=2;j<=8;j+=2) {
-                Point nP2 = getNeighboor(nP, j);
-                if ( !(outRef(nP2)[1] & EA_VISITED) ) {
-                    if (nP2!=nP && outRef(nP2)[0] > outRef(nP)[0]) {
-                        countOfPointsWithGreaterValue++;
-                        continue;
-                    }
-                }
-            }
-        }
-        
-        for (int i=0;i<=8;++i) {
-            Point nP = getNeighboor(p.point, i);
-            outRef(nP)[1] = 0;
-        }*/
-        
+                        goto stop; // о----+
+                    }                   // |
+                }                       // |
+            }                           // |
+        }                               // |
+        stop:        // <----- there ------+
         if (countOfPointsWithGreaterValue == 0) {
-            outRef(p.point)[2] = 255;
-        }
-    }
-    
-    
-    /* 
-     * 2. проходим по изображению 
-     * для каждой конкретной зоны находим точку
-     * с наибольшим радиусом симметрии 
-     * и с индексом симетрии
-     * не меньше заданного значения.
-     */
-    /*int minSymmetryIndex = 120;
-    int maxRadius;
-    cv::Point maxPos;
-    QVector<cv::Point> points;
-    for(int i = 0; i < iRows; ++i) {
-        for (int j = 0; j < iCols; ++j ) {
-            cv::Point p = cv::Point(j,i);
+            extrePoints.push_back(p);
             
-            if (outRef(j,i)[0] > minSymmetryIndex) {
-                if (!checkPointFlags(out, p, EA_VISITED)) {
-                    maxRadius = 0;
-                    maxPos = cv::Point(-1,-1);
-                    
-                    this->getMaxRadius(out, minSymmetryIndex, 
-                                       p, maxRadius, maxPos);
-                    points.push_back(maxPos);
-                }
-            }
         }
-    }*/
-    
-    /*out = cv::Scalar(0);
-    cv::Point p;
-    foreach(p, points) {
-        outRef(p.x, p.y)[1] = 255;
     }
-    */
+    
+    /**
+     * Для каждой области с экстремуми выбираем среднюю точку
+     */
+    foreach (p, extrePoints) {
+        if ( !(outRef(p.point)[1] & EA_VISITED) ) {
+            MKeyPoint key;
+            cv::Point pTemp = getCenter(out, p.point);
+            key.pos = QPoint(pTemp.x, pTemp.y);
+            key.value = p.value;
+            keyPoints.addKey(key);
+            outRef(pTemp)[2] = 255;
+        }
+    }
+    
     return out;
     //out.convertTo(out, CV_8UC3);
 }

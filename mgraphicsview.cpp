@@ -29,6 +29,9 @@ MGraphicsView::MGraphicsView(QWidget *parent) :
     // set background brush
     setBackgroundBrush(QBrush(Qt::black));
     
+    //set quality
+    pixmapItem->setTransformationMode(Qt::SmoothTransformation);
+    
     fFitToScreen = false;
 }
 

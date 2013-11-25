@@ -21,7 +21,8 @@ SOURCES += main.cpp\
     emisionanalyzer.cpp \
     horizontalsliderex.cpp \
     imagestack.cpp \
-    opencvutils.cpp
+    opencvutils.cpp \
+    keypoints.cpp
 
 HEADERS  += mainwindow.h \
             qlabelimage.h \
@@ -31,7 +32,8 @@ HEADERS  += mainwindow.h \
     emisionanalyzer.h \
     horizontalsliderex.h \
     imagestack.h \
-    opencvutils.h
+    opencvutils.h \
+    keypoints.h
 
 FORMS    += mainwindow.ui \
     horizontalsliderex.ui

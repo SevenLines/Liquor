@@ -49,7 +49,23 @@ MainWindow::MainWindow(QString imagePath, QWidget *parent) :
     // set Image stack
     ui->lstImageStack->setModel(&imageStack);
     
+    // fill channels combobox
+    ui->cmbChannels->addItem("");
+    ui->cmbChannels->addItem(tr("Red"));
+    ui->cmbChannels->addItem(tr("Green"));
+    ui->cmbChannels->addItem(tr("Blue"));
+    ui->cmbChannels->addItem(tr("Hue"));
+    ui->cmbChannels->addItem(tr("Saturation"));
+    ui->cmbChannels->addItem(tr("Value"));
       
+    // particle prop slider init 
+    ui->sldKeyProp->setMax(200);
+    ui->sldKeyProp->setMin(1);
+    ui->sldKeyProp->setValue(100);
+    connect(ui->sldKeyProp, SIGNAL(valueChanged(int)),
+            &keyPoints, SLOT(setProportion(int)));
+    connect(&keyPoints, SIGNAL(proportionChange(int)),
+            ui->graphicsView, SLOT(update()));
     
     // analyze button init
     connect(ui->btnAnalyze, SIGNAL(clicked()),
@@ -74,10 +90,11 @@ MainWindow::~MainWindow()
 
 void MainWindow::on_pushButton_clicked()
 {
-    QString fileName = QFileDialog::getOpenFileName(this,
-                                 tr("Open File"),
-                                 "/home/mick/Pictures",
-                                 tr("Images (*.png *.jpeg *.jpg *.xpm)")
+    QString fileName 
+            = QFileDialog::getOpenFileName(this,
+                                     tr("Open File"),
+                                     QString(),
+                                     tr("Images (*.png *.jpeg *.jpg *.xpm)")
                                  );
     if (fileName.isNull())
         return;
@@ -124,6 +141,8 @@ QImage MainWindow::loadImage(QString path, bool setActive)
 
 void MainWindow::analyze()
 {
+    log(tr("looking for particles"));
+    
     Mat temp =  OpenCVUtils::FromQPixmap(currentImage());
 
     EmisionAnalyzer ea;
@@ -132,39 +151,57 @@ void MainWindow::analyze()
     ea.setMinRadius(5);
     ea.setImage(temp);
     
-    Mat out = ea.findCircles(temp);
+    keyPoints.clear();
+    Mat out = ea.findCircles(keyPoints);
+    
     showImage(out);
+    stackIterate(tr("analyze"));
+    
+    QPixmap pixmap = ui->graphicsView->pixmap();
+    QPainter p;
+    p.begin(&pixmap);
+        p.setPen(QPen(Qt::white,2));
+        keyPoints.draw(&p);
+        ui->graphicsView->setPixmap(pixmap);
+    p.end();
+    
+    log(QString(tr("find %1 particle(s)")).arg(keyPoints.count()));
 }
 
 void MainWindow::pushCurrentImage(QString title, int index)
 {
-    imageStack.push(currentImage(), title, index);   
+    imageStack.push(currentImage(), title, index); 
+    log(tr("push current image to stack as '%1'").arg(title));
 }
 
 void MainWindow::setCurrentImage(QPixmap pixmap)
 {
     mImage = pixmap;
     ui->graphicsView->setPixmap( pixmap);
+    log(tr("change current image"));
 }
                 
 void MainWindow::threshold(int value)
 {
-    Mat temp = OpenCVUtils::FromQPixmap(currentImage());
+    log(tr("threshold: %1").arg(value));
     
+    Mat temp = OpenCVUtils::FromQPixmap(currentImage());    
     ImageProcessing::threshold(temp, temp, value);
-    
     showImage(temp);               
 }
                 
 void MainWindow::erode(int value)
 {
+    log(tr("erode: %1").arg(value));
+    
     Mat temp = OpenCVUtils::FromQPixmap(currentImage());
     ImageProcessing::erode(temp, temp, value);
-    showImage(temp);           
+    showImage(temp);      
 }
 
 void MainWindow::median(int value)
 {
+    log(tr("median filter: %1").arg(value));
     Mat temp = OpenCVUtils::FromQPixmap(currentImage());
     
     int kSize = value;
@@ -185,7 +222,84 @@ void MainWindow::hsv(int channel)
     
     cvtColor(hsv[channel], temp, CV_GRAY2BGR);
     
-    showImage(temp);     
+    showImage(temp);  
+    
+    switch(channel) {
+    case 0: log(tr("switch channel to hue"));break;
+    case 1: log(tr("switch channel to staturation"));break;
+    case 2: log(tr("switch channel to value"));break;   
+    }    
+}
+
+void MainWindow::rgb(int channel)
+{
+    Mat temp = OpenCVUtils::FromQPixmap(currentImage());
+    
+    Mat rgb[3];
+    cv::split(temp, rgb); 
+    
+    cvtColor(rgb[2-channel], temp, CV_GRAY2BGR);
+    
+    showImage(temp);   
+    
+    switch(channel) {
+    case 0: log(tr("switch channel to red"));break;
+    case 1: log(tr("switch channel to green"));break;
+    case 2: log(tr("switch channel to blue"));break;   
+    }    
+}
+
+void MainWindow::normalize()
+{
+    log(tr("normalize"));
+    Mat temp = OpenCVUtils::FromQPixmap(currentImage());
+    cv::normalize(temp, temp,0, 255, NORM_MINMAX, temp.type());
+    showImage(temp);           
+}
+
+void MainWindow::invert()
+{
+    log(tr("invert"));
+    Mat temp = OpenCVUtils::FromQPixmap(currentImage());
+    cv::bitwise_not(temp,temp);
+    showImage(temp); 
+}
+
+void MainWindow::equalizehist()
+{
+    log(tr("equalize hist"));
+    Mat temp = OpenCVUtils::FromQPixmap(currentImage());
+    Mat rgb[3];
+    cv::split(temp, rgb);
+    cv::equalizeHist(rgb[0],rgb[0]);
+    cv::equalizeHist(rgb[1],rgb[1]);
+    cv::equalizeHist(rgb[2],rgb[2]);
+    cv::merge(rgb,3,temp);
+    showImage(temp);       
+}
+
+void MainWindow::log(QString message)
+{
+    qDebug() << message;
+    ui->statusBar->showMessage(message);
+}
+
+void MainWindow::stackIterate(QString title)
+{
+    setCurrentImage(ui->graphicsView->pixmap());
+    int row = ui->lstImageStack->currentIndex().row();
+    QString label;
+    if (title.isNull()) {
+        label  = "image";
+        if (row == -1) {
+            label += QString::number(ui->lstImageStack->model()->rowCount());
+        } else {
+            label += QString::number(row+1);
+        }
+    } else {
+        label = title;
+    }
+    pushCurrentImage(label , row);  
 }
 
 
@@ -208,16 +322,6 @@ void MainWindow::saveIni()
     settings.setValue("LastImagePath", lastImagePath);
 }
 
-void MainWindow::on_actionZoom_Out_triggered()
-{
- 
-}
-
-void MainWindow::on_actionZoom_In_triggered()
-{
-
-}
-
 void MainWindow::on_actionExit_triggered()
 {
     QCoreApplication::exit(0);
@@ -225,15 +329,7 @@ void MainWindow::on_actionExit_triggered()
 
 void MainWindow::on_btnSaveImageStack_clicked()
 {
-    setCurrentImage(ui->graphicsView->pixmap());
-    int row = ui->lstImageStack->currentIndex().row();
-    QString label = "image";
-    if (row == -1) {
-        label += QString::number(ui->lstImageStack->model()->rowCount()+1);
-    } else {
-        label += QString::number(row+1);
-    }
-    pushCurrentImage(label , row);
+    stackIterate();
 }
 
 void MainWindow::on_actionSave_Image_triggered()
@@ -251,17 +347,51 @@ void MainWindow::on_lstImageStack_clicked(const QModelIndex &index)
     setCurrentImage( this->imageStack.data(index).Pixmap );
 }
 
-void MainWindow::on_btnHue_clicked()
+
+void MainWindow::on_btnNormalize_clicked()
 {
-    hsv(0);
+    normalize();
 }
 
-void MainWindow::on_btnSatturation_clicked()
+void MainWindow::on_btnInvert_clicked()
 {
-    hsv(1);
+    invert();
 }
 
-void MainWindow::on_btnValue_clicked()
+void MainWindow::on_btnEqHist_clicked()
 {
-    hsv(2);
+    equalizehist();
+}
+
+void MainWindow::on_cmbChannels_currentIndexChanged(const QString &value)
+{
+    if (value == "") showImage(currentImage());
+    if (value == tr("Red")) rgb(0);
+    if (value == tr("Green")) rgb(1);
+    if (value == tr("Blue")) rgb(2);
+    if (value == tr("Hue")) hsv(0);
+    if (value == tr("Saturation")) hsv(1);
+    if (value == tr("Value")) hsv(2);
+}
+
+void MainWindow::on_btnAutoAnalzye_clicked()
+{
+    erode(10);
+    stackIterate(tr("erode 10"));
+    threshold(95);
+    stackIterate(tr("threshold 95"));
+    analyze();
+
+}
+
+void MainWindow::on_actionDump_keyPoints_triggered()
+{
+    QString fileName 
+            = QFileDialog::getSaveFileName( 0,
+                                            tr("Dump file the file"),
+                                            QString(),
+                                            tr("Texts (*.txt)"));
+    if (fileName.isNull()) return;
+    
+    keyPoints.dumpToFile(fileName);
 }
