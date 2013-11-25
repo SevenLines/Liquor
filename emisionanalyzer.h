@@ -3,6 +3,7 @@
 
 #include <opencv/cv.hpp>
 #include <boost/lambda/lambda.hpp>
+#include "keypoints.h"
 
 using namespace cv;
 
@@ -64,15 +65,15 @@ public:
     void setImage(Mat &image);
     Mat &image();
     
-
-    
     void setMinRadius(int value);
     int minRadius();
     
     void setMaxRadius(int value);
     int maxRadius();
     
-    Mat findCircles(Mat in);
+    bool isInside(Mat &in, cv::Point &p);
+    
+    Mat findCircles(KeyPoints &keyPoints);
     
     bool isCircle(cv::Point position, int radius);
     float getSymmetryIndex(cv::Point pos);
@@ -91,6 +92,8 @@ public:
                             cv::Point pos,
                             int &curMaxValue,
                             cv::Point &maxPosition);
+    
+    cv::Point getCenter(Mat &in, cv::Point pos, Point center = Point());
     
     bool checkPointFlags(Mat &in, cv::Point p, int flags);
     
