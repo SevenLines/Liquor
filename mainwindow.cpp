@@ -26,27 +26,8 @@ MainWindow::MainWindow(QString imagePath, QWidget *parent) :
 {
     ui->setupUi(this);
     
-    ui->graphicsView->addAction(ui->actionSave_Image);
-    
+    ui->graphicsView->addAction(ui->actionSave_Image); 
     lastImageIndex = -1;
-    
-    // threshold control init
-   // ui->sldThreshold->setTitle(tr("threshold"));
-    ui->sldThreshold->setMax(255);
-    connect(ui->sldThreshold, SIGNAL(valueChanged(int)),
-            this, SLOT(threshold(int)));
-    
-    // erode control init
-    //ui->sldErode->setTitle(tr("erode"));
-    ui->sldErode->setMax(20);
-    connect(ui->sldErode, SIGNAL(valueChanged(int)),
-            this, SLOT(erode(int)));  
-    
-    // median control init
-    //ui->sldMedian->setTitle(tr("median"));
-    ui->sldMedian->setMax(50);
-    connect(ui->sldMedian, SIGNAL(valueChanged(int)),
-            this, SLOT(median(int))); 
     
     // set Image stack
     ui->lstImageStack->setModel(&imageStack);
@@ -72,13 +53,32 @@ MainWindow::MainWindow(QString imagePath, QWidget *parent) :
     connect(ui->chkShowKeys, SIGNAL(toggled(bool)), 
             ui->graphicsView, SLOT(toogleKeyPoints(bool)));
     
-    // analyze button init
-    connect(ui->btnAnalyze, SIGNAL(clicked()),
-            this, SLOT(analyze()));
-    
+    // load image is any passed as parameter to cmd
     loadImage(imagePath);
       
+    // load saved presets
     loadIni();
+    
+    // threshold control init
+    ui->sldThreshold->setMax(255);
+    connect(ui->sldThreshold, SIGNAL(apply()),
+            SLOT(stackIterate()));
+    connect(ui->sldThreshold, SIGNAL(valueChanged(int)),
+            this, SLOT(threshold(int)));
+    
+    // erode control init
+    ui->sldErode->setMax(20);
+    connect(ui->sldErode, SIGNAL(apply()),
+            SLOT(stackIterate()));
+    connect(ui->sldErode, SIGNAL(valueChanged(int)),
+            this, SLOT(erode(int)));  
+    
+    // median control init
+    ui->sldMedian->setMax(50);
+    connect(ui->sldMedian, SIGNAL(apply()),
+            SLOT(stackIterate()));
+    connect(ui->sldMedian, SIGNAL(valueChanged(int)),
+            this, SLOT(median(int))); 
 }
 
 
@@ -90,20 +90,6 @@ QPixmap MainWindow::currentImage()
 MainWindow::~MainWindow()
 {
     delete ui;
-}
-
-void MainWindow::on_pushButton_clicked()
-{
-    QString fileName 
-            = QFileDialog::getOpenFileName(this,
-                                     tr("Open File"),
-                                     lastImagePath,
-                                     tr("Images (*.png *.jpeg *.jpg *.xpm)")
-                                 );
-    if (fileName.isNull())
-        return;
-    
-    loadImage(fileName);
 }
 
 void MainWindow::showImage(Mat image)
@@ -135,13 +121,15 @@ void MainWindow::loadImage(QString path, bool setActive)
         mImage = QPixmap::fromImage(temp.copy());
     }
     
+    
     showImage(temp.copy());
     ui->graphicsView->fitToScreen();
+    ui->chkShowKeys->setChecked(false);
     
     pushCurrentImage(QFileInfo(path).baseName());
 }
 
-void MainWindow::analyze()
+void MainWindow::FindParticles()
 {
     log(tr("looking for particles"));
     
@@ -157,8 +145,37 @@ void MainWindow::analyze()
     ea.findCircles(keyPoints);
     stackIterate(tr("analyze"));
     ui->graphicsView->setKeyPoints(&keyPoints);
+    ui->chkShowKeys->setChecked(true);
     
     log(QString(tr("find %1 particle(s)")).arg(keyPoints.count()));
+}
+
+void MainWindow::FindParticleAreas()
+{
+    EmisionAnalyzer emisionAnalyzer;
+    
+    Mat temp = OpenCVUtils::FromQPixmap(currentImage());
+    emisionAnalyzer.setImage(temp);
+    
+    QList<QList<cv::Point> > areas;
+    
+    emisionAnalyzer.findBlackAreas(areas);
+
+    QList<cv::Point> area;
+    int colorFlag =0;
+    foreach(area, areas) {
+        cv::Point p;
+        foreach(p, area) {
+            if (emisionAnalyzer.isOnEdge(p)) {
+                temp.at<Vec3b>(p)[0] = 255;
+            } else {
+                temp.at<Vec3b>(p)[1] = colorFlag%2?196:64;
+            }
+        }
+        colorFlag++;
+    }
+    
+    setCurrentImage(OpenCVUtils::ToQPixmap(temp));
 }
 
 void MainWindow::pushCurrentImage(QString title, int index)
@@ -302,6 +319,21 @@ void MainWindow::loadIni()
     restoreGeometry(settings.value("Geometry", QByteArray()).toByteArray());
     loadImage(settings.value("LastImagePath", QString()).toString());
     
+    // restore image processing presets
+    // TODO
+    settings.beginGroup("ImageProcessing");
+    ui->sldErode->setValue(
+                settings.value("Erode", 9).toInt());
+    ui->sldThreshold->setValue(
+                settings.value("Threshold", 85).toInt());
+    settings.endGroup();
+    
+    // restore particles presets
+    settings.beginGroup("Particles");
+    setKeyPointsProportion(
+                settings.value("Proportion", 100).toInt());
+    settings.endGroup();
+    
     // restore BottomWidget state
     settings.beginGroup("BottomTabWidget");
     ui->BottomTabWidget->setVisible(
@@ -326,6 +358,18 @@ void MainWindow::saveIni()
     settings.setValue("Geometry", saveGeometry());
     settings.setValue("LastImagePath", lastImagePath);
     
+    // save image processing presets
+    // TODO
+    settings.beginGroup("ImageProcessing");
+    settings.setValue("Erode", ui->sldErode->value());
+    settings.setValue("Threshold", ui->sldThreshold->value());
+    settings.endGroup();
+    
+    // save particles presets
+    settings.beginGroup("Particles");
+    settings.setValue("Proportion", keyPoints.proportion());
+    settings.endGroup();
+    
     // save BottomWidget state
     settings.beginGroup("BottomTabWidget");
     settings.setValue("Visible", ui->BottomTabWidget->isVisible());
@@ -341,7 +385,7 @@ void MainWindow::saveIni()
 
 void MainWindow::on_actionExit_triggered()
 {
-    QCoreApplication::exit(0);
+    close();
 }
 
 void MainWindow::on_btnSaveImageStack_clicked()
@@ -403,36 +447,6 @@ void MainWindow::on_actionDump_keyPoints_triggered()
     keyPoints.dumpToFile(fileName);
 }
 
-void MainWindow::on_btnGetFillAreas_clicked()
-{
-    EmisionAnalyzer emisionAnalyzer;
-    
-    Mat temp = OpenCVUtils::FromQPixmap(currentImage());
-    emisionAnalyzer.setImage(temp);
-    
-    QList<QList<cv::Point> > areas;
-    
-    emisionAnalyzer.findBlackAreas(areas);
-    
-    
-    QList<cv::Point> area;
-    int colorFlag =0;
-    foreach(area, areas) {
-        cv::Point p;
-        foreach(p, area) {
-            if (emisionAnalyzer.isOnEdge(p)) {
-                temp.at<Vec3b>(p)[0] = 255;
-            } else {
-                temp.at<Vec3b>(p)[1] = colorFlag%2?196:64;
-            }
-        }
-        colorFlag++;
-    }
-    
-    setCurrentImage(OpenCVUtils::ToQPixmap(temp));
-}
-
-
 void MainWindow::on_btnHideLeftPanel_clicked()
 {
     // чтобы прятать левую панельку
@@ -450,5 +464,40 @@ void MainWindow::on_btnHideBottomPanel_clicked()
 
 void MainWindow::closeEvent(QCloseEvent *)
 {
-        saveIni();
+    saveIni();
+}
+
+void MainWindow::on_actionOpen_Image_triggered()
+{
+    QString fileName 
+            = QFileDialog::getOpenFileName(this,
+                                     tr("Open File"),
+                                     lastImagePath,
+                                     tr("Images (*.png *.jpeg *.jpg *.xpm)")
+                                 );
+    if (fileName.isNull())
+        return;
+    
+    loadImage(fileName);
+}
+
+void MainWindow::on_actionFit_To_View_triggered()
+{
+    ui->graphicsView->fitToScreen();
+}
+
+void MainWindow::setKeyPointsProportion(int value)
+{
+    //this->keyPoints.setProportion(value);
+    ui->sldKeyProp->setValue(value);
+}
+
+void MainWindow::on_actionFind_particles_triggered()
+{
+    FindParticles();
+}
+
+void MainWindow::on_actionFind_Areas_triggered()
+{
+    FindParticleAreas();
 }

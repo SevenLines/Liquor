@@ -1,6 +1,9 @@
 #include "horizontalsliderex.h"
 #include "ui_horizontalsliderex.h"
 
+#include <QDebug>
+#include <QMouseEvent>
+
 HorizontalSliderEx::HorizontalSliderEx(QWidget *parent) :
     QWidget(parent),
     ui(new Ui::HorizontalSliderEx)
@@ -72,4 +75,13 @@ void HorizontalSliderEx::setMin(int value)
 void HorizontalSliderEx::setTitle(QString value)
 {
     ui->label->setText(value);
+}
+
+
+void HorizontalSliderEx::keyPressEvent(QKeyEvent *e)
+{
+    emit keyPressed(e);
+    if (e->key() == Qt::Key_Return) {
+        emit apply();
+    }
 }

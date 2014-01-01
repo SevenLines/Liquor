@@ -36,11 +36,22 @@ public slots:
     void setMax(int value);
     void setMin(int value); 
     void setTitle(QString);
+    
+    
 signals:  
     void valueChanged(int newValue);
     void minimumChanged(int newValue);
     void maximumChanged(int newValue);
+    void keyPressed(QKeyEvent *);
+    /**
+     * @brief called when user press RETURN key
+     */
+    void apply();
 
+    
+    // QWidget interface
+protected:
+    void keyPressEvent(QKeyEvent *e);
 };
 
 #endif // HORIZONTALSLIDEREX_H

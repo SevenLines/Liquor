@@ -30,15 +30,16 @@ public:
     ~MainWindow();
 
 private slots:
-    void on_pushButton_clicked();
-    
+   
     void showImage(Mat image);
     void showImage(QPixmap pixmap);
     void showImage(QImage image);
     
     void loadImage(QString path, bool setActive = true);
-    void analyze();
     void pushCurrentImage(QString title, int index = -1);
+    
+    void FindParticles();
+    void FindParticleAreas();
     
     void setCurrentImage(QPixmap pixmap);
     
@@ -51,7 +52,7 @@ private slots:
     void invert();
     void equalizehist();
     void log(QString message);
-    void stackIterate(QString title = QString());
+
     
     void loadIni();
     void saveIni();
@@ -74,13 +75,23 @@ private slots:
     
     void on_actionDump_keyPoints_triggered();
     
-    void on_btnGetFillAreas_clicked();
-    
     void on_btnHideLeftPanel_clicked();
     
     void on_btnHideBottomPanel_clicked();
     
     void closeEvent(QCloseEvent *);
+    
+    void on_actionOpen_Image_triggered();
+    
+    void on_actionFit_To_View_triggered();
+    
+    void on_actionFind_particles_triggered();
+    
+    void on_actionFind_Areas_triggered();
+    
+public slots:
+    void setKeyPointsProportion(int value);
+    void stackIterate(QString title = QString());
     
 private:
     Ui::MainWindow *ui;
