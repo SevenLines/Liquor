@@ -1,7 +1,7 @@
 #include <QDebug>
 #include "emisionanalyzer.h"
-#include "opencvutils.h"
-#include "opencvutils_tempates.h"
+#include "Utils/opencvutils.h"
+#include "Utils/opencvutils_tempates.h"
 #include <boost/tuple/tuple.hpp>
 
 using namespace cv;

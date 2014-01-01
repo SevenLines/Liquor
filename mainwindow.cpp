@@ -5,9 +5,10 @@
 #include <QDebug>
 #include <QSettings>
 #include <QPicture>
-#include "imageprocessing.h"
-#include "histogram1d.h"
-#include "emisionanalyzer.h"
+#include <QPropertyAnimation>
+
+#include "Utils/imageprocessing.h"
+#include "Core/emisionanalyzer.h"
 
 #include "opencv2/features2d/features2d.hpp"
 #include "opencv2/nonfree/features2d.hpp"
@@ -68,6 +69,9 @@ MainWindow::MainWindow(QString imagePath, QWidget *parent) :
     connect(&keyPoints, SIGNAL(proportionChange(int)),
             ui->graphicsView, SLOT(update()));
     
+    connect(ui->chkShowKeys, SIGNAL(toggled(bool)), 
+            ui->graphicsView, SLOT(toogleKeyPoints(bool)));
+    
     // analyze button init
     connect(ui->btnAnalyze, SIGNAL(clicked()),
             this, SLOT(analyze()));
@@ -85,7 +89,6 @@ QPixmap MainWindow::currentImage()
 
 MainWindow::~MainWindow()
 {
-    saveIni();
     delete ui;
 }
 
@@ -153,14 +156,7 @@ void MainWindow::analyze()
     keyPoints.clear();
     ea.findCircles(keyPoints);
     stackIterate(tr("analyze"));
-    
-    QPixmap pixmap = ui->graphicsView->pixmap();
-    QPainter p;
-    p.begin(&pixmap);
-        p.setPen(QPen(Qt::white,2));
-        keyPoints.draw(&p);
-        ui->graphicsView->setPixmap(pixmap);
-    p.end();
+    ui->graphicsView->setKeyPoints(&keyPoints);
     
     log(QString(tr("find %1 particle(s)")).arg(keyPoints.count()));
 }
@@ -299,24 +295,48 @@ void MainWindow::stackIterate(QString title)
     pushCurrentImage(label , row);  
 }
 
-
-void MainWindow::on_pushButton_5_clicked()
-{
-    showImage(mImage);
-}
-
 void MainWindow::loadIni()
 {
     QSettings settings( "Liqour.cfg", QSettings::IniFormat);
+    // restore main form state
     restoreGeometry(settings.value("Geometry", QByteArray()).toByteArray());
     loadImage(settings.value("LastImagePath", QString()).toString());
+    
+    // restore BottomWidget state
+    settings.beginGroup("BottomTabWidget");
+    ui->BottomTabWidget->setVisible(
+                settings.value("Visible", true).toBool());
+    ui->BottomTabWidget->setCurrentIndex(
+                settings.value("CurrentIndex", true).toInt());
+    settings.endGroup();
+    
+    // restore LeftPanel state
+    settings.beginGroup("LeftPanel");
+    ui->LeftPanel->setVisible(
+                settings.value("Visible", true).toBool());
+    ui->LeftTabWidget->setCurrentIndex(
+                settings.value("CurrentIndex", 0).toInt());
+    settings.endGroup();
 }
 
 void MainWindow::saveIni()
 {
     QSettings settings("Liqour.cfg", QSettings::IniFormat);
+    
     settings.setValue("Geometry", saveGeometry());
     settings.setValue("LastImagePath", lastImagePath);
+    
+    // save BottomWidget state
+    settings.beginGroup("BottomTabWidget");
+    settings.setValue("Visible", ui->BottomTabWidget->isVisible());
+    settings.setValue("CurrentIndex", ui->BottomTabWidget->currentIndex());
+    settings.endGroup();
+    
+    // save LeftPanel state
+    settings.beginGroup("LeftPanel");
+    settings.setValue("Visible", ui->LeftPanel->isVisible());
+    settings.setValue("CurrentIndex", ui->LeftTabWidget->currentIndex());
+    settings.endGroup();
 }
 
 void MainWindow::on_actionExit_triggered()
@@ -394,6 +414,7 @@ void MainWindow::on_btnGetFillAreas_clicked()
     
     emisionAnalyzer.findBlackAreas(areas);
     
+    
     QList<cv::Point> area;
     int colorFlag =0;
     foreach(area, areas) {
@@ -409,4 +430,25 @@ void MainWindow::on_btnGetFillAreas_clicked()
     }
     
     setCurrentImage(OpenCVUtils::ToQPixmap(temp));
+}
+
+
+void MainWindow::on_btnHideLeftPanel_clicked()
+{
+    // чтобы прятать левую панельку
+    bool fVisible = ui->LeftPanel->isVisible();
+    ui->LeftPanel->setVisible(!fVisible);  
+    ui->btnHideLeftPanel->setText(fVisible?">":"<");
+}
+
+void MainWindow::on_btnHideBottomPanel_clicked()
+{
+    bool fVisible = ui->BottomTabWidget->isVisible();
+    ui->BottomTabWidget->setVisible(!fVisible);  
+}
+
+
+void MainWindow::closeEvent(QCloseEvent *)
+{
+        saveIni();
 }

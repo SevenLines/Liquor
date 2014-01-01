@@ -10,7 +10,7 @@ class MGraphicsView : public QGraphicsView
 {
     Q_OBJECT
     
-private:
+protected:
     QGraphicsScene *gScene;
     QGraphicsPixmapItem *pixmapItem;
     bool fFitToScreen;

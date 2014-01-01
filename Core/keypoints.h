@@ -6,6 +6,7 @@
 #include <QPoint>
 #include <QPainter>
 
+
 struct MKeyPoint 
 {
     QPoint pos;
@@ -34,6 +35,7 @@ public:
     
 signals:
     void proportionChange(int newValue);
+    void cleared();
     
 public slots:
     void setProportion(int value);

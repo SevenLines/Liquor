@@ -13,34 +13,44 @@ TEMPLATE = app
 CONFIG -= console
 TRANSLATIONS += main.ts
 
-SOURCES += main.cpp\
-        mainwindow.cpp \
-        qlabelimage.cpp \
-    imageprocessing.cpp \
-    mgraphicsview.cpp \
-    emisionanalyzer.cpp \
-    horizontalsliderex.cpp \
-    imagestack.cpp \
-    opencvutils.cpp \
-    keypoints.cpp
+INCLUDEPATH += Core Utils Widgets
+
+SOURCES  += main.cpp\
+    mainwindow.cpp \
+    Core/imagestack.cpp \
+    Core/keypoints.cpp \
+    Core/emisionanalyzer.cpp \
+    Utils/imageprocessing.cpp \
+    Utils/opencvutils.cpp \
+    Widgets/horizontalsliderex.cpp \
+    Widgets/qlabelimage.cpp \
+    Widgets/mgraphicsview.cpp \
+    Widgets/mgraphicsviewea.cpp \
+    Widgets/qgraphicsparticleitem.cpp \
+    Widgets/sequenceanalyzewidget.cpp
 
 HEADERS  += mainwindow.h \
-            qlabelimage.h \
-    imageprocessing.h \
-    histogram1d.h \
-    mgraphicsview.h \
-    emisionanalyzer.h \
-    horizontalsliderex.h \
-    imagestack.h \
-    opencvutils.h \
-    keypoints.h \
-    opencvutils_tempates.h
+    Core/imagestack.h \
+    Core/keypoints.h \
+    Core/opencvutils_tempates.h \
+    Core/emisionanalyzer.h \
+    Utils/imageprocessing.h \
+    Utils/opencvutils.h \
+    Widgets/qlabelimage.h \
+    Widgets/mgraphicsview.h \
+    Widgets/horizontalsliderex.h \
+    Widgets/mgraphicsviewea.h \
+    Widgets/qgraphicsparticleitem.h \
+    Widgets/sequenceanalyzewidget.h
 
 FORMS    += mainwindow.ui \
-    horizontalsliderex.ui
+    Widgets/horizontalsliderex.ui \
+    Widgets/sequenceanalyzewidget.ui
 
 FORMS    += mainwindow.ui \
-    horizontalsliderex.ui
+    Widgets/horizontalsliderex.ui
+
+
 
 win32 {
    INCLUDEPATH += d:/_OpenCV/include/opencv

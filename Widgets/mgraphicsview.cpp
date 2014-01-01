@@ -4,6 +4,7 @@
 #include <QBrush>
 #include <QRadialGradient>
 #include <QScrollBar>
+#include <QGraphicsDropShadowEffect>
 #include "mgraphicsview.h"
 
 QGraphicsScene *MGraphicsView::scene() const
@@ -23,23 +24,21 @@ MGraphicsView::MGraphicsView(QWidget *parent) :
 {
     // init scene
     gScene = new QGraphicsScene(this);
-    pixmapItem = gScene->addPixmap(QPixmap());
     setScene(gScene);
     
+    // set pixmap
+    pixmapItem = gScene->addPixmap(QPixmap());
+    
     // set background brush
-    setBackgroundBrush(QBrush(Qt::black));
+    setBackgroundBrush(QBrush(Qt::gray));
     
     // включаем отслеживание движения мыши
     setMouseTracking(true);
+    
     // отключаем скроллбары чтобы избежать проблем с изменением размеров
     setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-    
-    setOptimizationFlag();
-    
-    //set quality
-    //pixmapItem->setTransformationMode(Qt::SmoothTransformation);
-    
+
     fFitToScreen = false;
 }
 
@@ -47,7 +46,7 @@ void MGraphicsView::setPixmap(const QPixmap &img)
 {
     //gScene->setSceneRect(pixmapItem->boundingRect());
     pixmapItem->setPixmap(img);
-    gScene->setSceneRect(QRectF());
+    gScene->setSceneRect(gScene->itemsBoundingRect());
 }
 
 QPointF MGraphicsView::centerOfScene()

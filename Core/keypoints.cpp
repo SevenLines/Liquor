@@ -25,7 +25,7 @@ KeyPoints::KeyPoints(QObject *parent) :
 void KeyPoints::setProportion(int value)
 {
     mProportion = (float)value / 100;
-    emit proportionChange(mProportion);
+    emit proportionChange(value);
 }
 
 int KeyPoints::proportion()
@@ -71,7 +71,7 @@ void KeyPoints::dumpToFile(QString filePath)
     foreach(point, mPoints) {
         stream << QString("%1\t%2\t(%3; %4)\n")
                 .arg(i)
-                .arg(point.value)
+                .arg(point.value * mProportion)
                 .arg(point.pos.x())
                 .arg(point.pos.y());
         ++i;
@@ -81,6 +81,7 @@ void KeyPoints::dumpToFile(QString filePath)
 
 void KeyPoints::clear()
 {
+    emit cleared();
     mPoints.clear();
 }
 

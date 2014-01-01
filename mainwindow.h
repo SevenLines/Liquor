@@ -5,9 +5,9 @@
 #include <opencv/cv.h>
 #include <opencv/highgui.h>
 
-#include "imagestack.h"
-#include "opencvutils.h"
-#include "keypoints.h"
+#include "Core/imagestack.h"
+#include "Core/keypoints.h"
+#include "Utils/opencvutils.h"
 
 class QSettings;
 
@@ -52,9 +52,6 @@ private slots:
     void equalizehist();
     void log(QString message);
     void stackIterate(QString title = QString());
-  
-    
-    void on_pushButton_5_clicked();
     
     void loadIni();
     void saveIni();
@@ -78,6 +75,12 @@ private slots:
     void on_actionDump_keyPoints_triggered();
     
     void on_btnGetFillAreas_clicked();
+    
+    void on_btnHideLeftPanel_clicked();
+    
+    void on_btnHideBottomPanel_clicked();
+    
+    void closeEvent(QCloseEvent *);
     
 private:
     Ui::MainWindow *ui;
