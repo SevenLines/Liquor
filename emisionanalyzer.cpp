@@ -1,25 +1,15 @@
-#include "emisionanalyzer.h"
 #include <QDebug>
+#include "emisionanalyzer.h"
+#include "opencvutils.h"
+#include "opencvutils_tempates.h"
+#include <boost/tuple/tuple.hpp>
 
 using namespace cv;
 using namespace std;
 using namespace boost::lambda;
+using namespace boost::tuples;
+using namespace boost;
 
-
-Point getNeighboor(Point p, int num)
-{
-    switch(num) {
-        case 0: return p; break;
-        case 1: return cv::Point(p.x-1, p.y-1); break;
-        case 2: return cv::Point(p.x, p.y-1); break;
-        case 3: return cv::Point(p.x+1, p.y-1); break;
-        case 4: return cv::Point(p.x+1, p.y); break;
-        case 5: return cv::Point(p.x+1, p.y+1); break;
-        case 6: return cv::Point(p.x, p.y+1); break;
-        case 7: return cv::Point(p.x-1, p.y+1); break;
-        case 8: return cv::Point(p.x-1, p.y); break;
-    }
-}
 
 EmisionAnalyzer::EmisionAnalyzer()
 {
@@ -27,11 +17,18 @@ EmisionAnalyzer::EmisionAnalyzer()
 
 void EmisionAnalyzer::setImage(Mat &image)
 {
+    // чтобы не было ошибок преобразования 
     if (image.type() != CV_8UC3) {
         qWarning() << "wrong format of input image, image is not set, should be CV_8UC3";
         return;
     }
-    gImage = image;
+    
+    // создаем пустое изображение
+    gImage = Mat::zeros(gImage.rows, gImage.cols, CV_8U);
+    cvtColor(image, gImage, CV_RGB2GRAY);
+    // 
+    gImageRef = gImage;
+
     // using for storing specific info about each pixel
     gSymmetryInfo = Mat::zeros(gImage.rows, gImage.cols, CV_32SC3);
 }
@@ -62,83 +59,66 @@ int EmisionAnalyzer::maxRadius()
     return gMaxRadius;
 }
 
-bool EmisionAnalyzer::isInside(Mat &in, Point &p)
+void EmisionAnalyzer::getMinMax(QList<Point> area,
+                                Mat1i image,
+                                int &min, int &max)
 {
-    return (p.x >= 0 && p.y >=0 && p.x < in.cols && p.y < in.rows);
+    min = image(area.at(0));
+    max = image(area.at(0));
+    foreach (Point p, area) {
+        if (image(p) < min) min = image(p);
+        if (image(p) > max) max = image(p);
+    }
 }
 
-/**
- * @brief возвращает значение от 0 до 1000, соответствующей 
- * отношению горизонтальной семетрии в данной точке, в промилях
- *
- * @param pos
- * @return 
- */
-float EmisionAnalyzer::getHorizontalSymmetry(cv::Point pos) 
+bool EmisionAnalyzer::isOnEdge(Point point)
 {
-    int lIndex = 0, rIndex = 0;
-    
-    Mat_<Vec3b> in = gImage;
-    
-    while( lIndex < gMaxRadius && in(pos.x-lIndex, pos.y)[0] == 0) {
-        ++lIndex;
+    for(int i=1;i<=8;++i) {
+        Point neigh = OpenCVUtils::getNeighboor(point, i);
+        if (gImageRef(neigh) == EA_EMPTY) {
+            return true;
+        }
     }
-    while( rIndex < gMaxRadius && in(pos.x+rIndex, pos.y)[0] == 0) {
-        ++rIndex;
-    }
-    
-    if (rIndex == 0 || lIndex == 0) 
-        return 0;
-    
-    float val = (float)lIndex / rIndex;
-    return val>1 ? 1.0f/val : val;
-}
-
-float EmisionAnalyzer::getVerticalSymmetry(cv::Point pos) 
-{
-    int lIndex = 0, rIndex = 0;
-    
-    Mat_<Vec3b> in = gImage;
-    
-    while( lIndex < gMaxRadius && in(pos.x, pos.y-lIndex)[0] == 0) {
-        ++lIndex;
-    }
-    while( rIndex < gMaxRadius && in(pos.x, pos.y+rIndex)[0] == 0) {
-        ++rIndex;
-    }
-    
-    if (rIndex == 0 || lIndex == 0) 
-        return 0;
-    
-    float val = (float)lIndex / rIndex;
-    return val>1 ? 1.0f/val : val;
+    return false;
 }
 
 // return radius of the most available circle
-int EmisionAnalyzer::isInsideCircle(Point pos)
+int EmisionAnalyzer::getSymmetryValue(Point pos, int i)
 {  
-    Mat_<Vec3b> in = gImage;
-
-    if ( in(pos)[0] != 0 ) return 0;
+    if ( gImageRef(pos) != EA_BLACK ) return 0;
     
     int offset = 0;
+    // кол-во направлений по которым перестала расширяться область
+    i = qMin(i, 8);
+    int stopItems = 0;
     do {
-        if (   pos.y - offset < 0 
-            || pos.x - offset < 0 
-            || pos.x + offset >= in.cols 
-            || pos.y + offset >= in.rows) {
+        if ( pos.y + offset >= gImageRef.rows
+             || gImageRef(pos.y + offset, pos.x) != EA_BLACK ) stopItems++; // to right
+        
+        if ( pos.y - offset < 0 
+              ||gImageRef(pos.y - offset, pos.x) != EA_BLACK ) stopItems++; // to left
+        
+        if ( pos.x - offset < 0 
+             || gImageRef(pos.y, pos.x - offset) != EA_BLACK ) stopItems++; // to top
+        
+        if ( pos.y + offset >= gImageRef.rows
+             || gImageRef(pos.y, pos.x + offset) != EA_BLACK ) stopItems++; // to bottom
+        
+        if ( pos.y + offset >= gImageRef.rows || pos.x - offset < 0
+             || gImageRef(pos.y + offset, pos.x - offset) != EA_BLACK ) stopItems++;
+        
+        if ( pos.y - offset < 0 || pos.x - offset < 0 
+             || gImageRef(pos.y - offset, pos.x - offset) != EA_BLACK ) stopItems++;
+        
+        if ( pos.y - offset < 0 || pos.x + offset >= gImageRef.cols
+             || gImageRef(pos.y - offset, pos.x + offset) != EA_BLACK ) stopItems++; 
+        
+        if ( pos.y + offset > gImageRef.rows || pos.x + offset >= gImageRef.cols
+             || gImageRef(pos.y + offset, pos.x + offset) != EA_BLACK ) stopItems++; 
+        
+        if (stopItems >= i) {
             break;
         }
-        
-        if ( in(pos.y + offset, pos.x)[0] != 0 ) break; // to right
-        if ( in(pos.y - offset, pos.x)[0] != 0 ) break; // to left
-        if ( in(pos.y,          pos.x - offset)[0] != 0 ) break; // to top
-        if ( in(pos.y,          pos.x + offset)[0] != 0 ) break; // to bottom
-        
-        if ( in(pos.y + offset, pos.x - offset)[0] != 0 ) break;
-        if ( in(pos.y - offset, pos.x - offset)[0] != 0 ) break; 
-        if ( in(pos.y - offset, pos.x + offset)[0] != 0 ) break; 
-        if ( in(pos.y + offset, pos.x + offset)[0] != 0 ) break; 
         
         offset ++;        
     }while(true);
@@ -146,25 +126,6 @@ int EmisionAnalyzer::isInsideCircle(Point pos)
     return offset;
 }
 
-int EmisionAnalyzer::checkForFunction(Point pos, int depth, bool (*predicate)(Point))
-{
-    return 0;
-}
-
-int EmisionAnalyzer::getMaxRadius(Point pos)
-{
-    int lIndex = 0, rIndex = 0;
-    Mat_<Vec3b> in = gImage;
-    
-    while( lIndex < gMaxRadius && in(pos.x, pos.y-lIndex)[0] == 0) {
-        if (in(pos.x, pos.y+rIndex)[0] != 0) {
-            break;
-        }
-        ++lIndex;
-        ++rIndex;
-    } 
-    return lIndex;
-}
 
 Point EmisionAnalyzer::findMaxPoint(Mat &in, Point p, int minValue)
 {
@@ -182,7 +143,7 @@ Point EmisionAnalyzer::findMaxPoint(Mat &in, Point p, int minValue)
     
     for (int i=1;i <= 8; ++i ) {
         // iterrate over all neighboors of point
-        cv::Point neighP = getNeighboor(p, i);
+        cv::Point neighP = OpenCVUtils::getNeighboor(p, i);
         newValue = inref(neighP)[0];
         if (curValue < newValue && newValue >= minValue ) {
             if (! (inref(neighP)[1] & EA_VISITED) ) { // check s point visited
@@ -204,77 +165,19 @@ Point EmisionAnalyzer::findMaxPoint(Mat &in, Point p, int minValue)
     return outPos;
 }
 
-bool EmisionAnalyzer::checkPointFlags(Mat &in, Point p, int flags)
+template<class MatXX>
+void __getAreaPoints(cv::Point const &point, MatXX &image,
+                     tuple< int *,cv::Point *, cv::Mat1b*> &info)
 {
-    return in.at<Vec3b>(p.x, p.y)[1] & flags;
-}
-
-float EmisionAnalyzer::getSymmetryIndex(cv::Point pos)
-{
-    float hor = 0, ver = 0;
-    int maxRadius = 0;
-    if (gImage.at<Vec3b>(pos.x, pos.y)[0] == 0) { 
-        hor = getHorizontalSymmetry(pos);
-        ver = getVerticalSymmetry(pos);
-        maxRadius = getMaxRadius(pos);
-    }
-    return ver*hor * 255;
-}
-
-cv::Point EmisionAnalyzer::getMaxRadius(Mat &in, 
-                                        int minValue,
-                                        cv::Point pos,
-                                        int &curMaxValue,
-                                        cv::Point &maxPosition)
-{
-    in.at<Vec3b>(pos.x, pos.y)[1] |= EA_VISITED;
-    qDebug() << in.at<Vec3b>(pos.x, pos.y)[1];
+    int *count = get<0>(info);
+    (*count)++;
     
-    int newValue = getMaxRadius(pos);
-    if (newValue > curMaxValue) {
-       curMaxValue = newValue;
-       maxPosition = pos;
-    }
+    cv::Point *p = get<1>(info);
+    p->x += point.x;
+    p->y += point.y;
     
-    for (int i=1; i<=8; i++) {
-        cv:Point p = getNeighboor(pos, i);
-        
-        int value = in.at<Vec3b>(p.x, p.y)[0];
-        int flag = in.at<Vec3b>(p.x, p.y)[1];
-        
-        if (value >= minValue && ! (flag & EA_VISITED) ) {
-            getMaxRadius(in, minValue, p, curMaxValue, maxPosition);
-        }
-    }
-    return maxPosition;
-}
-
-/**
- * @brief Обходит всех соседей точки pos иеющие тоже значение
- * что и pos, и формирует средную точку
- * @param in
- * @param pos
- * @return 
- */
-Point EmisionAnalyzer::getCenter(Mat &in, Point pos, Point center)
-{
-    in.at<Vec3b>(pos)[1] |= EA_VISITED; // mark as visited
-    
-    center.x+=1; // 
-    
-    if (center.x > 100) return Point(-1,-1); // wrong :D to deep
-    
-    for(int i=1;i<=8;++i) {
-        Point neigh = getNeighboor(pos, i);
-        if (isInside(in, neigh)) {
-            if ( in.at<Vec3b>(neigh)[0] == in.at<Vec3b>(pos)[0] && !(in.at<Vec3b>((neigh))[1]&EA_VISITED) ) {
-                if ( getCenter(in, neigh, center).x == -1) {
-                    return Point(-1,-1);
-                }
-            }
-        }
-    }
-    return pos;
+    cv::Mat1b* flagImage = get<2>(info);
+    (*flagImage)(point) |= EmisionAnalyzer::EA_VISITED;
 }
 
 /**
@@ -282,94 +185,119 @@ Point EmisionAnalyzer::getCenter(Mat &in, Point pos, Point center)
  * @param in, CV_8UC3 Mat image
  * @return image representaion of findin pixels
  */
-cv::Mat EmisionAnalyzer::findCircles(KeyPoints &keyPoints)
+void EmisionAnalyzer::findCircles(KeyPoints &keyPoints)
 {
-    int minValue;
-    
-    
     if ( gImage.empty() ) {
         qWarning() << "image is not set!";
-        return cv::Mat();
+        return;
     }    
-        
-    int iCols = gImage.cols, iRows = gImage.rows;
-   
+    
+    // изображение для хранения хначений пикселей
+    Mat valueImageOrigin = Mat::zeros(gImage.rows, gImage.cols, CV_16SC1);
+    Mat1i valueImage = valueImageOrigin;
+    
+    QVector<Point> extremPoints; // локальные экстремумы
 
-    Mat out = Mat::zeros(gImage.rows, gImage.cols, gImage.type());
-    Mat_<Vec3b> outRef = out;
+    // заполненые области    
+    QList< QList<cv::Point> > blackAreas;
+    // нахожу заполненые области
+    OpenCVUtils::getKeyAreas<cv::Mat1b>(blackAreas, EA_BLACK, gImageRef);
     
-    
-    PointValue p;
-    QVector<PointValue> blackPoints; // черные точки
-    QVector<PointValue> extrePoints; // локальные экстремумы
-    
-    /*
-     * 1. проходим по изображению пересчитываю
-     * симетрические области 
-     */
-    for(int y = 0; y < iRows; ++y) {
-        for (int x = 0; x < iCols; ++x ) {
-            Point p = cv::Point(x, y);
-            int value = isInsideCircle(p);
-            if ( value ) {
-                blackPoints.push_back(PointValue(p, value));
-            }
-            outRef(p)[0] = value;
+    int symmValue;
+    foreach(QList<cv::Point> area, blackAreas) {
+        foreach(cv::Point p, area) {
+            symmValue = getSymmetryValue(p, 1);
+            valueImage(p) = symmValue;
         }
     }
     
-    // размываю точки
-    cv::GaussianBlur(out,out,cv::Size(5, 5), 3);
+    // размываю индексы симметрии
+    cv::GaussianBlur(valueImageOrigin, valueImageOrigin,cv::Size(5, 5), 3);
 
-    /**
-     * Ищем точки, в радиусе depth от которых нету 
-     * точек с большим значением
-     */
+    
     int countOfPointsWithGreaterValue;
+    // Ищем точки, в радиусе depth от которых 
+    // нету точек с большим значением
     int depth = 5;
-    foreach (p, blackPoints) {
-        countOfPointsWithGreaterValue = 0;
-        //outRef(p.point)[1] |= EA_VISITED;
-        
-        for (int i=-depth; i<depth; ++i) {
-            for (int j=-depth;j<depth; ++j) {
-                if (i!=0 || j!=0) {
-                    cv::Point nP(p.point.x+j, p.point.y+i);
-                    if (isInside(out, nP)) {
-                        if ( outRef(nP)[0] > outRef(p.point)[0] ) {
+    foreach (QList<Point> area, blackAreas) {
+        foreach(Point p, area) {
+            countOfPointsWithGreaterValue = 0;
+            for (int i=-depth; i<depth; ++i) {
+                for (int j=-depth;j<depth; ++j) {
+                    cv::Point neigh(p.x+j, p.y+i);
+                    if(OpenCVUtils::isInside(valueImage, neigh)) {
+                        if (valueImage(p) < valueImage(neigh)) {
                             countOfPointsWithGreaterValue++;
-                            goto stop; // о----+
-                        }                   // |
-                    }                       // |
-                }                           // |
-            }                               // |
-        }                                   // |
-        stop:        // <----- there ----------+
-        if (countOfPointsWithGreaterValue == 0) {
-            extrePoints.push_back(p);
-        }
-    }
-    
-    /**
-     * Для каждой области с экстремуми выбираем среднюю точку
-     */
-    foreach (p, extrePoints) {
-        if ( !(outRef(p.point)[1] & EA_VISITED) ) {
-            MKeyPoint key;
-            cv::Point pTemp = getCenter(out, p.point);
-
-            if (pTemp.x != -1) {
-                key.pos = QPoint(pTemp.x, pTemp.y);
-                key.value = p.value;
-                keyPoints.addKey(key);
-                outRef(pTemp)[2] = 255;
+                            goto stop;
+                        }
+                    }
+                }
             }
-            //outRef(p.point)[2] = 255;
+            stop:
+            if (countOfPointsWithGreaterValue == 0) {
+                extremPoints.push_back(p);
+            }
         }
     }
     
-    return out;
-    //out.convertTo(out, CV_8UC3);
+    // флаги
+    Mat1b flagImage = Mat::zeros(gImage.rows, gImage.cols, CV_8U);
+    
+    // Для каждой области с экстремум выбираем среднюю точку
+    foreach (Point p, extremPoints) {
+        // если пиксел не посещенный
+        if ( !(flagImage(p) & EA_VISITED) ) {
+            // помечаем как посещенный
+            flagImage(p) |= EA_VISITED;
+            
+            // кол-во точек в области
+            int pointsCount = 1;
+            cv::Point avgPoint = p; 
+            
+            // передаем информацию для функции обхода области
+            // ко-во точек, сумма точек, флаги
+            tuple< int *,cv::Point *, cv::Mat1b*>  info;
+            info = make_tuple(&pointsCount, &avgPoint, &flagImage);
+            OpenCVUtils::bypassArea(p, 
+                                    valueImage, 
+                                    valueImage(p),
+                                    info,
+                                    __getAreaPoints);
+            
+            // пересчитываем центр масс
+            avgPoint.x /= pointsCount;
+            avgPoint.y /= pointsCount;
+            
+            // создаем новую ключевую точку 
+            MKeyPoint key;
+            key.pos = QPoint(avgPoint.x, avgPoint.y);
+            key.value = valueImage(p);
+            // проверяем не находится ли центр масс области 
+            // в зоне действия какой-либо другой точки
+            bool fWas = false;
+            for(int i=0;i<keyPoints.count();++i) {
+                MKeyPoint &k = keyPoints[i];
+                int diff = (k.pos - key.pos).manhattanLength();
+                if ( diff - k.value - key.value < 0 ) {
+                    fWas = true;
+                    break;
+                }
+            }
+            // если наложений не было добавляем точку
+            if (!fWas)
+                keyPoints.addKey(key);
+        }
+    }
+}
+
+void EmisionAnalyzer::findBlackAreas(QList<QList<Point> > &areas)
+{
+    if ( gImage.empty() ) {
+        qWarning() << "image is not set!";
+        return;
+    }    
+    
+    OpenCVUtils::getKeyAreas<Mat1b>(areas, EA_BLACK, gImageRef);
 }
 
 bool EmisionAnalyzer::isCircle(cv::Point position, int radius)

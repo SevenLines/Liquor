@@ -3,6 +3,7 @@
 #include <QDebug>
 #include <QBrush>
 #include <QRadialGradient>
+#include <QScrollBar>
 #include "mgraphicsview.h"
 
 QGraphicsScene *MGraphicsView::scene() const
@@ -12,7 +13,6 @@ QGraphicsScene *MGraphicsView::scene() const
 
 void MGraphicsView::fitToScreen()
 {
-    qDebug() << viewport()->size();
     fitInView(pixmapItem, Qt::KeepAspectRatio);
     fFitToScreen = true;
 }
@@ -29,8 +29,16 @@ MGraphicsView::MGraphicsView(QWidget *parent) :
     // set background brush
     setBackgroundBrush(QBrush(Qt::black));
     
+    // включаем отслеживание движения мыши
+    setMouseTracking(true);
+    // отключаем скроллбары чтобы избежать проблем с изменением размеров
+    setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    
+    setOptimizationFlag();
+    
     //set quality
-    pixmapItem->setTransformationMode(Qt::SmoothTransformation);
+    //pixmapItem->setTransformationMode(Qt::SmoothTransformation);
     
     fFitToScreen = false;
 }
@@ -63,16 +71,24 @@ void MGraphicsView::mouseReleaseEvent(QMouseEvent *)
 }
 
 void MGraphicsView::mouseMoveEvent(QMouseEvent *e)
-{
-    QPointF curPoint = e->pos();
+{ 
+    QPoint curPoint = e->pos();
     
-    QPointF center = centerOfScene();
-    center = mapToScene(center.x(), center.y());
+    QPoint offset = curPoint - lastPoint;   
     
-    QPointF newPoint = pressPointScene - curPoint;
-    qDebug() << newPoint;
-    centerOn(center + newPoint);
-    pressPointScene = curPoint;
+    // двигаем вьюпорт сцены если нажата средняя кнопка
+    if (e->buttons() & Qt::MiddleButton) {
+        setCursor(Qt::ClosedHandCursor);
+        QScrollBar *yScroll = verticalScrollBar();
+        yScroll->setValue(yScroll->value() - offset.y());
+        
+        QScrollBar *xScroll = horizontalScrollBar();
+        xScroll->setValue(xScroll->value() - offset.x());
+    } else {
+        setCursor(QCursor());
+    }
+    
+    lastPoint = curPoint;
 }
 
 
@@ -98,5 +114,5 @@ void MGraphicsView::wheelEvent(QWheelEvent *e)
         }
     }
     
-    centerOn(pos);
+    //centerOn(pos);
 }

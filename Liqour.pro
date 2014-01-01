@@ -11,7 +11,7 @@ greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 TARGET = Liqour
 TEMPLATE = app
 CONFIG -= console
-
+TRANSLATIONS += main.ts
 
 SOURCES += main.cpp\
         mainwindow.cpp \
@@ -33,7 +33,8 @@ HEADERS  += mainwindow.h \
     horizontalsliderex.h \
     imagestack.h \
     opencvutils.h \
-    keypoints.h
+    keypoints.h \
+    opencvutils_tempates.h
 
 FORMS    += mainwindow.ui \
     horizontalsliderex.ui
@@ -58,3 +59,8 @@ unix {
     LIBS += -lopencv_core -lopencv_highgui -lopencv_superres
 }
 
+message($$VERSION)
+
+OTHER_FILES += \
+    VERSION.txt \
+    BUILD.txt

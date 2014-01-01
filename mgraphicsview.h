@@ -14,7 +14,7 @@ private:
     QGraphicsScene *gScene;
     QGraphicsPixmapItem *pixmapItem;
     bool fFitToScreen;
-    QPointF pressPointScene;
+    QPoint pressPointScene, lastPoint;
     
 public:
     explicit MGraphicsView(QWidget *parent = 0);

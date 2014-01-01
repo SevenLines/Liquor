@@ -15,6 +15,7 @@
 #include "opencv2/nonfree/nonfree.hpp"
 
 using namespace cv;
+using namespace OpenCVUtils;
 
 #define WND_HISTOGRAMM "Histogramm"
 
@@ -93,7 +94,7 @@ void MainWindow::on_pushButton_clicked()
     QString fileName 
             = QFileDialog::getOpenFileName(this,
                                      tr("Open File"),
-                                     QString(),
+                                     lastImagePath,
                                      tr("Images (*.png *.jpeg *.jpg *.xpm)")
                                  );
     if (fileName.isNull())
@@ -117,10 +118,10 @@ void MainWindow::showImage(QImage image)
     showImage(QPixmap::fromImage(image));
 }
 
-QImage MainWindow::loadImage(QString path, bool setActive)
+void MainWindow::loadImage(QString path, bool setActive)
 {
     if(path.isNull() || path.isEmpty())
-        return QImage();
+        return;
     
     QImage temp;
     temp.load(path);
@@ -131,12 +132,10 @@ QImage MainWindow::loadImage(QString path, bool setActive)
         mImage = QPixmap::fromImage(temp.copy());
     }
     
-    showImage(temp);
+    showImage(temp.copy());
     ui->graphicsView->fitToScreen();
     
     pushCurrentImage(QFileInfo(path).baseName());
-    
-    return temp;
 }
 
 void MainWindow::analyze()
@@ -152,9 +151,7 @@ void MainWindow::analyze()
     ea.setImage(temp);
     
     keyPoints.clear();
-    Mat out = ea.findCircles(keyPoints);
-    
-    showImage(out);
+    ea.findCircles(keyPoints);
     stackIterate(tr("analyze"));
     
     QPixmap pixmap = ui->graphicsView->pixmap();
@@ -310,14 +307,14 @@ void MainWindow::on_pushButton_5_clicked()
 
 void MainWindow::loadIni()
 {
-    QSettings settings;
+    QSettings settings( "Liqour.cfg", QSettings::IniFormat);
     restoreGeometry(settings.value("Geometry", QByteArray()).toByteArray());
     loadImage(settings.value("LastImagePath", QString()).toString());
 }
 
 void MainWindow::saveIni()
 {
-    QSettings settings;
+    QSettings settings("Liqour.cfg", QSettings::IniFormat);
     settings.setValue("Geometry", saveGeometry());
     settings.setValue("LastImagePath", lastImagePath);
 }
@@ -374,16 +371,6 @@ void MainWindow::on_cmbChannels_currentIndexChanged(const QString &value)
     if (value == tr("Value")) hsv(2);
 }
 
-void MainWindow::on_btnAutoAnalzye_clicked()
-{
-    erode(10);
-    stackIterate(tr("erode 10"));
-    threshold(95);
-    stackIterate(tr("threshold 95"));
-    analyze();
-
-}
-
 void MainWindow::on_actionDump_keyPoints_triggered()
 {
     QString fileName 
@@ -394,4 +381,32 @@ void MainWindow::on_actionDump_keyPoints_triggered()
     if (fileName.isNull()) return;
     
     keyPoints.dumpToFile(fileName);
+}
+
+void MainWindow::on_btnGetFillAreas_clicked()
+{
+    EmisionAnalyzer emisionAnalyzer;
+    
+    Mat temp = OpenCVUtils::FromQPixmap(currentImage());
+    emisionAnalyzer.setImage(temp);
+    
+    QList<QList<cv::Point> > areas;
+    
+    emisionAnalyzer.findBlackAreas(areas);
+    
+    QList<cv::Point> area;
+    int colorFlag =0;
+    foreach(area, areas) {
+        cv::Point p;
+        foreach(p, area) {
+            if (emisionAnalyzer.isOnEdge(p)) {
+                temp.at<Vec3b>(p)[0] = 255;
+            } else {
+                temp.at<Vec3b>(p)[1] = colorFlag%2?196:64;
+            }
+        }
+        colorFlag++;
+    }
+    
+    setCurrentImage(OpenCVUtils::ToQPixmap(temp));
 }

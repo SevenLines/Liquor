@@ -36,7 +36,7 @@ private slots:
     void showImage(QPixmap pixmap);
     void showImage(QImage image);
     
-    QImage loadImage(QString path, bool setActive = true);
+    void loadImage(QString path, bool setActive = true);
     void analyze();
     void pushCurrentImage(QString title, int index = -1);
     
@@ -75,9 +75,9 @@ private slots:
 
     void on_cmbChannels_currentIndexChanged(const QString &arg1);
     
-    void on_btnAutoAnalzye_clicked();
-    
     void on_actionDump_keyPoints_triggered();
+    
+    void on_btnGetFillAreas_clicked();
     
 private:
     Ui::MainWindow *ui;

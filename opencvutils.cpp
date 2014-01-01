@@ -2,6 +2,7 @@
 
 using namespace cv;
 
+
 QImage OpenCVUtils::ToQImage(cv::Mat const &in)
 {
     Mat image;// = OpenCVUtils::ToRGB(in);    
@@ -67,3 +68,34 @@ Mat OpenCVUtils::FromQPixmap(const QPixmap &src)
 {
     return OpenCVUtils::FromQImage(src.toImage());
 }
+
+
+Point OpenCVUtils::getNeighboor(Point p, int num)
+{
+    switch(num) {
+        case 0: return p; break;
+        case 1: return cv::Point(p.x-1, p.y-1); break;
+        case 2: return cv::Point(p.x, p.y-1); break;
+        case 3: return cv::Point(p.x+1, p.y-1); break;
+        case 4: return cv::Point(p.x+1, p.y); break;
+        case 5: return cv::Point(p.x+1, p.y+1); break;
+        case 6: return cv::Point(p.x, p.y+1); break;
+        case 7: return cv::Point(p.x-1, p.y+1); break;
+        case 8: return cv::Point(p.x-1, p.y); break;
+    }
+}
+
+bool OpenCVUtils::isInside(cv::Mat &image, cv::Point &p)
+{
+    return (p.x >= 0 && 
+            p.y >=0 && 
+            p.x < image.cols && 
+            p.y < image.rows);
+}
+
+
+
+
+
+
+

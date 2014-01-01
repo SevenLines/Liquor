@@ -2,27 +2,13 @@
 #define EMISIONANALYZER_H
 
 #include <opencv/cv.hpp>
-#include <boost/lambda/lambda.hpp>
+#include <boost/tuple/tuple.hpp>
 #include "keypoints.h"
 
+using namespace boost::tuples;
 using namespace cv;
 
 
-/**
- * @brief возвращает соседа под номером num
- *
- * num:
- * +-----+
- * |1|2|3|
- * |8|x|4|
- * |7|6|5|
- * +-----+
- *
- * @param p точка x
- * @param num номер соседа точки
- * @return точка
- */
-cv::Point getNeighboor(cv::Point p, int num);
 
 struct PointValue
 {
@@ -41,25 +27,53 @@ public :
     
 };
 
+
 class EmisionAnalyzer
 {
     
 private:
+
+    int gMinRadius;
+    int gMaxRadius;
+    
+    Mat gImage; // копия изображения, тип CV_8U
+    Mat1b gImageRef; // для упрощения доступа к изображению
+    
+    Mat gSymmetryInfo;// using for storing specific info about each pixel
+ 
+    bool isCircle(cv::Point position, int radius);
+    
+    /**
+     * @brief Возвращает радиус максимальной окружности которую 
+     * можно вписать в область с центром в текущей точке
+     */
+    int getSymmetryValue(cv::Point pos, int i=1);
+    int checkForFunction(cv::Point pos, int depth,
+                         bool (*predicate)(cv::Point pos) );
+    
+    
+    cv::Point findMaxPoint(Mat &in, cv::Point p, int minValue);
+    
+    
+    /**
+     * @brief Находит все точки изображения
+     * @param point -- точка с которой нчинается обход
+     * @param areaPoints -- список под точки
+     * @param flagImage -- изображения для фиксирования пройденных точек, CV_8U
+     */
+    void getBlackArea(Point point, QList<cv::Point> &areaPoints, Mat1b &flagImage);
+    
+public:
+    
     
     enum flags{
-        EA_VISITED = 1
+        EA_BLACK = 0,
+        EA_VISITED = 1,
+        EA_EMPTY = 255
     }; 
     
     
-    int gMinRadius;
-    int gMaxRadius;
-    Mat gImage;
-    
-    Mat gSymmetryInfo;// using for storing specific info about each pixel
-    
-public:
     EmisionAnalyzer();
-    
     
     // only binary images accepted
     void setImage(Mat &image);
@@ -70,32 +84,31 @@ public:
     
     void setMaxRadius(int value);
     int maxRadius();
-    
-    bool isInside(Mat &in, cv::Point &p);
 
-    Mat findCircles(KeyPoints &keyPoints);
     
-    bool isCircle(cv::Point position, int radius);
-    float getSymmetryIndex(cv::Point pos);
-    float getHorizontalSymmetry( cv::Point pos);
-    float getVerticalSymmetry(cv::Point pos);
+    /**
+     * @brief возвращает минимальное и максимальное значение для 
+     * области пикселей заданной area на изображении image
+     */
+    void getMinMax(QList<cv::Point> area, Mat1i image, int &min, int &max);
     
-    int isInsideCircle(cv::Point pos);
-    int checkForFunction(cv::Point pos, int depth,
-                         bool (*predicate)(cv::Point pos) );
+    /**
+     * @brief Возвращает true если пиксель угловой
+     */
+    bool isOnEdge(cv::Point point);
+
+
+    /**
+     * @brief поиск заполненых окружностей на изображении
+     */
+    void findCircles(KeyPoints &keyPoints);
     
-    int getMaxRadius(Point pos);
-    
-    cv::Point findMaxPoint(Mat &in, cv::Point p, int minValue);
-    
-    cv::Point getMaxRadius(Mat &in, int minValue, 
-                            cv::Point pos,
-                            int &curMaxValue,
-                            cv::Point &maxPosition);
-    
-    cv::Point getCenter(Mat &in, cv::Point pos, Point center = Point());
-    
-    bool checkPointFlags(Mat &in, cv::Point p, int flags);
+    /**
+     * @brief Заполняет массив areas списком областей у которых в 1-ом канале 
+     * находится ноль, areas[0] -- список точки первой области и т.д.
+     * @param areas -- список под точки
+     */
+    void findBlackAreas(QList<QList<cv::Point> > &areas);  
     
 };
 
