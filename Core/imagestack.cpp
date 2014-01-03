@@ -7,7 +7,7 @@ ImageStack::ImageStack(QObject *parent) :
 }
 
 
-int ImageStack::rowCount(const QModelIndex &parent) const
+int ImageStack::rowCount(const QModelIndex &) const
 {
     return stack.count();
 }
@@ -26,12 +26,12 @@ QVariant ImageStack::data(const QModelIndex &index, int role) const
     return QVariant();
 }
 
-const PixmapInfo &ImageStack::data(const QModelIndex &index)
+PixmapInfo ImageStack::data(const QModelIndex &index)
 {
     return stack.value(index.row());
 }
 
-QVariant ImageStack::headerData(int section, Qt::Orientation orientation, int role) const
+QVariant ImageStack::headerData(int section, Qt::Orientation, int role) const
 {
     switch(role) {
     case Qt::DisplayRole:
@@ -94,8 +94,9 @@ Qt::ItemFlags ImageStack::flags(const QModelIndex &index) const
 }
 
 
-PixmapInfo::PixmapInfo() : PixmapInfo("", QPixmap())
+PixmapInfo::PixmapInfo()
 {  
+    PixmapInfo("", QPixmap());
 }
 
 PixmapInfo::PixmapInfo(QString title, QPixmap pixmap)

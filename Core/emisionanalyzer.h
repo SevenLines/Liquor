@@ -17,7 +17,9 @@ struct PointValue
     
 public :
     
-    PointValue() : PointValue(cv::Point(), 0){}
+    PointValue() {
+        PointValue(cv::Point(), 0);
+    }
     
     PointValue(cv::Point point, int value) 
     {
@@ -40,8 +42,6 @@ private:
     Mat1b gImageRef; // для упрощения доступа к изображению
     
     Mat gSymmetryInfo;// using for storing specific info about each pixel
- 
-    bool isCircle(cv::Point position, int radius);
     
     /**
      * @brief Возвращает радиус максимальной окружности которую 

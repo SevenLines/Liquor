@@ -30,10 +30,10 @@ public slots:
     
     // QAbstractItemModel interface
 public:
-    int rowCount(const QModelIndex &parent) const;
+    int rowCount(const QModelIndex &) const;
     QVariant data(const QModelIndex &index, int role) const;
-    const PixmapInfo &data(const QModelIndex &index);
-    QVariant headerData(int section, Qt::Orientation orientation, int role) const;
+    PixmapInfo data(const QModelIndex &index);
+    QVariant headerData(int section, Qt::Orientation, int role) const;
     
     QPixmap pop();
     void push(QPixmap pixmap, QString title, int pos=-1);

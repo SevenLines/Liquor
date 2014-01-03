@@ -7,9 +7,9 @@ int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
     
-    QTranslator translator;
+    /*QTranslator translator;
     bool r = translator.load("main.qm");
-    a.installTranslator(&translator);
+    a.installTranslator(&translator);*/
     
     MainWindow w(argv[1]);
     

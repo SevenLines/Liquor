@@ -83,6 +83,7 @@ Point OpenCVUtils::getNeighboor(Point p, int num)
         case 7: return cv::Point(p.x-1, p.y+1); break;
         case 8: return cv::Point(p.x-1, p.y); break;
     }
+    return p;
 }
 
 bool OpenCVUtils::isInside(cv::Mat &image, cv::Point &p)

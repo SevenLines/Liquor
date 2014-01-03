@@ -166,7 +166,7 @@ Point EmisionAnalyzer::findMaxPoint(Mat &in, Point p, int minValue)
 }
 
 template<class MatXX>
-void __getAreaPoints(cv::Point const &point, MatXX &image,
+void __getAreaPoints(cv::Point const &point, MatXX &,
                      tuple< int *,cv::Point *, cv::Mat1b*> &info)
 {
     int *count = get<0>(info);
@@ -299,7 +299,4 @@ void EmisionAnalyzer::findBlackAreas(QList<QList<Point> > &areas)
     
     OpenCVUtils::getKeyAreas<Mat1b>(areas, EA_BLACK, gImageRef);
 }
-
-bool EmisionAnalyzer::isCircle(cv::Point position, int radius)
-{
-}   
+ 

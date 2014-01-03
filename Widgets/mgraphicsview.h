@@ -18,7 +18,7 @@ protected:
     
 public:
     explicit MGraphicsView(QWidget *parent = 0);
-    void setPixmap(const QPixmap &img);
+    void setPixmap(QPixmap img);
     QPointF centerOfScene();
     QPixmap pixmap();
     

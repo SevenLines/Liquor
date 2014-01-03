@@ -131,7 +131,7 @@ namespace OpenCVUtils {
     
     
     template<class MatXX>
-    void __getKeyAreaPoints(cv::Point const &point, MatXX  &image,
+    void __getKeyAreaPoints(cv::Point const &point, MatXX  &,
                             tuple<QList<Point> *, cv::Mat1b *> &info) {
         (*get<0>(info)).append(point);
         (*get<1>(info))(point) |= 1;

@@ -42,9 +42,8 @@ MGraphicsView::MGraphicsView(QWidget *parent) :
     fFitToScreen = false;
 }
 
-void MGraphicsView::setPixmap(const QPixmap &img)
-{
-    //gScene->setSceneRect(pixmapItem->boundingRect());
+void MGraphicsView::setPixmap(QPixmap img)
+{ 
     pixmapItem->setPixmap(img);
     gScene->setSceneRect(gScene->itemsBoundingRect());
 }
@@ -102,9 +101,7 @@ void MGraphicsView::wheelEvent(QWheelEvent *e)
 {
     float s = 1.5f;
     fFitToScreen = false;
-    
-    QPointF pos = mapToScene(e->pos());
-    
+
     if (e->modifiers() & Qt::CTRL){
         if (e->delta() > 0) {
             scale(s, s);
