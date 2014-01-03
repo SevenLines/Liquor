@@ -39,6 +39,7 @@ MGraphicsView::MGraphicsView(QWidget *parent) :
     setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
 
+
     fFitToScreen = false;
 }
 
@@ -61,11 +62,13 @@ QPixmap MGraphicsView::pixmap()
 
 void MGraphicsView::mousePressEvent(QMouseEvent *e)
 {
-    pressPointScene = e->pos();
+    pressPointScene = mapToScene(e->pos());
+    fMovedAfterPress = false;
 }
 
 void MGraphicsView::mouseReleaseEvent(QMouseEvent *)
 {
+    fMovedAfterPress = false;
 }
 
 void MGraphicsView::mouseMoveEvent(QMouseEvent *e)
@@ -73,6 +76,10 @@ void MGraphicsView::mouseMoveEvent(QMouseEvent *e)
     QPoint curPoint = e->pos();
     
     QPoint offset = curPoint - lastPoint;   
+    
+    if (!e->buttons().testFlag(Qt::NoButton)) {
+        fMovedAfterPress = true;
+    }
     
     // двигаем вьюпорт сцены если нажата средняя кнопка
     if (e->buttons() & Qt::MiddleButton) {
@@ -109,6 +116,4 @@ void MGraphicsView::wheelEvent(QWheelEvent *e)
             scale(1.0/s, 1.0/s);
         }
     }
-    
-    //centerOn(pos);
 }

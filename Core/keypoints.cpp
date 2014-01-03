@@ -6,6 +6,22 @@
 
 MKeyPoint::MKeyPoint()
 {
+    mProportion = 1;
+}
+
+void MKeyPoint::setProportion(int percents)
+{
+    mProportion = (float)percents / 100;
+}
+
+int MKeyPoint::proportion()
+{
+    return mProportion * 100;
+}
+
+float MKeyPoint::calcValue()
+{
+    return value * mProportion;
 }
 
 void MKeyPoint::draw(QPainter *p, float prop)
@@ -69,12 +85,14 @@ void KeyPoints::dumpToFile(QString filePath)
     int i = 1;
     QTextStream stream(&file);
     foreach(point, mPoints) {
-        stream << QString("%1\t%2\t(%3; %4)\n")
-                .arg(i)
-                .arg(point.value * mProportion)
-                .arg(point.pos.x())
-                .arg(point.pos.y());
-        ++i;
+        if (!point.fIgnore) {
+            stream << QString("%1\t%2\t(%3; %4)\n")
+                    .arg(i)
+                    .arg(point.calcValue() * mProportion)
+                    .arg(point.pos.x())
+                    .arg(point.pos.y());
+            ++i;
+        }
     }
     file.close();
 }

@@ -50,8 +50,12 @@ MainWindow::MainWindow(QString imagePath, QWidget *parent) :
     connect(&keyPoints, SIGNAL(proportionChange(int)),
             ui->graphicsView, SLOT(update()));
     
-    connect(ui->chkShowKeys, SIGNAL(toggled(bool)), 
+    // particle show checkable
+    connect(ui->actionShow_particles, SIGNAL(toggled(bool)), 
             ui->graphicsView, SLOT(toogleKeyPoints(bool)));
+    
+    // add showparticles menu item to graphicsview   context menu 
+    ui->graphicsView->addContextMenuAction(ui->actionShow_particles);
     
     // load image is any passed as parameter to cmd
     loadImage(imagePath);
@@ -124,7 +128,7 @@ void MainWindow::loadImage(QString path, bool setActive)
     
     showImage(temp.copy());
     ui->graphicsView->fitToScreen();
-    ui->chkShowKeys->setChecked(false);
+    ui->actionShow_particles->setChecked(false);
     
     pushCurrentImage(QFileInfo(path).baseName());
 }
@@ -144,8 +148,9 @@ void MainWindow::FindParticles()
     keyPoints.clear();
     ea.findCircles(keyPoints);
     stackIterate(tr("analyze"));
+    
     ui->graphicsView->setKeyPoints(&keyPoints);
-    ui->chkShowKeys->setChecked(true);
+    ui->actionShow_particles->setChecked(true);
     
     log(QString(tr("find %1 particle(s)")).arg(keyPoints.count()));
 }

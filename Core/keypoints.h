@@ -9,11 +9,29 @@
 
 struct MKeyPoint 
 {
-    QPoint pos;
-    QString description;
-    int value;
+private:
+    float mProportion;
+public:
+    
+    bool fIgnore; // set to true if u want to ignore this particle
+    
+    
+    QPointF pos; // position of particle on pixmap
+    QString description; // description of particle
+    int value; // real value of particle
     
     MKeyPoint();
+    
+    /// set proportion in percents
+    void setProportion(int percents);
+    int proportion();
+    
+    /// returns overcalculated value, with proportion
+    float calcValue();
+    
+    /**
+     * @brief draw particles on canvas
+     */
     void draw(QPainter *p, float prop = 1);
 };
 

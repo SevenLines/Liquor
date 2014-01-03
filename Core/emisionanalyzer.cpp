@@ -270,7 +270,7 @@ void EmisionAnalyzer::findCircles(KeyPoints &keyPoints)
             
             // создаем новую ключевую точку 
             MKeyPoint key;
-            key.pos = QPoint(avgPoint.x, avgPoint.y);
+            key.pos = QPointF(avgPoint.x, avgPoint.y);
             key.value = valueImage(p);
             // проверяем не находится ли центр масс области 
             // в зоне действия какой-либо другой точки

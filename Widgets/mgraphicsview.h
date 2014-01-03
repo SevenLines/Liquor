@@ -12,9 +12,12 @@ class MGraphicsView : public QGraphicsView
     
 protected:
     QGraphicsScene *gScene;
+
     QGraphicsPixmapItem *pixmapItem;
     bool fFitToScreen;
-    QPoint pressPointScene, lastPoint;
+    bool fMovedAfterPress;
+    QPointF pressPointScene;
+    QPoint lastPoint;
     
 public:
     explicit MGraphicsView(QWidget *parent = 0);

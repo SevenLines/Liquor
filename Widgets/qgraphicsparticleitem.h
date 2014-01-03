@@ -7,6 +7,17 @@
 class QGraphicsParticleItem : public QGraphicsEllipseItem
 {
 private:
+    QBrush brushDefault;
+    QBrush brushIgnore;
+    QBrush brushSelected;
+    QBrush brushPrevious;
+    
+    QPen penDefault;
+    QPen penSelected;
+    QPen previousPen;
+    
+    bool fSelected;
+    
     //float radius;
     int percentsProp;
     //QPoint pos;
@@ -19,11 +30,20 @@ public:
     
     void setKeyPoint(MKeyPoint *keyPoint);
     void setProportion(int percents);
+    void setParticleProportion(int percents);
+    void setPos(QPointF pos);
+    void move(QPointF offset);
+    
+    void toggleSelect(bool fSelected);
+    
+    QPointF pos();
+    bool isIgnore();
+    int particleProportion();
     
 signals:
     
 public slots:
-    
+    void toggleIgnore(bool fIgnore);
     
     // QGraphicsItem interface
 protected:
