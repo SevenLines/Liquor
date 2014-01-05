@@ -65,6 +65,9 @@ private:
     
 public:
     
+    /// функция вызывается при каждом изменении прогресса
+    /// value, min, max, object
+    void (*progressCallback)(int, int, int, void*);
     
     enum flags{
         EA_BLACK = 0,

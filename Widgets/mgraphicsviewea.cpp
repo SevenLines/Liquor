@@ -35,12 +35,10 @@ MGraphicsViewEA::MGraphicsViewEA(QWidget *parent)
     contextMenu = new QMenu(this);   
     contextMenu->addAction(toggleParticleAction);
     
-    
     // рамка для выделения
     selectionFrame = gScene->addRect(0,0,0,0);
     selectionFrame->setPen(QPen(QBrush(Qt::blue), 0, Qt::DashLine));
     selectionFrame->setVisible(false);
-
 }
 
 MGraphicsViewEA::~MGraphicsViewEA() 
@@ -53,29 +51,33 @@ void MGraphicsViewEA::addContextMenuAction(QAction *action)
 }
 
 void MGraphicsViewEA::setKeyPoints(KeyPoints *keyPoints)
-{
+{    
     // соединяем представление с данными
     if (this->keyPoints != keyPoints ) {
         this->keyPoints = keyPoints;
-        connect(keyPoints, SIGNAL(proportionChange(int)),
-                SLOT(setProportion(int)));
-        connect(keyPoints, SIGNAL(cleared()), 
-                SLOT(clearParticleItems()));
+        if (keyPoints) {
+            connect(keyPoints, SIGNAL(proportionChange(int)),
+                    SLOT(setProportion(int)));
+            connect(keyPoints, SIGNAL(cleared()), 
+                    SLOT(clearParticleItems()));
+        }
     }
-  
+        
     // убираем существующие частицы
     clearParticleItems();
     
-    // добавляем новы частицы
-    for(int i=0;i<keyPoints->count();i++) {
-        MKeyPoint &k = (*keyPoints)[i];
-        QGraphicsParticleItem *circle = new QGraphicsParticleItem();
-        
-        gScene->addItem(circle);
-        circle->setKeyPoint(&k); 
-        keyPointsRoot->addToGroup(circle);
+    if (keyPoints) {     
+        // добавляем новы частицы
+        for(int i=0;i<keyPoints->count();i++) {
+            MKeyPoint &k = (*keyPoints)[i];
+            QGraphicsParticleItem *circle = new QGraphicsParticleItem();
+            
+            gScene->addItem(circle);
+            circle->setKeyPoint(&k); 
+            keyPointsRoot->addToGroup(circle);
+        }
+        setProportion(this->keyPoints->proportion());
     }
-    setProportion(this->keyPoints->proportion());
 }
 
 void MGraphicsViewEA::toogleKeyPoints(bool fShow)
@@ -93,6 +95,7 @@ void MGraphicsViewEA::setProportion(int value)
 
 void MGraphicsViewEA::clearParticleItems()
 {
+    selectedParticles.clear();
     qDeleteAll(keyPointsRoot->childItems());
 }
 
@@ -110,7 +113,9 @@ void MGraphicsViewEA::selectItem(QGraphicsParticleItem *particle, bool deselectS
         selectedParticles.append(particle);
         particle->toggleSelect(true);
     } else if (deselectSelected) {
+        qDebug() << "inside";
         selectedParticles.removeOne(particle);
+        particle->toggleSelect(false);
     }
 }
 
@@ -138,7 +143,7 @@ int MGraphicsViewEA::selectedItemsIgnoreState()
     return i==0?0:i==selectedParticles.count()?1:2;
 }
 
-int MGraphicsViewEA::selectInsideFrame()
+void MGraphicsViewEA::selectInsideFrame()
 {
     foreach( QGraphicsItem *item , keyPointsRoot->childItems()) {
         QGraphicsParticleItem *p 
@@ -169,14 +174,11 @@ void MGraphicsViewEA::wheelEvent(QWheelEvent *e)
     MGraphicsView::wheelEvent(e);
     
     if (e->modifiers().testFlag(Qt::NoModifier)) {
-        QGraphicsParticleItem *particle = getParticleAtPos(e->pos());
-        if (particle) {
-            // изменение пропорции мышью
-            if (e->delta() > 0)
-                incrementSelectItemsProportion(iParticleIncrement);
-            else 
-                incrementSelectItemsProportion(-iParticleIncrement);
-        }
+        // изменение пропорции мышью
+        if (e->delta() > 0)
+            incrementSelectItemsProportion(iParticleIncrement);
+        else 
+            incrementSelectItemsProportion(-iParticleIncrement);
     }
 }
 
@@ -188,8 +190,8 @@ void MGraphicsViewEA::mouseMoveEvent(QMouseEvent *e)
     QPointF offset = cPointSceneF - lPointSceneF;
     
     MGraphicsView::mouseMoveEvent(e); 
-    
     if (e->buttons().testFlag(Qt::LeftButton)) {   
+        // если не было выбрано частиц рисуем рамку выделения
         if (fParticleSelected == false) {
             clearSelected();
             selectionFrame->setRect(QRectF(
@@ -198,6 +200,7 @@ void MGraphicsViewEA::mouseMoveEvent(QMouseEvent *e)
                         cPointSceneF.x() - pressPointScene.x(),
                         cPointSceneF.y() - pressPointScene.y()).normalized());
         } else {
+            // иначе двигаем выбранные частицы
             foreach(QGraphicsParticleItem *p, selectedParticles) {
                 p->move(offset);
             }
@@ -210,19 +213,22 @@ void MGraphicsViewEA::mouseMoveEvent(QMouseEvent *e)
 void MGraphicsViewEA::mousePressEvent(QMouseEvent *e)
 {
     MGraphicsView::mousePressEvent(e);
+    // управление выбором частиц
     if (e->buttons().testFlag(Qt::LeftButton)) {
         QGraphicsParticleItem *particle = getParticleAtPos(e->pos());
+        qDebug() << (void*)particle;
         if (particle) {
             fParticleSelected  = true;
             if (!selectedParticles.contains(particle)) {
                 if (e->modifiers().testFlag(Qt::ShiftModifier)) {
-                    selectItem(particle);
+                    selectItem(particle, true);
                 } else {
                     clearSelected();
                     selectItem(particle);
                 }
             }
         } else {
+            // тут рамку рисуем
             fParticleSelected = false;
             selectionFrame->setVisible(true);
             selectionFrame->setRect(
@@ -231,6 +237,8 @@ void MGraphicsViewEA::mousePressEvent(QMouseEvent *e)
                         0,0);
         }
     }
+    
+    // для правильной обработки вызова контекстного меню
     if ( e->buttons().testFlag(Qt::RightButton)) {
         fParticleSelected = true;
     }
@@ -245,6 +253,7 @@ void MGraphicsViewEA::mouseReleaseEvent(QMouseEvent *e)
         }
     } 
     MGraphicsView::mouseReleaseEvent(e);
+    // отключаем рамку выбора
     if (selectionFrame->isVisible()) {
         selectInsideFrame();
     }

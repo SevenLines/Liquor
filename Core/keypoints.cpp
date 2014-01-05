@@ -7,6 +7,8 @@
 MKeyPoint::MKeyPoint()
 {
     mProportion = 1;
+    fIgnore = false;
+    value = 0;
 }
 
 void MKeyPoint::setProportion(int percents)
@@ -57,6 +59,11 @@ int KeyPoints::count()
 MKeyPoint &KeyPoints::operator[](int index)
 {
     return mPoints[index];
+}
+
+float KeyPoints::keyValue(int index)
+{
+    return mPoints[index].calcValue() * mProportion;
 }
 
 void KeyPoints::addKey(MKeyPoint &key)

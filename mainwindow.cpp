@@ -5,6 +5,7 @@
 #include <QDebug>
 #include <QSettings>
 #include <QPicture>
+#include <QSplitter>
 #include <QPropertyAnimation>
 
 #include "Utils/imageprocessing.h"
@@ -28,6 +29,7 @@ MainWindow::MainWindow(QString imagePath, QWidget *parent) :
     
     ui->graphicsView->addAction(ui->actionSave_Image); 
     lastImageIndex = -1;
+    keyPoints = 0;
     
     // set Image stack
     ui->lstImageStack->setModel(&imageStack);
@@ -45,10 +47,7 @@ MainWindow::MainWindow(QString imagePath, QWidget *parent) :
     ui->sldKeyProp->setMax(200);
     ui->sldKeyProp->setMin(1);
     ui->sldKeyProp->setValue(100);
-    connect(ui->sldKeyProp, SIGNAL(valueChanged(int)),
-            &keyPoints, SLOT(setProportion(int)));
-    connect(&keyPoints, SIGNAL(proportionChange(int)),
-            ui->graphicsView, SLOT(update()));
+
     
     // particle show checkable
     connect(ui->actionShow_particles, SIGNAL(toggled(bool)), 
@@ -82,7 +81,11 @@ MainWindow::MainWindow(QString imagePath, QWidget *parent) :
     connect(ui->sldMedian, SIGNAL(apply()),
             SLOT(stackIterate()));
     connect(ui->sldMedian, SIGNAL(valueChanged(int)),
-            this, SLOT(median(int))); 
+            this, SLOT(median(int)));
+    
+    // keyPoints graph buttons
+    connect(ui->btnAddParticleSet, SIGNAL(clicked()),
+            SLOT(addKeyPointsToGraph()));
 }
 
 
@@ -145,15 +148,20 @@ void MainWindow::FindParticles()
     ea.setMinRadius(5);
     ea.setImage(temp);
     
-    keyPoints.clear();
-    ea.findCircles(keyPoints);
-    stackIterate(tr("analyze"));
+    // создаем новый набор под ключевые точки
+    ui->graphicsView->setKeyPoints(0);
+    setCurrentKeyPoints(createNewKeyPoints());
+    // ищем частицы
+    ea.findCircles(*keyPoints);
+    // сохраняем обработанное изображение
+    // stackIterate(tr("analyze"));
     
-    ui->graphicsView->setKeyPoints(&keyPoints);
+    ui->graphicsView->setKeyPoints(keyPoints);
     ui->actionShow_particles->setChecked(true);
     
-    log(QString(tr("find %1 particle(s)")).arg(keyPoints.count()));
+    log(QString(tr("find %1 particle(s)")).arg(keyPoints->count()));
 }
+
 
 void MainWindow::FindParticleAreas()
 {
@@ -317,6 +325,47 @@ void MainWindow::stackIterate(QString title)
     pushCurrentImage(label , row);  
 }
 
+void MainWindow::addKeyPointsToGraph()
+{
+    ui->SequenceAnalyzeWdg->addKeyPoints(keyPoints);
+}
+
+void MainWindow::clearKeyPoints()
+{
+    ui->SequenceAnalyzeWdg->clearKeyPoints();
+}
+
+KeyPoints *MainWindow::createNewKeyPoints()
+{
+    KeyPoints *keyPoints = new KeyPoints(this);
+    return keyPoints;
+}
+
+void MainWindow::setCurrentKeyPoints(KeyPoints *keyPoints)
+{
+    if (this->keyPoints) {   
+        removeCurrentKeyPoints();
+    }
+    // подключаем сигналы
+    if (keyPoints) {
+        keyPoints->setProportion(ui->sldKeyProp->value());
+        connect(ui->sldKeyProp, SIGNAL(valueChanged(int)),
+                keyPoints, SLOT(setProportion(int)));
+        connect(keyPoints, SIGNAL(proportionChange(int)),
+                ui->graphicsView, SLOT(update()));
+    }
+    this->keyPoints = keyPoints;
+}
+
+void MainWindow::removeCurrentKeyPoints()
+{
+    this->keyPoints->disconnect();
+    if (keyPoints && keyPoints->parent() == this) {
+        delete keyPoints;
+        keyPoints = 0;
+    }
+}
+
 void MainWindow::loadIni()
 {
     QSettings settings( "Liqour.cfg", QSettings::IniFormat);
@@ -341,8 +390,8 @@ void MainWindow::loadIni()
     
     // restore BottomWidget state
     settings.beginGroup("BottomTabWidget");
-    ui->BottomTabWidget->setVisible(
-                settings.value("Visible", true).toBool());
+    ui->spliterBottom->restoreState(
+                settings.value("spliterBottom", QByteArray()).toByteArray());
     ui->BottomTabWidget->setCurrentIndex(
                 settings.value("CurrentIndex", true).toInt());
     settings.endGroup();
@@ -372,12 +421,12 @@ void MainWindow::saveIni()
     
     // save particles presets
     settings.beginGroup("Particles");
-    settings.setValue("Proportion", keyPoints.proportion());
+    settings.setValue("Proportion", ui->sldKeyProp->value());
     settings.endGroup();
     
     // save BottomWidget state
     settings.beginGroup("BottomTabWidget");
-    settings.setValue("Visible", ui->BottomTabWidget->isVisible());
+    settings.setValue("spliterBottom", ui->spliterBottom->saveState());
     settings.setValue("CurrentIndex", ui->BottomTabWidget->currentIndex());
     settings.endGroup();
     
@@ -449,7 +498,8 @@ void MainWindow::on_actionDump_keyPoints_triggered()
                                             tr("Texts (*.txt)"));
     if (fileName.isNull()) return;
     
-    keyPoints.dumpToFile(fileName);
+    if (keyPoints) 
+        keyPoints->dumpToFile(fileName);
 }
 
 void MainWindow::on_btnHideLeftPanel_clicked()
@@ -462,8 +512,8 @@ void MainWindow::on_btnHideLeftPanel_clicked()
 
 void MainWindow::on_btnHideBottomPanel_clicked()
 {
-    bool fVisible = ui->BottomTabWidget->isVisible();
-    ui->BottomTabWidget->setVisible(!fVisible);  
+    /*bool fVisible = ui->BottomTabWidget->isVisible();
+    ui->BottomTabWidget->setVisible(!fVisible);  */
 }
 
 

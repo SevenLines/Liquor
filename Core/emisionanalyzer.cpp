@@ -13,6 +13,7 @@ using namespace boost;
 
 EmisionAnalyzer::EmisionAnalyzer()
 {
+    progressCallback = 0;
 }
 
 void EmisionAnalyzer::setImage(Mat &image)

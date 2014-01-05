@@ -7,15 +7,14 @@
 #include <QPainter>
 
 
-struct MKeyPoint 
+struct MKeyPoint
 {
 private:
     float mProportion;
 public:
     
     bool fIgnore; // set to true if u want to ignore this particle
-    
-    
+
     QPointF pos; // position of particle on pixmap
     QString description; // description of particle
     int value; // real value of particle
@@ -50,6 +49,7 @@ public:
     int count();
     
     MKeyPoint &operator[](int index);
+    float keyValue(int index);
     
 signals:
     void proportionChange(int newValue);

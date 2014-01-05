@@ -22,12 +22,14 @@ SOURCES  += main.cpp\
     Core/emisionanalyzer.cpp \
     Utils/imageprocessing.cpp \
     Utils/opencvutils.cpp \
+    Utils/qcustomplot.cpp \
     Widgets/horizontalsliderex.cpp \
     Widgets/qlabelimage.cpp \
     Widgets/mgraphicsview.cpp \
     Widgets/mgraphicsviewea.cpp \
     Widgets/qgraphicsparticleitem.cpp \
-    Widgets/sequenceanalyzewidget.cpp
+    Widgets/sequenceanalyzewidget.cpp \
+    Core/multikeypoints.cpp
 
 HEADERS  += mainwindow.h \
     Core/imagestack.h \
@@ -36,25 +38,23 @@ HEADERS  += mainwindow.h \
     Core/emisionanalyzer.h \
     Utils/imageprocessing.h \
     Utils/opencvutils.h \
+    Utils/qcustomplot.h \
     Widgets/qlabelimage.h \
     Widgets/mgraphicsview.h \
     Widgets/horizontalsliderex.h \
     Widgets/mgraphicsviewea.h \
     Widgets/qgraphicsparticleitem.h \
-    Widgets/sequenceanalyzewidget.h
+    Widgets/sequenceanalyzewidget.h \
+    Core/multikeypoints.h \
 
 FORMS    += mainwindow.ui \
     Widgets/horizontalsliderex.ui \
     Widgets/sequenceanalyzewidget.ui
 
-FORMS    += mainwindow.ui \
-    Widgets/horizontalsliderex.ui
-
-
-
 win32 {
    INCLUDEPATH += d:/_OpenCV/include/opencv
    INCLUDEPATH += d:/_OpenCV/include/
+   INCLUDEPATH += d:/_DISTR/_QT/
    INCLUDEPATH += d:/Boost/boost_1_54_0/ 
    LIBS += -Ld:/_OpenCV/build/x86/mingw44/lib/
    LIBS +=  libopencv_core246.dll \ 

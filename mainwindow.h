@@ -93,6 +93,11 @@ public slots:
     void setKeyPointsProportion(int value);
     void stackIterate(QString title = QString());
     
+    // добавляет точки к графику
+    void addKeyPointsToGraph();
+    // очищает точки графику
+    void clearKeyPoints();
+    
 private:
     Ui::MainWindow *ui;
     Mat lastShowedImage;
@@ -100,9 +105,17 @@ private:
     ImageStack imageStack;
     
     QPixmap mImage;
-    KeyPoints keyPoints;
+    KeyPoints *keyPoints;
     
     int lastImageIndex;
+    
+    /// создает новый набор точек
+    KeyPoints *createNewKeyPoints();
+    /// устанавливает текущим набором точек
+    void setCurrentKeyPoints(KeyPoints *keyPoints);
+    /// удаляет текущуий набор точек, если они принадлежат этому объекту
+    void removeCurrentKeyPoints();
+
 };
 
 #endif // MAINWINDOW_H

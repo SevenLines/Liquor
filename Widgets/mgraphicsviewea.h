@@ -54,7 +54,7 @@ public slots:
     
     int selectedItemsIgnoreState();
     // выделеяет все объекты внутри рамки
-    int selectInsideFrame();
+    void selectInsideFrame();
     
     // QWidget interface
 protected:
