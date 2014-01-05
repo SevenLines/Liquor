@@ -8,6 +8,7 @@
 #include <QSplitter>
 #include <QPropertyAnimation>
 
+
 #include "Utils/imageprocessing.h"
 #include "Core/emisionanalyzer.h"
 
@@ -18,6 +19,7 @@
 
 using namespace cv;
 using namespace OpenCVUtils;
+using namespace Mick;
 
 #define WND_HISTOGRAMM "Histogramm"
 
@@ -86,6 +88,11 @@ MainWindow::MainWindow(QString imagePath, QWidget *parent) :
     // keyPoints graph buttons
     connect(ui->btnAddParticleSet, SIGNAL(clicked()),
             SLOT(addKeyPointsToGraph()));
+    connect(ui->SequenceAnalyzeWdg, SIGNAL(graphUpdated()),
+            SLOT(updateAddSetButtonState()));
+    
+    
+    setCurrentKeyPoints(0);
 }
 
 
@@ -325,8 +332,18 @@ void MainWindow::stackIterate(QString title)
     pushCurrentImage(label , row);  
 }
 
+void MainWindow::updateAddSetButtonState()
+{
+    if (!ui->SequenceAnalyzeWdg->isContains(keyPoints)) {
+        ui->btnAddParticleSet->setText(tr("Add particle set"));
+    } else {
+        ui->btnAddParticleSet->setText(tr("Update particle set"));
+    }
+}
+
 void MainWindow::addKeyPointsToGraph()
 {
+    ui->LeftTabWidget->setCurrentIndex(1);
     ui->SequenceAnalyzeWdg->addKeyPoints(keyPoints);
 }
 
@@ -355,6 +372,8 @@ void MainWindow::setCurrentKeyPoints(KeyPoints *keyPoints)
                 ui->graphicsView, SLOT(update()));
     }
     this->keyPoints = keyPoints;
+    
+    updateAddSetButtonState();
 }
 
 void MainWindow::removeCurrentKeyPoints()
@@ -394,10 +413,14 @@ void MainWindow::loadIni()
                 settings.value("spliterBottom", QByteArray()).toByteArray());
     ui->BottomTabWidget->setCurrentIndex(
                 settings.value("CurrentIndex", true).toInt());
+    ui->BottomTabWidget->setVisible(
+                settings.value("Visible", true).toBool());
     settings.endGroup();
     
     // restore LeftPanel state
     settings.beginGroup("LeftPanel");
+    ui->splitterLeft->restoreState(
+                settings.value("splitterLeft", QByteArray()).toByteArray());
     ui->LeftPanel->setVisible(
                 settings.value("Visible", true).toBool());
     ui->LeftTabWidget->setCurrentIndex(
@@ -426,6 +449,7 @@ void MainWindow::saveIni()
     
     // save BottomWidget state
     settings.beginGroup("BottomTabWidget");
+    settings.setValue("Visible", ui->BottomTabWidget->isVisible());
     settings.setValue("spliterBottom", ui->spliterBottom->saveState());
     settings.setValue("CurrentIndex", ui->BottomTabWidget->currentIndex());
     settings.endGroup();
@@ -433,6 +457,7 @@ void MainWindow::saveIni()
     // save LeftPanel state
     settings.beginGroup("LeftPanel");
     settings.setValue("Visible", ui->LeftPanel->isVisible());
+    settings.setValue("splitterLeft", ui->splitterLeft->saveState());
     settings.setValue("CurrentIndex", ui->LeftTabWidget->currentIndex());
     settings.endGroup();
 }
@@ -512,8 +537,8 @@ void MainWindow::on_btnHideLeftPanel_clicked()
 
 void MainWindow::on_btnHideBottomPanel_clicked()
 {
-    /*bool fVisible = ui->BottomTabWidget->isVisible();
-    ui->BottomTabWidget->setVisible(!fVisible);  */
+    bool fVisible = ui->BottomTabWidget->isVisible();
+    ui->BottomTabWidget->setVisible(!fVisible);  
 }
 
 
@@ -556,3 +581,4 @@ void MainWindow::on_actionFind_Areas_triggered()
 {
     FindParticleAreas();
 }
+

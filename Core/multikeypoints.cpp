@@ -1,6 +1,8 @@
 #include "multikeypoints.h"
 #include <QDebug>
 
+using namespace Mick;
+
 MultiKeyPoints::MultiKeyPoints()
 {
     setScale(10);
@@ -8,17 +10,36 @@ MultiKeyPoints::MultiKeyPoints()
     mCount = 0;
 }
 
+bool MultiKeyPoints::isContains(KeyPoints *keyPoints)
+{
+    if (!keyPoints) return false;
+    return keyPointsSets.contains(keyPoints);
+}
+
+void MultiKeyPoints::removeSet(KeyPoints *keyPoints, bool force)
+{
+    if (keyPointsSets.contains(keyPoints)) {
+        keyPointsSets.removeOne(keyPoints);
+        if (force) {
+            delete keyPoints;
+        }
+    }
+    
+    getPoints();
+}
+
 void MultiKeyPoints::addSet(KeyPoints *keyPoints)
 {
-    // проверяем на наличие набора
-    if (keyPointsSets.contains(keyPoints)) 
+    if (keyPoints == 0)
         return;
-    
-    // добавлем в список
-    keyPointsSets.append(keyPoints);
-    // меняем родителя на текущий объект
-    keyPoints->setParent(this);
-    
+    // проверяем на наличие набора
+    if (!keyPointsSets.contains(keyPoints)) {
+        // добавлем в список
+        keyPointsSets.append(keyPoints);
+        // меняем родителя на текущий объект
+        keyPoints->setParent(this);
+    }        
+ 
     getPoints();
 }
 
@@ -56,14 +77,16 @@ void MultiKeyPoints::getPoints()
     int countOfPoints = 0;
     foreach(KeyPoints *set, keyPointsSets) {
         for(int i=0;i<set->count();++i) {
-            ++countOfPoints;
-            float value = (*set)[i].calcValue();
-            QPointF &p = graph[(int)(value / step)];
-            p.setY(p.y() + 1);
+            if (!(*set)[i].isIgnore()) {
+                ++countOfPoints;
+                float value = (*set)[i].calcValue();
+                QPointF &p = graph[(int)(value / step)];
+                p.setY(p.y() + 1);
+            }
         }
     }
     
-    bool ffirst = true;
+    //bool ffirst = true;
     mMinValue = mMaxValue = -1;
     if (countOfPoints!=0) {   
         // перерассчитываем долю
@@ -103,16 +126,18 @@ void MultiKeyPoints::getMinMax(float &min, float &max)
     bool ffirst = true;
     foreach(KeyPoints *set, keyPointsSets) {
         for(int i=0;i<set->count();++i) {
-            float value = (*set).keyValue(i);
-            if (ffirst) {
-                ffirst = false;
-                min = max = value;
-            } else {
-                if (value > max) {
-                    max = value;
-                }
-                if (value < min) {
-                    min = value;
+            if (!(*set)[i].isIgnore()) {
+                float value = (*set).keyValue(i);
+                if (ffirst) {
+                    ffirst = false;
+                    min = max = value;
+                } else {
+                    if (value > max) {
+                        max = value;
+                    }
+                    if (value < min) {
+                        min = value;
+                    }
                 }
             }
         }

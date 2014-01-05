@@ -11,7 +11,7 @@ class MGraphicsViewEA : public MGraphicsView
     Q_OBJECT
     
 private:
-    KeyPoints *keyPoints;
+    Mick::KeyPoints *keyPoints;
     
     QGraphicsItemGroup *keyPointsRoot;
     QGraphicsRectItem *selectionFrame;
@@ -35,7 +35,7 @@ public:
     explicit MGraphicsViewEA(QWidget *parent = 0);
     
     void addContextMenuAction(QAction *action);
-    void setKeyPoints(KeyPoints *keyPoints);
+    void setKeyPoints(Mick::KeyPoints *keyPoints);
     
     ~MGraphicsViewEA();
 public slots:

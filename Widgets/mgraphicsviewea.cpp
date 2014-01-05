@@ -50,7 +50,7 @@ void MGraphicsViewEA::addContextMenuAction(QAction *action)
     contextMenu->addAction(action);
 }
 
-void MGraphicsViewEA::setKeyPoints(KeyPoints *keyPoints)
+void MGraphicsViewEA::setKeyPoints(Mick::KeyPoints *keyPoints)
 {    
     // соединяем представление с данными
     if (this->keyPoints != keyPoints ) {
@@ -69,7 +69,7 @@ void MGraphicsViewEA::setKeyPoints(KeyPoints *keyPoints)
     if (keyPoints) {     
         // добавляем новы частицы
         for(int i=0;i<keyPoints->count();i++) {
-            MKeyPoint &k = (*keyPoints)[i];
+            Mick::KeyPoint &k = (*keyPoints)[i];
             QGraphicsParticleItem *circle = new QGraphicsParticleItem();
             
             gScene->addItem(circle);

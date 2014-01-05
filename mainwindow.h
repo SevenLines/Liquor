@@ -12,6 +12,7 @@
 class QSettings;
 
 using namespace cv;
+using namespace Mick;
 
 namespace Ui {
 class MainWindow;
@@ -89,9 +90,11 @@ private slots:
     
     void on_actionFind_Areas_triggered();
     
-public slots:
+public slots:   
     void setKeyPointsProportion(int value);
     void stackIterate(QString title = QString());
+    
+    void updateAddSetButtonState();
     
     // добавляет точки к графику
     void addKeyPointsToGraph();
@@ -105,12 +108,15 @@ private:
     ImageStack imageStack;
     
     QPixmap mImage;
-    KeyPoints *keyPoints;
+    Mick::KeyPoints *keyPoints;
     
     int lastImageIndex;
-    
+
     /// создает новый набор точек
     KeyPoints *createNewKeyPoints();
+    
+private slots:
+    
     /// устанавливает текущим набором точек
     void setCurrentKeyPoints(KeyPoints *keyPoints);
     /// удаляет текущуий набор точек, если они принадлежат этому объекту

@@ -7,6 +7,7 @@
 
 using namespace boost::tuples;
 using namespace cv;
+using namespace Mick;
 
 
 

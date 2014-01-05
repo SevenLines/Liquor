@@ -21,14 +21,14 @@ private:
     //float radius;
     int percentsProp;
     //QPoint pos;
-    MKeyPoint *keyPoint; // сылка на оригинальный объект
+    Mick::KeyPoint *keyPoint; // сылка на оригинальный объект
     
     void recalculate();
     
 public:
     explicit QGraphicsParticleItem(QGraphicsItem *parent = 0);
     
-    void setKeyPoint(MKeyPoint *keyPoint);
+    void setKeyPoint(Mick::KeyPoint *keyPoint);
     void setProportion(int percents);
     void setParticleProportion(int percents);
     void setPos(QPointF pos);

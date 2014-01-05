@@ -2,34 +2,66 @@
 #include <QDebug>
 #include <QFile>
 
+using namespace Mick;
+
 // -=-=-=-=--=-=--=-=--=-=--=-=--=-=--=-=- //
 
-MKeyPoint::MKeyPoint()
+KeyPoint::KeyPoint()
 {
     mProportion = 1;
-    fIgnore = false;
-    value = 0;
+    mIgnore = false;
+    mValue = 0;
 }
 
-void MKeyPoint::setProportion(int percents)
+void KeyPoint::setProportion(int percents)
 {
     mProportion = (float)percents / 100;
 }
 
-int MKeyPoint::proportion()
+int KeyPoint::proportion()
 {
     return mProportion * 100;
 }
 
-float MKeyPoint::calcValue()
+void KeyPoint::setIgnore(bool fIgnore)
 {
-    return value * mProportion;
+    mIgnore = fIgnore;
 }
 
-void MKeyPoint::draw(QPainter *p, float prop)
+bool KeyPoint::isIgnore()
 {
-    int radius = this->value * prop;
-    p->drawEllipse(this->pos, radius, radius);
+    return mIgnore;
+}
+
+void KeyPoint::setPos(QPointF pos)
+{
+    mPos = pos;
+}
+
+const QPointF &KeyPoint::pos()
+{
+    return mPos;
+}
+
+void KeyPoint::setValue(int value)
+{
+    mValue = value;
+}
+
+int KeyPoint::value()
+{
+    return mValue;
+}
+
+float KeyPoint::calcValue()
+{
+    return mValue * mProportion;
+}
+
+void KeyPoint::draw(QPainter *p, float prop)
+{
+    int radius = calcValue() * prop;
+    p->drawEllipse(mPos, radius, radius);
 }
 
 // -=-=-=-=--=-=--=-=--=-=--=-=--=-=--=-=- //
@@ -56,7 +88,7 @@ int KeyPoints::count()
     return mPoints.count();         
 }
 
-MKeyPoint &KeyPoints::operator[](int index)
+KeyPoint &KeyPoints::operator[](int index)
 {
     return mPoints[index];
 }
@@ -66,16 +98,16 @@ float KeyPoints::keyValue(int index)
     return mPoints[index].calcValue() * mProportion;
 }
 
-void KeyPoints::addKey(MKeyPoint &key)
+void KeyPoints::addKey(Mick::KeyPoint &key)
 {
     mPoints.append(key);
 }
 
 void KeyPoints::draw(QPainter *p)
 {
-    MKeyPoint point;
-    foreach(point, mPoints) {
-        point.draw(p, mProportion);
+    KeyPoint point;
+    for(int i=0;i<mPoints.count();++i) {
+        mPoints[i].draw(p, mProportion);
     }
 }
 
@@ -88,16 +120,16 @@ void KeyPoints::dumpToFile(QString filePath)
         return;
     }
     
-    MKeyPoint point;
+    KeyPoint point;
     int i = 1;
     QTextStream stream(&file);
     foreach(point, mPoints) {
-        if (!point.fIgnore) {
+        if (!point.isIgnore()) {
             stream << QString("%1\t%2\t(%3; %4)\n")
                     .arg(i)
                     .arg(point.calcValue() * mProportion)
-                    .arg(point.pos.x())
-                    .arg(point.pos.y());
+                    .arg(point.pos().x())
+                    .arg(point.pos().y());
             ++i;
         }
     }

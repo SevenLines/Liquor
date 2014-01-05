@@ -14,11 +14,11 @@ void QGraphicsParticleItem::recalculate()
     
     float k = (float)percentsProp / 100;
     float r = keyPoint->calcValue() * k;
-    setRect(keyPoint->pos.x() - r, keyPoint->pos.y() - r, r * 2, r *2);
+    setRect(keyPoint->pos().x() - r, keyPoint->pos().y() - r, r * 2, r *2);
     setToolTip( QObject::tr("rad: %1\npos:(%2; %3)")
                 .arg(r)
-                .arg(keyPoint->pos.x())
-                .arg(keyPoint->pos.y()) );
+                .arg(keyPoint->pos().x())
+                .arg(keyPoint->pos().y()) );
 }
 
 QGraphicsParticleItem::QGraphicsParticleItem(QGraphicsItem *parent) :
@@ -41,11 +41,11 @@ QGraphicsParticleItem::QGraphicsParticleItem(QGraphicsItem *parent) :
     setAcceptHoverEvents(true);
 }
 
-void QGraphicsParticleItem::setKeyPoint(MKeyPoint *keyPoint)
+void QGraphicsParticleItem::setKeyPoint(Mick::KeyPoint *keyPoint)
 {
     this->keyPoint = keyPoint;
     if (keyPoint) {
-        toggleIgnore(keyPoint->fIgnore);
+        toggleIgnore(keyPoint->isIgnore());
     }
 }
 
@@ -66,7 +66,7 @@ void QGraphicsParticleItem::setParticleProportion(int percents)
 void QGraphicsParticleItem::setPos(QPointF pos)
 {
     if (keyPoint) {
-        keyPoint->pos = pos;
+        keyPoint->setPos(pos);
         recalculate();
     }
 }
@@ -74,7 +74,7 @@ void QGraphicsParticleItem::setPos(QPointF pos)
 void QGraphicsParticleItem::move(QPointF offset)
 {
     if (keyPoint) {
-        keyPoint->pos += offset;
+        keyPoint->setPos(offset + keyPoint->pos());
         recalculate();
     }
 }
@@ -102,12 +102,12 @@ void QGraphicsParticleItem::toggleSelect(bool fSelected)
 
 bool QGraphicsParticleItem::isIgnore()
 {
-    return keyPoint?keyPoint->fIgnore:false;
+    return keyPoint?keyPoint->isIgnore():false;
 }
 
 QPointF QGraphicsParticleItem::pos()
 {
-    return keyPoint? keyPoint->pos : QPointF(-1.0f,-1.0f);
+    return keyPoint? keyPoint->pos() : QPointF(-1.0f,-1.0f);
 }
 
 int QGraphicsParticleItem::particleProportion()
@@ -118,7 +118,7 @@ int QGraphicsParticleItem::particleProportion()
 void QGraphicsParticleItem::toggleIgnore(bool fIgnore)
 {
     if (keyPoint) {
-        keyPoint->fIgnore = fIgnore;
+        keyPoint->setIgnore(fIgnore);
         setBrush(fIgnore ? brushIgnore : brushDefault);
     }
 }

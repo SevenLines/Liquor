@@ -270,16 +270,16 @@ void EmisionAnalyzer::findCircles(KeyPoints &keyPoints)
             avgPoint.y /= pointsCount;
             
             // создаем новую ключевую точку 
-            MKeyPoint key;
-            key.pos = QPointF(avgPoint.x, avgPoint.y);
-            key.value = valueImage(p);
+            Mick::KeyPoint key;
+            key.setPos(QPointF(avgPoint.x, avgPoint.y));
+            key.setValue(valueImage(p));
             // проверяем не находится ли центр масс области 
             // в зоне действия какой-либо другой точки
             bool fWas = false;
             for(int i=0;i<keyPoints.count();++i) {
-                MKeyPoint &k = keyPoints[i];
-                int diff = (k.pos - key.pos).manhattanLength();
-                if ( diff - k.value - key.value < 0 ) {
+                Mick::KeyPoint &k = keyPoints[i];
+                int diff = (k.pos() - key.pos()).manhattanLength();
+                if ( diff - k.value() - key.value() < 0 ) {
                     fWas = true;
                     break;
                 }

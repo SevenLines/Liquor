@@ -4,6 +4,7 @@
 #
 #-------------------------------------------------
 
+
 QT       += core gui
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
@@ -11,7 +12,8 @@ greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 TARGET = Liqour
 TEMPLATE = app
 CONFIG -= console
-TRANSLATIONS += main.ts
+
+TRANSLATIONS += liqour_ru.ts
 
 INCLUDEPATH += Core Utils Widgets
 
@@ -29,7 +31,8 @@ SOURCES  += main.cpp\
     Widgets/mgraphicsviewea.cpp \
     Widgets/qgraphicsparticleitem.cpp \
     Widgets/sequenceanalyzewidget.cpp \
-    Core/multikeypoints.cpp
+    Core/multikeypoints.cpp \
+    Widgets/qimagebrowser.cpp
 
 HEADERS  += mainwindow.h \
     Core/imagestack.h \
@@ -46,20 +49,39 @@ HEADERS  += mainwindow.h \
     Widgets/qgraphicsparticleitem.h \
     Widgets/sequenceanalyzewidget.h \
     Core/multikeypoints.h \
+    Widgets/qimagebrowser.h
 
 FORMS    += mainwindow.ui \
     Widgets/horizontalsliderex.ui \
-    Widgets/sequenceanalyzewidget.ui
+    Widgets/sequenceanalyzewidget.ui \
+    Widgets/qimagebrowser.ui
+
+
 
 win32 {
-   INCLUDEPATH += d:/_OpenCV/include/opencv
-   INCLUDEPATH += d:/_OpenCV/include/
-   INCLUDEPATH += d:/_DISTR/_QT/
-   INCLUDEPATH += d:/Boost/boost_1_54_0/ 
-   LIBS += -Ld:/_OpenCV/build/x86/mingw44/lib/
-   LIBS +=  libopencv_core246.dll \ 
+    INCLUDEPATH += d:/_OpenCV/include/opencv
+    INCLUDEPATH += d:/_OpenCV/include/
+    INCLUDEPATH += d:/_DISTR/_QT/
+    INCLUDEPATH += d:/Boost/boost_1_54_0/ 
+    
+    OPENCV_PATH = d:/_OpenCV/build/x86/mingw4.4/
+    OPENCV_PATH ~= s,/,\\,g
+    OPENCV_LIBS = libopencv_core246.dll \ 
 	    libopencv_highgui246.dll \
-	    libopencv_imgproc246.dll 
+	    libopencv_imgproc246.dll
+
+    LIBS += -L$${OPENCV_PATH}lib
+    LIBS += $$OPENCV_LIBS
+
+    SDIR = $${PWD}/
+    SDIR ~= s,/,\\,g
+    DDIR = $${OUT_PWD}
+    DDIR ~= s,/,\\,g
+
+    #copy OPENCV libs
+    for(FILE, OPENCV_LIBS) {
+	QMAKE_POST_LINK += $${QMAKE_COPY} $${OPENCV_PATH}bin\\$$FILE $${DDIR}$$escape_expand(\\n\\t)
+    }
 }
 
 unix {
@@ -67,10 +89,19 @@ unix {
     CONFIG += link_pkgconfig
     PKGCONFIG += opencv
     LIBS += -lopencv_core -lopencv_highgui -lopencv_superres
+    SDIR = $${PWD}/
+    DDIR = $${OUT_PWD}
 }
 
-message($$VERSION)
 
 OTHER_FILES += \
     VERSION.txt \
     BUILD.txt
+
+# copy linquist files
+for(FILE, TRANSLATIONS) {
+    QMAKE_POST_LINK += $${QMAKE_COPY} $${SDIR}$$replace(FILE,ts,qm) $${DDIR}$$escape_expand(\\n\\t)
+}
+
+
+

@@ -5,6 +5,8 @@
 #include <QObject>
 #include "keypoints.h"
 
+using namespace Mick;
+
 class MultiKeyPoints : public QObject
 {
     Q_OBJECT
@@ -29,6 +31,12 @@ private:
     
 public:
     MultiKeyPoints();
+    
+    bool isContains(KeyPoints *keyPoints);
+    
+    /// удаляет набор из списка
+    void removeSet(KeyPoints *keyPoints, bool force = false);
+    
     /// добавляет набор точек к объекту и становиться его родителем
     void addSet(KeyPoints *keyPoints);
     
