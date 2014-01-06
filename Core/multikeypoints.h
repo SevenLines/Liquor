@@ -23,11 +23,11 @@ private:
     float mMinValue;
     float mMaxValue;
     
-    /// формирует график распределения, 
-    /// ключ (x) -- размер частиц, значение (y) -- доля от общего чила
-    /// scale -- частей 
-    void getPoints();
     void getMinMax(float &min, float &max);
+    
+private slots:
+    void getPoints();
+    
     
 public:
     MultiKeyPoints();
@@ -46,7 +46,9 @@ public:
     
     void setScale(int scale);
     int scale();
+    int countOfParticles();
     int count();
+    
     
     float minKey();
     float maxKey();
@@ -57,8 +59,16 @@ public:
     const QVector<double> &keys();
     const QVector<double> &values();
     
+    KeyPoints *operator[](int index);
+    KeyPoints *at(int index);
+    
+    void saveDumpToFile(QString filePath);
+    void loadDumpFromFile(QString filePath);
+    
 signals:
     void graphChanged();
+    void aboutToAddSet();
+    void afterAddSet();
 };
 
 #endif // MULTIKEYPOINTS_H

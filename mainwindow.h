@@ -116,11 +116,13 @@ private:
     KeyPoints *createNewKeyPoints();
     
 private slots:
-    
     /// устанавливает текущим набором точек
     void setCurrentKeyPoints(KeyPoints *keyPoints);
     /// удаляет текущуий набор точек, если они принадлежат этому объекту
     void removeCurrentKeyPoints();
+    
+signals:
+    void currentKeyPointsChanged(KeyPoints* keyPoints);
 
 };
 

@@ -49,6 +49,7 @@ namespace Mick {
     private:
         QVector<KeyPoint> mPoints; 
         float mProportion;
+        bool mEnabled;
         
     public:
         explicit KeyPoints(QObject *parent = 0);
@@ -56,17 +57,23 @@ namespace Mick {
         int proportion();
         
         int count();
+        // возвращает количетво активных частиц в наборе
+        int countActual();
+        
+        bool isEnabled();
+        void setEnabled(bool value);
         
         KeyPoint &operator[](int index);
         float keyValue(int index);
         
     signals:
         void proportionChange(int newValue);
+        void enabledChange(bool newValue);
         void cleared();
         
     public slots:
         void setProportion(int value);
-        void addKey(KeyPoint &key);
+        void addKey(KeyPoint key);
         void draw(QPainter *p);
         void dumpToFile(QString filePath);
         void clear();

@@ -70,6 +70,7 @@ KeyPoints::KeyPoints(QObject *parent) :
     QObject(parent)
 {
         mProportion = 1;
+        mEnabled = true;
 }
 
 void KeyPoints::setProportion(int value)
@@ -88,6 +89,30 @@ int KeyPoints::count()
     return mPoints.count();         
 }
 
+int KeyPoints::countActual()
+{
+    int c = 0;
+    for(int i=0;i<mPoints.count();++i) {
+        if (!mPoints[i].isIgnore()) {
+            c++;
+        }
+    }
+    return c;
+}
+
+bool KeyPoints::isEnabled()
+{
+    return mEnabled;
+}
+
+void KeyPoints::setEnabled(bool value)
+{
+    if (mEnabled != value) {
+        mEnabled = value;
+        emit enabledChange(mEnabled);
+    }
+}
+
 KeyPoint &KeyPoints::operator[](int index)
 {
     return mPoints[index];
@@ -98,7 +123,7 @@ float KeyPoints::keyValue(int index)
     return mPoints[index].calcValue() * mProportion;
 }
 
-void KeyPoints::addKey(Mick::KeyPoint &key)
+void KeyPoints::addKey(Mick::KeyPoint key)
 {
     mPoints.append(key);
 }

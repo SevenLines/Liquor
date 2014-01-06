@@ -113,7 +113,6 @@ void MGraphicsViewEA::selectItem(QGraphicsParticleItem *particle, bool deselectS
         selectedParticles.append(particle);
         particle->toggleSelect(true);
     } else if (deselectSelected) {
-        qDebug() << "inside";
         selectedParticles.removeOne(particle);
         particle->toggleSelect(false);
     }
@@ -216,7 +215,6 @@ void MGraphicsViewEA::mousePressEvent(QMouseEvent *e)
     // управление выбором частиц
     if (e->buttons().testFlag(Qt::LeftButton)) {
         QGraphicsParticleItem *particle = getParticleAtPos(e->pos());
-        qDebug() << (void*)particle;
         if (particle) {
             fParticleSelected  = true;
             if (!selectedParticles.contains(particle)) {

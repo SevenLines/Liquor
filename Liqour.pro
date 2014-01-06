@@ -32,7 +32,8 @@ SOURCES  += main.cpp\
     Widgets/qgraphicsparticleitem.cpp \
     Widgets/sequenceanalyzewidget.cpp \
     Core/multikeypoints.cpp \
-    Widgets/qimagebrowser.cpp
+    Widgets/qimagebrowser.cpp \
+    Core/multikeypointsmodel.cpp
 
 HEADERS  += mainwindow.h \
     Core/imagestack.h \
@@ -49,7 +50,8 @@ HEADERS  += mainwindow.h \
     Widgets/qgraphicsparticleitem.h \
     Widgets/sequenceanalyzewidget.h \
     Core/multikeypoints.h \
-    Widgets/qimagebrowser.h
+    Widgets/qimagebrowser.h \
+    Core/multikeypointsmodel.h
 
 FORMS    += mainwindow.ui \
     Widgets/horizontalsliderex.ui \

@@ -1,5 +1,6 @@
 #include "multikeypoints.h"
 #include <QDebug>
+#include <QFile>
 
 using namespace Mick;
 
@@ -19,6 +20,7 @@ bool MultiKeyPoints::isContains(KeyPoints *keyPoints)
 void MultiKeyPoints::removeSet(KeyPoints *keyPoints, bool force)
 {
     if (keyPointsSets.contains(keyPoints)) {
+        keyPoints->disconnect(this);
         keyPointsSets.removeOne(keyPoints);
         if (force) {
             delete keyPoints;
@@ -30,25 +32,34 @@ void MultiKeyPoints::removeSet(KeyPoints *keyPoints, bool force)
 
 void MultiKeyPoints::addSet(KeyPoints *keyPoints)
 {
+    emit aboutToAddSet();
     if (keyPoints == 0)
         return;
     // проверяем на наличие набора
     if (!keyPointsSets.contains(keyPoints)) {
+        
         // добавлем в список
         keyPointsSets.append(keyPoints);
         // меняем родителя на текущий объект
         keyPoints->setParent(this);
+        
+        connect(keyPoints, SIGNAL(enabledChange(bool)),
+                SLOT(getPoints()));
     }        
- 
     getPoints();
+    emit afterAddSet();
 }
 
 void MultiKeyPoints::clearSets(bool force)
 {
     if (force)
         qDeleteAll(keyPointsSets);
-    keyPointsSets.clear();
     
+    foreach(KeyPoints *set, keyPointsSets) {
+        set->disconnect(this);
+    }
+
+    keyPointsSets.clear();
     getPoints();
 }
 
@@ -72,10 +83,12 @@ void MultiKeyPoints::getPoints()
         graph[i].setX(step * i);
         graph[i].setY(0);
     }
-    
+
     // расчитываем график
     int countOfPoints = 0;
     foreach(KeyPoints *set, keyPointsSets) {
+        if (!set->isEnabled()) 
+            continue;
         for(int i=0;i<set->count();++i) {
             if (!(*set)[i].isIgnore()) {
                 ++countOfPoints;
@@ -85,6 +98,7 @@ void MultiKeyPoints::getPoints()
             }
         }
     }
+
     
     //bool ffirst = true;
     mMinValue = mMaxValue = -1;
@@ -125,6 +139,9 @@ void MultiKeyPoints::getMinMax(float &min, float &max)
     min = max = -1; // чтобы было понятно что ничего не нашли
     bool ffirst = true;
     foreach(KeyPoints *set, keyPointsSets) {
+        if (!set->isEnabled()) 
+            continue;
+        
         for(int i=0;i<set->count();++i) {
             if (!(*set)[i].isIgnore()) {
                 float value = (*set).keyValue(i);
@@ -142,6 +159,66 @@ void MultiKeyPoints::getMinMax(float &min, float &max)
             }
         }
     }
+}
+
+KeyPoints *MultiKeyPoints::operator[](int index)
+{
+    return at(index);
+}
+
+KeyPoints *MultiKeyPoints::at(int index)
+{
+    return keyPointsSets[index];
+}
+
+void MultiKeyPoints::saveDumpToFile(QString filePath)
+{
+    QFile data(filePath);
+    if (data.open(QFile::WriteOnly | QFile::Truncate | QFile::Text)) {
+        QTextStream out(&data);
+        
+        int counter = 1;
+        
+        foreach(KeyPoints *set, keyPointsSets) {
+            if (!set->isEnabled()) 
+                continue;
+            
+            for(int i=0;i<set->count();++i) {
+                Mick::KeyPoint &p = (*set)[i];
+                if (!p.isIgnore()) {
+                    out << (counter++) 
+                           << '\t' << p.calcValue()
+                              << '\t' << p.pos().x()
+                                 << '\t' << p.pos().y()
+                                    << endl;
+                }
+            }
+        }
+    }
+}
+
+void MultiKeyPoints::loadDumpFromFile(QString filePath)
+{
+    KeyPoints *newSet = new KeyPoints();
+    
+    QFile data(filePath);
+    if (data.open(QFile::ReadOnly | QFile::Text)) {
+        QTextStream out(&data);
+        
+        while(!out.atEnd()) {
+            QString line = out.readLine();
+            QStringList values = line.split("\t",  QString::SkipEmptyParts);
+            if (values.count() == 4) {
+                Mick::KeyPoint k;
+                k.setValue(values[1].toFloat());
+                k.setPos(QPointF(values[2].toFloat(), values[3].toFloat()));
+                newSet->addKey(k);
+            }
+        }
+        data.close();
+    }
+    
+    addSet(newSet);
 }
 
 void MultiKeyPoints::clearGraph()
@@ -164,9 +241,14 @@ int MultiKeyPoints::scale()
     return mScale;
 }
 
-int MultiKeyPoints::count()
+int MultiKeyPoints::countOfParticles()
 {
     return mCount;
+}
+
+int MultiKeyPoints::count()
+{
+    return keyPointsSets.count();
 }
 
 float MultiKeyPoints::minKey()

@@ -91,8 +91,11 @@ MainWindow::MainWindow(QString imagePath, QWidget *parent) :
     connect(ui->SequenceAnalyzeWdg, SIGNAL(graphUpdated()),
             SLOT(updateAddSetButtonState()));
     
+    connect(ui->SequenceAnalyzeWdg, SIGNAL(keyPointsSetActivated(KeyPoints*)),
+            SLOT(setCurrentKeyPoints(KeyPoints*)));
     
     setCurrentKeyPoints(0);
+
 }
 
 
@@ -157,13 +160,14 @@ void MainWindow::FindParticles()
     
     // создаем новый набор под ключевые точки
     ui->graphicsView->setKeyPoints(0);
-    setCurrentKeyPoints(createNewKeyPoints());
+    KeyPoints *points = createNewKeyPoints();
     // ищем частицы
-    ea.findCircles(*keyPoints);
+    ea.findCircles(*points);
+    setCurrentKeyPoints(points);
     // сохраняем обработанное изображение
     // stackIterate(tr("analyze"));
     
-    ui->graphicsView->setKeyPoints(keyPoints);
+    
     ui->actionShow_particles->setChecked(true);
     
     log(QString(tr("find %1 particle(s)")).arg(keyPoints->count()));
@@ -372,13 +376,18 @@ void MainWindow::setCurrentKeyPoints(KeyPoints *keyPoints)
                 ui->graphicsView, SLOT(update()));
     }
     this->keyPoints = keyPoints;
+    ui->graphicsView->setKeyPoints(keyPoints);
+    
+    emit currentKeyPointsChanged(this->keyPoints);
+    
+    ui->SequenceAnalyzeWdg->setActive(keyPoints);
     
     updateAddSetButtonState();
 }
 
 void MainWindow::removeCurrentKeyPoints()
 {
-    this->keyPoints->disconnect();
+    this->keyPoints->disconnect(this);
     if (keyPoints && keyPoints->parent() == this) {
         delete keyPoints;
         keyPoints = 0;
@@ -421,11 +430,15 @@ void MainWindow::loadIni()
     settings.beginGroup("LeftPanel");
     ui->splitterLeft->restoreState(
                 settings.value("splitterLeft", QByteArray()).toByteArray());
+    ui->splitterLeftCenter->restoreState(
+                settings.value("splitterLeftCenter", QByteArray()).toByteArray());
     ui->LeftPanel->setVisible(
                 settings.value("Visible", true).toBool());
     ui->LeftTabWidget->setCurrentIndex(
                 settings.value("CurrentIndex", 0).toInt());
     settings.endGroup();
+    
+    ui->SequenceAnalyzeWdg->saveIni(&settings);
 }
 
 void MainWindow::saveIni()
@@ -458,8 +471,11 @@ void MainWindow::saveIni()
     settings.beginGroup("LeftPanel");
     settings.setValue("Visible", ui->LeftPanel->isVisible());
     settings.setValue("splitterLeft", ui->splitterLeft->saveState());
+    settings.setValue("splitterLeftCenter", ui->splitterLeftCenter->saveState());
     settings.setValue("CurrentIndex", ui->LeftTabWidget->currentIndex());
     settings.endGroup();
+    
+    ui->SequenceAnalyzeWdg->loadIni(&settings);
 }
 
 void MainWindow::on_actionExit_triggered()
