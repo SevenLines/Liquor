@@ -157,9 +157,10 @@ void MainWindow::FindParticles()
     ea.setMaxRadius(100);
     ea.setMinRadius(5);
     ea.setImage(temp);
-    
-    // создаем новый набор под ключевые точки
+
+    // отключаем предыдущий набор    
     ui->graphicsView->setKeyPoints(0);
+    // создаем новый набор под ключевые точки
     KeyPoints *points = createNewKeyPoints();
     // ищем частицы
     ea.findCircles(*points);

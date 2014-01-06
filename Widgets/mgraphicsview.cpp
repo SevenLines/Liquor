@@ -108,7 +108,7 @@ void MGraphicsView::wheelEvent(QWheelEvent *e)
 {
     float s = 1.5f;
     fFitToScreen = false;
-
+    
     if (e->modifiers() & Qt::CTRL){
         if (e->delta() > 0) {
             scale(s, s);

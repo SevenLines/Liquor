@@ -18,6 +18,9 @@ QGraphicsParticleItem *MGraphicsViewEA::getParticleAtPos(QPoint pos)
 MGraphicsViewEA::MGraphicsViewEA(QWidget *parent)
     : MGraphicsView(parent)
 {
+    // setup init values
+    keyPoints = 0;
+    
     // setup keyPointsRoot object
     keyPointsRoot = 0;
     keyPointsRoot = gScene->createItemGroup(QList<QGraphicsItem*>());

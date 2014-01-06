@@ -73,10 +73,10 @@ void MultiKeyPoints::getPoints()
     //  находим границы
     getMinMax(mMin, mMax);
 
-    float step = (float)( mMax - mMin ) / mScale;
+    float step = (float)( mMax - mMin ) / (mScale - 1);
     
     // временный массив под график
-    QPointF * graph = new QPointF[mScale];
+    QVector<QPointF> graph(mScale);// = new QPointF[mScale];
     
     // заполняем массив начальными значениями
     for (int i=0;i<mScale;++i) {
@@ -93,7 +93,7 @@ void MultiKeyPoints::getPoints()
             if (!(*set)[i].isIgnore()) {
                 ++countOfPoints;
                 float value = (*set)[i].calcValue();
-                QPointF &p = graph[(int)(value / step)];
+                QPointF &p = graph[ (int)((value - mMin) / step)];
                 p.setY(p.y() + 1);
             }
         }
@@ -127,9 +127,6 @@ void MultiKeyPoints::getPoints()
         
     }
     mCount = countOfPoints;
-    
-    // удаляем временный массив
-    delete[] graph;
     
     emit graphChanged();
 }

@@ -4,6 +4,7 @@
 #include <QTranslator>
 #include <QLibraryInfo>
 #include <QLocale>
+#include <QDebug>
 
 int main(int argc, char *argv[])
 {
@@ -16,6 +17,7 @@ int main(int argc, char *argv[])
     
     QTranslator myappTranslator;
     myappTranslator.load("liqour_" + QLocale::system().name());
+    qDebug() << "liqour_" + QLocale::system().name();
     app.installTranslator(&myappTranslator); 
     
     MainWindow w(argv[1]);

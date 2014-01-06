@@ -114,7 +114,7 @@ int EmisionAnalyzer::getSymmetryValue(Point pos, int i)
         if ( pos.y - offset < 0 || pos.x + offset >= gImageRef.cols
              || gImageRef(pos.y - offset, pos.x + offset) != EA_BLACK ) stopItems++; 
         
-        if ( pos.y + offset > gImageRef.rows || pos.x + offset >= gImageRef.cols
+        if ( pos.y + offset >= gImageRef.rows || pos.x + offset >= gImageRef.cols
              || gImageRef(pos.y + offset, pos.x + offset) != EA_BLACK ) stopItems++; 
         
         if (stopItems >= i) {
@@ -204,7 +204,7 @@ void EmisionAnalyzer::findCircles(KeyPoints &keyPoints)
     // нахожу заполненые области
     OpenCVUtils::getKeyAreas<cv::Mat1b>(blackAreas, EA_BLACK, gImageRef);
     
-    int symmValue;
+    int symmValue = 0;
     foreach(QList<cv::Point> area, blackAreas) {
         foreach(cv::Point p, area) {
             symmValue = getSymmetryValue(p, 1);
