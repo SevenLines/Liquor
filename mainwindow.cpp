@@ -49,6 +49,7 @@ MainWindow::MainWindow(QString imagePath, QWidget *parent) :
     ui->sldKeyProp->setMax(200);
     ui->sldKeyProp->setMin(1);
     ui->sldKeyProp->setValue(100);
+    ui->sldKeyProp->toggleButtonVisible(false);
 
     
     // particle show checkable
@@ -143,7 +144,7 @@ void MainWindow::loadImage(QString path, bool setActive)
     ui->graphicsView->fitToScreen();
     ui->actionShow_particles->setChecked(false);
     
-    pushCurrentImage(QFileInfo(path).baseName());
+    pushCurrentImage(QFileInfo(path).baseName(), true);
 }
 
 void MainWindow::FindParticles()
@@ -162,6 +163,7 @@ void MainWindow::FindParticles()
     ui->graphicsView->setKeyPoints(0);
     // создаем новый набор под ключевые точки
     KeyPoints *points = createNewKeyPoints();
+    points->setTitle(currentKeyImageName);
     // ищем частицы
     ea.findCircles(*points);
     setCurrentKeyPoints(points);
@@ -203,9 +205,12 @@ void MainWindow::FindParticleAreas()
     setCurrentImage(OpenCVUtils::ToQPixmap(temp));
 }
 
-void MainWindow::pushCurrentImage(QString title, int index)
+void MainWindow::pushCurrentImage(QString title, bool asKey, int index)
 {
-    imageStack.push(currentImage(), title, index); 
+    if (asKey) {
+        currentKeyImageName = title;
+    }
+    imageStack.push(currentImage(), title, asKey, index); 
     log(tr("push current image to stack as '%1'").arg(title));
 }
 
@@ -334,7 +339,7 @@ void MainWindow::stackIterate(QString title)
     } else {
         label = title;
     }
-    pushCurrentImage(label , row);  
+    pushCurrentImage(label , false, row);  
 }
 
 void MainWindow::updateAddSetButtonState()
@@ -439,7 +444,7 @@ void MainWindow::loadIni()
                 settings.value("CurrentIndex", 0).toInt());
     settings.endGroup();
     
-    ui->SequenceAnalyzeWdg->saveIni(&settings);
+    ui->SequenceAnalyzeWdg->loadIni(&settings);
 }
 
 void MainWindow::saveIni()
@@ -476,7 +481,7 @@ void MainWindow::saveIni()
     settings.setValue("CurrentIndex", ui->LeftTabWidget->currentIndex());
     settings.endGroup();
     
-    ui->SequenceAnalyzeWdg->loadIni(&settings);
+    ui->SequenceAnalyzeWdg->saveIni(&settings);
 }
 
 void MainWindow::on_actionExit_triggered()
@@ -501,7 +506,11 @@ void MainWindow::on_actionSave_Image_triggered()
 
 void MainWindow::on_lstImageStack_clicked(const QModelIndex &index)
 {
-    setCurrentImage( this->imageStack.data(index).Pixmap );
+    PixmapInfo info = this->imageStack.data(index);
+    if (info.keyImage) {
+        currentKeyImageName = info.Title;
+    }
+    setCurrentImage( info.Pixmap );
 }
 
 

@@ -10,11 +10,13 @@ SequenceAnalyzeWidget::SequenceAnalyzeWidget(QWidget *parent) :
     ui->setupUi(this);
     
     // setup multiKeyPoints
-    multiKeyPoints.setScale(25);
+    connect(ui->sldScale, SIGNAL(valueChanged(int)),
+            &multiKeyPoints, SLOT(setScale(int)));
     connect(&multiKeyPoints, SIGNAL(graphChanged()),
             SLOT(updateGraph()));
     connect(&multiKeyPoints, SIGNAL(graphChanged()),
             SIGNAL(graphUpdated()));
+
     
     // setup multiKeyPoints model
     multiKeyPointsModel.setData(&multiKeyPoints);
@@ -26,16 +28,10 @@ SequenceAnalyzeWidget::SequenceAnalyzeWidget(QWidget *parent) :
     
     // setup graph style
     graph = ui->plotGraph->addGraph();
-    graph->setPen(QPen( QColor(30, 40, 255)));
+    graph->setPen(QPen( QColor(0, 0, 0)));
     graph->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssCircle, 
                                           QColor(30, 40, 255) , Qt::white, 4));
-    
-    /*label = new QCPItemText(ui->plotGraph);
-    label->setText("info");
-    label->setPositionAlignment( Qt::AlignLeft | Qt::AlignBottom);
-    label->setPen(QPen());*/
-    
-    //ui->plotGraph->addItem(label);
+    graph->setBrush(QBrush(QColor(30, 40, 255, 128)));
     
     // add header title
     title = new QCPPlotTitle(ui->plotGraph, "");
@@ -49,6 +45,13 @@ SequenceAnalyzeWidget::SequenceAnalyzeWidget(QWidget *parent) :
     ui->plotGraph->yAxis->setLabel(tr("count"));
     ui->plotGraph->xAxis->setLabel(tr("size (px.)"));
     ui->plotGraph->yAxis->setRange(0,1);
+    
+    ui->plotGraph->xAxis->setPadding(5);
+    ui->plotGraph->yAxis->setPadding(5);
+    
+    // rescale event
+    connect(ui->btnFitToScreen, SIGNAL(clicked(bool)),
+            SLOT(rescaleGraphAxis(bool)));
     
     // connect graphic events
     connect(ui->plotGraph, SIGNAL(mouseMove(QMouseEvent*)),
@@ -91,13 +94,23 @@ void SequenceAnalyzeWidget::updateGraph()
 {
     graph->setData(multiKeyPoints.keys(), multiKeyPoints.values());
     title->setText(QString(tr("count: %1")).arg(multiKeyPoints.countOfParticles()));
-    ui->plotGraph->rescaleAxes();
     ui->plotGraph->replot();
+    if (ui->btnFitToScreen->isChecked()) {
+        rescaleGraphAxis(true);
+    }
 }
 
 void SequenceAnalyzeWidget::changeScale(int value)
 {
     multiKeyPoints.setScale(value);
+}
+
+void SequenceAnalyzeWidget::rescaleGraphAxis(bool fFit)
+{
+    if (fFit) {
+        ui->plotGraph->rescaleAxes();
+        ui->plotGraph->replot();
+    }
 }
 
 void SequenceAnalyzeWidget::setActive(KeyPoints *keyPoints)
@@ -142,6 +155,8 @@ void SequenceAnalyzeWidget::saveIni(QSettings *ini)
 {
     ini->beginGroup("SequenceAnalyzeWidget");
     ini->setValue("lastPath", lastPath);
+    ini->setValue("sldScale/Value", ui->sldScale->value());
+    ini->setValue("fitGraphic", ui->btnFitToScreen->isChecked());
     ini->endGroup();
 }
 
@@ -149,6 +164,10 @@ void SequenceAnalyzeWidget::loadIni(QSettings *ini)
 {
     ini->beginGroup("SequenceAnalyzeWidget");
     lastPath = ini->value("lastPath", QString()).toString();
+    ui->sldScale->setValue(
+                ini->value("sldScale/Value", 25).toInt());
+    ui->btnFitToScreen->setChecked(
+                ini->value("fitGraphic", true).toBool());
     ini->endGroup();
 }
 

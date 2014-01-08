@@ -28,7 +28,7 @@ QGraphicsParticleItem::QGraphicsParticleItem(QGraphicsItem *parent) :
     fSelected = false;
     keyPoint = 0;
    
-    brushDefault = QBrush(QColor::fromRgb(0,255,0,164));
+    brushDefault = QBrush(QColor::fromRgb(0,255,0,128));
     brushIgnore = QBrush(QColor::fromRgb(255,0,0,64));
     brushSelected = QBrush(QColor::fromRgb(0,0,255,164));
     
@@ -87,15 +87,16 @@ void QGraphicsParticleItem::toggleSelect(bool fSelected)
     
     if (fSelected) {
         QGraphicsDropShadowEffect *eff = new QGraphicsDropShadowEffect();
-        
-        eff->setColor(Qt::white);
+        eff->setColor(Qt::yellow);
         eff->setOffset(0);
         if (keyPoint) {
             eff->setBlurRadius(keyPoint->calcValue());
         }   
         setGraphicsEffect(eff);
+        setPen(penSelected);
     } else {
         setGraphicsEffect(0);
+        setPen(penDefault);
     }  
     this->fSelected = fSelected;
 }

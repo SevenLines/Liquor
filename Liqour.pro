@@ -15,7 +15,7 @@ CONFIG -= console
 
 TRANSLATIONS += liqour_ru.ts
 
-INCLUDEPATH += Core Utils Widgets
+INCLUDEPATH += Core Utils Widgets Settings
 
 SOURCES  += main.cpp\
     mainwindow.cpp \
@@ -33,7 +33,9 @@ SOURCES  += main.cpp\
     Widgets/sequenceanalyzewidget.cpp \
     Core/multikeypoints.cpp \
     Widgets/qimagebrowser.cpp \
-    Core/multikeypointsmodel.cpp
+    Core/multikeypointsmodel.cpp \
+    Settings/formsettings.cpp \
+    Settings/formsettingsgeneral.cpp
 
 HEADERS  += mainwindow.h \
     Core/imagestack.h \
@@ -51,12 +53,16 @@ HEADERS  += mainwindow.h \
     Widgets/sequenceanalyzewidget.h \
     Core/multikeypoints.h \
     Widgets/qimagebrowser.h \
-    Core/multikeypointsmodel.h
+    Core/multikeypointsmodel.h \
+    Settings/formsettings.h \
+    Settings/formsettingsgeneral.h
 
 FORMS    += mainwindow.ui \
     Widgets/horizontalsliderex.ui \
     Widgets/sequenceanalyzewidget.ui \
-    Widgets/qimagebrowser.ui
+    Widgets/qimagebrowser.ui \
+    Settings/formsettings.ui \
+    Settings/formsettingsgeneral.ui
 
 
 
@@ -104,6 +110,9 @@ OTHER_FILES += \
 for(FILE, TRANSLATIONS) {
     QMAKE_POST_LINK += $${QMAKE_COPY} $${SDIR}$$replace(FILE,ts,qm) $${DDIR}$$escape_expand(\\n\\t)
 }
+
+RESOURCES += \
+    Assets/main.qrc
 
 
 

@@ -14,6 +14,7 @@ namespace Mick {
         bool mIgnore; // set to true if u want to ignore this particle
         QPointF mPos; // position of particle on pixmap
         int mValue; // real value of particle
+
         
     public:
         
@@ -32,6 +33,7 @@ namespace Mick {
         /// value in pixels
         void setValue(int value);
         int value();
+
           
         /// returns overcalculated value, with proportion
         float calcValue();
@@ -50,6 +52,7 @@ namespace Mick {
         QVector<KeyPoint> mPoints; 
         float mProportion;
         bool mEnabled;
+        QString mTitle;
         
     public:
         explicit KeyPoints(QObject *parent = 0);
@@ -65,6 +68,10 @@ namespace Mick {
         
         KeyPoint &operator[](int index);
         float keyValue(int index);
+        
+        
+        void setTitle(QString title);
+        QString title();
         
     signals:
         void proportionChange(int newValue);

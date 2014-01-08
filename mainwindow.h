@@ -37,7 +37,7 @@ private slots:
     void showImage(QImage image);
     
     void loadImage(QString path, bool setActive = true);
-    void pushCurrentImage(QString title, int index = -1);
+    void pushCurrentImage(QString title, bool asKey=false, int index = -1);
     
     void FindParticles();
     void FindParticleAreas();
@@ -109,6 +109,8 @@ private:
     
     QPixmap mImage;
     Mick::KeyPoints *keyPoints;
+    
+    QString currentKeyImageName;
     
     int lastImageIndex;
 

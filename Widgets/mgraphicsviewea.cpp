@@ -136,13 +136,13 @@ void MGraphicsViewEA::toggleIgnoreSeletItems(bool fIgnore)
     } 
 }
 
-int MGraphicsViewEA::selectedItemsIgnoreState()
+bool MGraphicsViewEA::selectedItemsIgnoreState()
 {
     int i=0;
     foreach(QGraphicsParticleItem *p, selectedParticles) {
         i += p->isIgnore();
     }  
-    return i==0?0:i==selectedParticles.count()?1:2;
+    return i>selectedParticles.count()/2?true:false;
 }
 
 void MGraphicsViewEA::selectInsideFrame()

@@ -52,7 +52,7 @@ public slots:
     // вкл / выкл выделенный объекты
     void toggleIgnoreSeletItems(bool fIgnore);
     
-    int selectedItemsIgnoreState();
+    bool selectedItemsIgnoreState();
     // выделеяет все объекты внутри рамки
     void selectInsideFrame();
     

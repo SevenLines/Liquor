@@ -86,15 +86,37 @@ void MultiKeyPoints::getPoints()
 
     // расчитываем график
     int countOfPoints = 0;
+    int index;
+    float leftValue, rightValue, iValue;
     foreach(KeyPoints *set, keyPointsSets) {
         if (!set->isEnabled()) 
             continue;
         for(int i=0;i<set->count();++i) {
             if (!(*set)[i].isIgnore()) {
                 ++countOfPoints;
-                float value = (*set)[i].calcValue();
-                QPointF &p = graph[ (int)((value - mMin) / step)];
-                p.setY(p.y() + 1);
+                
+                float value = (set->keyValue(i) - mMin);//(*set)[i].calcValue();
+                
+                index = (int)(value / step);
+                
+                iValue = (float)index * step;
+                leftValue = value - iValue;
+                rightValue = iValue + step - value;
+                
+                /*qDebug() << "left:" << leftValue 
+                         << "right:" << rightValue
+                         << "summ:" << leftValue + rightValue;*/
+                
+                QPointF &pLeft = graph[index];
+                pLeft.setY(pLeft.y() + leftValue);
+                
+                if (index < mScale - 1 ) {
+                    QPointF &pRight = graph[index + 1];
+                    pRight.setY(pRight.y() + rightValue);
+                } else {
+                    pLeft.setY(pLeft.y() + rightValue); 
+                }
+                
             }
         }
     }

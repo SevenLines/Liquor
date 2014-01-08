@@ -24,6 +24,7 @@ private:
     float mMaxValue;
     
     void getMinMax(float &min, float &max);
+    //void recountParticlesCount();
     
 private slots:
     void getPoints();
@@ -44,7 +45,7 @@ public:
     void clearSets(bool force = false);
     void clearGraph();
     
-    void setScale(int scale);
+
     int scale();
     int countOfParticles();
     int count();
@@ -64,6 +65,9 @@ public:
     
     void saveDumpToFile(QString filePath);
     void loadDumpFromFile(QString filePath);
+    
+public slots:
+    void setScale(int scale);
     
 signals:
     void graphChanged();

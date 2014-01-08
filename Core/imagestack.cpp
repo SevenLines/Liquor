@@ -55,19 +55,22 @@ QPixmap ImageStack::pop()
     return out.Pixmap;
 }
 
-void ImageStack::push(QPixmap pixmap, QString title, int pos)
+void ImageStack::push(QPixmap pixmap, QString title, bool asKeyImage, int pos)
 {
     beginResetModel();
     
+    PixmapInfo info(title, pixmap);
+    info.keyImage = asKeyImage;
+    
     switch (pos) {
     case -1:
-        stack.push(PixmapInfo(title, pixmap));
+        stack.push(info);
         break;
     default:
         while(stack.count() > pos + 1) {
             stack.pop();
         }
-        stack.push(PixmapInfo(title, pixmap));
+        stack.push(info);
         break;
     }
 
@@ -103,4 +106,5 @@ PixmapInfo::PixmapInfo(QString title, QPixmap pixmap)
 {
     this->Title = title;
     this->Pixmap = pixmap;
+    this->keyImage = false;
 }

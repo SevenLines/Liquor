@@ -53,6 +53,16 @@ int KeyPoint::value()
     return mValue;
 }
 
+void KeyPoints::setTitle(QString title)
+{
+    mTitle = title;
+}
+
+QString KeyPoints::title()
+{
+    return mTitle;
+}
+
 float KeyPoint::calcValue()
 {
     return mValue * mProportion;

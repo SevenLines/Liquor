@@ -10,6 +10,7 @@ HorizontalSliderEx::HorizontalSliderEx(QWidget *parent) :
 {
     ui->setupUi(this);
     connect(ui->spinBox, SIGNAL(valueChanged(int)), this, SIGNAL(valueChanged(int)));
+    //connect(ui->btnApply, SIGNAL(clicked()), SIGNAL(apply()));
 }
 
 HorizontalSliderEx::~HorizontalSliderEx()
@@ -77,6 +78,11 @@ void HorizontalSliderEx::setTitle(QString value)
     ui->label->setText(value);
 }
 
+void HorizontalSliderEx::toggleButtonVisible(bool fShow)
+{
+    ui->btnApply->setVisible(fShow);
+}
+
 
 void HorizontalSliderEx::keyPressEvent(QKeyEvent *e)
 {
@@ -84,4 +90,10 @@ void HorizontalSliderEx::keyPressEvent(QKeyEvent *e)
     if (e->key() == Qt::Key_Return) {
         emit apply();
     }
+}
+
+void HorizontalSliderEx::on_btnApply_clicked()
+{
+    emit valueChanged(this->value());
+    emit apply();
 }

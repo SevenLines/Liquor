@@ -9,6 +9,8 @@ struct PixmapInfo
 {
     QString Title;
     QPixmap Pixmap;
+    bool keyImage;
+    
     PixmapInfo();
     PixmapInfo(QString title, QPixmap pixmap);
 };
@@ -36,7 +38,7 @@ public:
     QVariant headerData(int section, Qt::Orientation, int role) const;
     
     QPixmap pop();
-    void push(QPixmap pixmap, QString title, int pos=-1);
+    void push(QPixmap pixmap, QString title, bool asKeyImage=false, int pos=-1);
     
     bool setData(const QModelIndex &index, const QVariant &value, int role);
     Qt::ItemFlags flags(const QModelIndex &index) const;

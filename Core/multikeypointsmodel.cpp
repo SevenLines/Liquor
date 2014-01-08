@@ -20,8 +20,6 @@ void MultiKeyPointsModel::setData(MultiKeyPoints *data)
         }
         if (data) {
             multiKeyPoints = data;
-            /*connect(multiKeyPoints, SIGNAL(afterAddSet()),
-                    SLOT(resetModel()));*/
             connect(multiKeyPoints, SIGNAL(graphChanged()),
                     SLOT(resetModel()));
         }
@@ -62,9 +60,9 @@ QVariant MultiKeyPointsModel::data(const QModelIndex &index, int role) const
     switch(role) {
     case Qt::DisplayRole:
         if (keyPointsActive == kp) {
-            return QString(tr("%1 <<< active").arg(kp->countActual()));
+            return QString(tr(">>> %1").arg(kp->title()));
         } else {
-            return kp->countActual();
+            return kp->title();
         }
         break;
     case Qt::CheckStateRole:

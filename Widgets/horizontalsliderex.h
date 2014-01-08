@@ -36,6 +36,7 @@ public slots:
     void setMax(int value);
     void setMin(int value); 
     void setTitle(QString);
+    void toggleButtonVisible(bool fShow);
     
     
 signals:  
@@ -52,6 +53,8 @@ signals:
     // QWidget interface
 protected:
     void keyPressEvent(QKeyEvent *e);
+private slots:
+    void on_btnApply_clicked();
 };
 
 #endif // HORIZONTALSLIDEREX_H

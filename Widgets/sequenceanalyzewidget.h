@@ -54,6 +54,7 @@ public slots:
     void updateGraph();
     /// установить кол-во точек на графике (шкалу)
     void changeScale(int value);
+    void rescaleGraphAxis(bool fFit);
     
     void setActive(KeyPoints *keyPoints);
     void savePoints();
