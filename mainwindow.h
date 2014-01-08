@@ -2,12 +2,14 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
+#include <QDebug>
 #include <opencv/cv.h>
 #include <opencv/highgui.h>
 
 #include "Core/imagestack.h"
 #include "Core/keypoints.h"
 #include "Utils/opencvutils.h"
+#include "MainInclude.h"
 
 class QSettings;
 
@@ -26,10 +28,10 @@ public:
     explicit MainWindow(QString imagePath, QWidget *parent = 0);
     Mat QPixmapToMat(QPixmap pixmap);
     QPixmap currentImage();
-    
-    
-    ~MainWindow();
 
+
+    ~MainWindow();
+    
 private slots:
    
     void showImage(Mat image);
@@ -52,9 +54,7 @@ private slots:
     void normalize();
     void invert();
     void equalizehist();
-    void log(QString message);
-
-    
+   
     void loadIni();
     void saveIni();
     
@@ -91,6 +91,8 @@ private slots:
     void on_actionFind_Areas_triggered();
     
 public slots:   
+    void log(QString message, QtMsgType type = QtDebugMsg);    
+    
     void setKeyPointsProportion(int value);
     void stackIterate(QString title = QString());
     

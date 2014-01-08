@@ -55,7 +55,9 @@ HEADERS  += mainwindow.h \
     Widgets/qimagebrowser.h \
     Core/multikeypointsmodel.h \
     Settings/formsettings.h \
-    Settings/formsettingsgeneral.h
+    Settings/formsettingsgeneral.h \
+    ApplicationInfo.h \
+    MainInclude.h
 
 FORMS    += mainwindow.ui \
     Widgets/horizontalsliderex.ui \
@@ -72,6 +74,9 @@ win32 {
     INCLUDEPATH += d:/_DISTR/_QT/
     INCLUDEPATH += d:/Boost/boost_1_54_0/ 
     
+    # widows resource
+    RC_FILE = Assets/windows_resource.rc
+
     OPENCV_PATH = d:/_OpenCV/build/x86/mingw4.4/
     OPENCV_PATH ~= s,/,\\,g
     OPENCV_LIBS = libopencv_core246.dll \ 
@@ -90,6 +95,10 @@ win32 {
     for(FILE, OPENCV_LIBS) {
 	QMAKE_POST_LINK += $${QMAKE_COPY} $${OPENCV_PATH}bin\\$$FILE $${DDIR}$$escape_expand(\\n\\t)
     }
+
+    OTHER_FILES += \
+	Assets/windows_resource.rc \
+	Assets/icon.ico
 }
 
 unix {
@@ -104,7 +113,8 @@ unix {
 
 OTHER_FILES += \
     VERSION.txt \
-    BUILD.txt
+    BUILD.txt \
+    Assets/logo_3.png \
 
 # copy linquist files
 for(FILE, TRANSLATIONS) {

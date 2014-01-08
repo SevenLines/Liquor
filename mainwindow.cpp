@@ -27,9 +27,12 @@ MainWindow::MainWindow(QString imagePath, QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
 {
-    ui->setupUi(this);
-    
+    ui->setupUi(this);   
     ui->graphicsView->addAction(ui->actionSave_Image); 
+    
+    // устанавливаем указатель на главное окно
+    applicationInfo.mainWindow = this;
+    
     lastImageIndex = -1;
     keyPoints = 0;
     
@@ -96,9 +99,7 @@ MainWindow::MainWindow(QString imagePath, QWidget *parent) :
             SLOT(setCurrentKeyPoints(KeyPoints*)));
     
     setCurrentKeyPoints(0);
-
 }
-
 
 QPixmap MainWindow::currentImage()
 {
@@ -107,6 +108,9 @@ QPixmap MainWindow::currentImage()
 
 MainWindow::~MainWindow()
 {
+    // обнуляем указатель на главное окно
+    applicationInfo.mainWindow = 0;
+    // удаляем интерфейс
     delete ui;
 }
 
@@ -173,7 +177,7 @@ void MainWindow::FindParticles()
     
     ui->actionShow_particles->setChecked(true);
     
-    log(QString(tr("find %1 particle(s)")).arg(keyPoints->count()));
+    qDebug() << QString(tr("find %1 particle(s)")).arg(keyPoints->count());
 }
 
 
@@ -211,19 +215,20 @@ void MainWindow::pushCurrentImage(QString title, bool asKey, int index)
         currentKeyImageName = title;
     }
     imageStack.push(currentImage(), title, asKey, index); 
-    log(tr("push current image to stack as '%1'").arg(title));
+    
+    qDebug() << tr("push current image to stack as '%1'").arg(title);
 }
 
 void MainWindow::setCurrentImage(QPixmap pixmap)
 {
     mImage = pixmap;
     ui->graphicsView->setPixmap( pixmap);
-    log(tr("change current image"));
+    qDebug() << tr("change current image");
 }
                 
 void MainWindow::threshold(int value)
 {
-    log(tr("threshold: %1").arg(value));
+    qDebug() << tr("threshold: %1").arg(value);
     
     Mat temp = OpenCVUtils::FromQPixmap(currentImage());    
     ImageProcessing::threshold(temp, temp, value);
@@ -232,7 +237,7 @@ void MainWindow::threshold(int value)
                 
 void MainWindow::erode(int value)
 {
-    log(tr("erode: %1").arg(value));
+    qDebug() << tr("erode: %1").arg(value);
     
     Mat temp = OpenCVUtils::FromQPixmap(currentImage());
     ImageProcessing::erode(temp, temp, value);
@@ -241,7 +246,7 @@ void MainWindow::erode(int value)
 
 void MainWindow::median(int value)
 {
-    log(tr("median filter: %1").arg(value));
+    qDebug() << tr("median filter: %1").arg(value);
     Mat temp = OpenCVUtils::FromQPixmap(currentImage());
     
     int kSize = value;
@@ -265,9 +270,9 @@ void MainWindow::hsv(int channel)
     showImage(temp);  
     
     switch(channel) {
-    case 0: log(tr("switch channel to hue"));break;
-    case 1: log(tr("switch channel to staturation"));break;
-    case 2: log(tr("switch channel to value"));break;   
+    case 0: qDebug() << tr("switch channel to hue") ;break;
+    case 1: qDebug() << (tr("switch channel to staturation"));break;
+    case 2: qDebug() << (tr("switch channel to value"));break;   
     }    
 }
 
@@ -283,15 +288,15 @@ void MainWindow::rgb(int channel)
     showImage(temp);   
     
     switch(channel) {
-    case 0: log(tr("switch channel to red"));break;
-    case 1: log(tr("switch channel to green"));break;
-    case 2: log(tr("switch channel to blue"));break;   
+    case 0: qDebug() << (tr("switch channel to red"));break;
+    case 1: qDebug() << (tr("switch channel to green"));break;
+    case 2: qDebug() << (tr("switch channel to blue"));break;   
     }    
 }
 
 void MainWindow::normalize()
 {
-    log(tr("normalize"));
+    qDebug() << (tr("normalize"));
     Mat temp = OpenCVUtils::FromQPixmap(currentImage());
     cv::normalize(temp, temp,0, 255, NORM_MINMAX, temp.type());
     showImage(temp);           
@@ -299,7 +304,7 @@ void MainWindow::normalize()
 
 void MainWindow::invert()
 {
-    log(tr("invert"));
+    qDebug() << (tr("invert"));
     Mat temp = OpenCVUtils::FromQPixmap(currentImage());
     cv::bitwise_not(temp,temp);
     showImage(temp); 
@@ -307,7 +312,7 @@ void MainWindow::invert()
 
 void MainWindow::equalizehist()
 {
-    log(tr("equalize hist"));
+    qDebug() << (tr("equalize hist"));
     Mat temp = OpenCVUtils::FromQPixmap(currentImage());
     Mat rgb[3];
     cv::split(temp, rgb);
@@ -318,9 +323,8 @@ void MainWindow::equalizehist()
     showImage(temp);       
 }
 
-void MainWindow::log(QString message)
+void MainWindow::log(QString message, QtMsgType type)
 {
-    qDebug() << message;
     ui->statusBar->showMessage(message);
 }
 

@@ -60,7 +60,7 @@ QVariant MultiKeyPointsModel::data(const QModelIndex &index, int role) const
     switch(role) {
     case Qt::DisplayRole:
         if (keyPointsActive == kp) {
-            return QString(tr(">>> %1").arg(kp->title()));
+            return QString(tr("> %1").arg(kp->title()));
         } else {
             return kp->title();
         }
