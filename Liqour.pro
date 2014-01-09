@@ -35,7 +35,8 @@ SOURCES  += main.cpp\
     Widgets/qimagebrowser.cpp \
     Core/multikeypointsmodel.cpp \
     Settings/formsettings.cpp \
-    Settings/formsettingsgeneral.cpp
+    Settings/formsettingsgeneral.cpp \
+    Widgets/mmdiarea.cpp
 
 HEADERS  += mainwindow.h \
     Core/imagestack.h \
@@ -57,7 +58,8 @@ HEADERS  += mainwindow.h \
     Settings/formsettings.h \
     Settings/formsettingsgeneral.h \
     ApplicationInfo.h \
-    MainInclude.h
+    MainInclude.h \
+    Widgets/mmdiarea.h
 
 FORMS    += mainwindow.ui \
     Widgets/horizontalsliderex.ui \

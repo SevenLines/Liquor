@@ -28,13 +28,14 @@ MainWindow::MainWindow(QString imagePath, QWidget *parent) :
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);   
-    ui->graphicsView->addAction(ui->actionSave_Image); 
+
     
     // устанавливаем указатель на главное окно
     applicationInfo.mainWindow = this;
     
     lastImageIndex = -1;
     keyPoints = 0;
+    //graphicsView = 0;
     
     // set Image stack
     ui->lstImageStack->setModel(&imageStack);
@@ -54,13 +55,6 @@ MainWindow::MainWindow(QString imagePath, QWidget *parent) :
     ui->sldKeyProp->setValue(100);
     ui->sldKeyProp->toggleButtonVisible(false);
 
-    
-    // particle show checkable
-    connect(ui->actionShow_particles, SIGNAL(toggled(bool)), 
-            ui->graphicsView, SLOT(toogleKeyPoints(bool)));
-    
-    // add showparticles menu item to graphicsview   context menu 
-    ui->graphicsView->addContextMenuAction(ui->actionShow_particles);
     
     // load image is any passed as parameter to cmd
     loadImage(imagePath);
@@ -109,6 +103,8 @@ MainWindow::MainWindow(QString imagePath, QWidget *parent) :
     setCurrentKeyPoints(0);
 }
 
+
+
 QPixmap MainWindow::currentImage()
 {
     return mImage;
@@ -129,7 +125,9 @@ void MainWindow::showImage(Mat image)
 
 void MainWindow::showImage(QPixmap pixmap)
 {
-    ui->graphicsView->setPixmap(pixmap);     
+    if (ui->mdiArea->currentGraphicsView()) {
+        ui->mdiArea->currentGraphicsView()->setPixmap(pixmap);     
+    }
 }
 
 void MainWindow::showImage(QImage image)
@@ -151,9 +149,13 @@ void MainWindow::loadImage(QString path, bool setActive)
         mImage = QPixmap::fromImage(temp.copy());
     }
     
+    /*MGraphicsViewEA *view = createNewGraphicsViewWindow("");
+    setCurrentGraphicsView(view);
+    ui->mdiArea->addSubWindow(view);*/
+    ui->mdiArea->addGraphicsViewEA(QPixmap());
     
     showImage(temp.copy());
-    ui->graphicsView->fitToScreen();
+    fitToView();
     ui->actionShow_particles->setChecked(false);
     
     pushCurrentImage(QFileInfo(path).baseName(), true);
@@ -172,7 +174,10 @@ void MainWindow::FindParticles()
     ea.setImage(temp);
 
     // отключаем предыдущий набор    
-    ui->graphicsView->setKeyPoints(0);
+    if (ui->mdiArea->currentGraphicsView()) {
+        ui->mdiArea->currentGraphicsView()->setKeyPoints(0);
+    }
+    
     // создаем новый набор под ключевые точки
     KeyPoints *points = createNewKeyPoints();
     points->setTitle(currentKeyImageName);
@@ -230,7 +235,9 @@ void MainWindow::pushCurrentImage(QString title, bool asKey, int index)
 void MainWindow::setCurrentImage(QPixmap pixmap)
 {
     mImage = pixmap;
-    ui->graphicsView->setPixmap( pixmap);
+    if (ui->mdiArea->currentGraphicsView()) {
+        ui->mdiArea->currentGraphicsView()->setPixmap( pixmap);
+    }
     qDebug() << tr("change current image");
 }
                 
@@ -338,7 +345,9 @@ void MainWindow::log(QString message, QtMsgType type)
 
 void MainWindow::stackIterate(QString title)
 {
-    setCurrentImage(ui->graphicsView->pixmap());
+    if (!ui->mdiArea->currentGraphicsView()) return;
+    
+    setCurrentImage(ui->mdiArea->currentGraphicsView()->pixmap());
     int row = ui->lstImageStack->currentIndex().row();
     QString label;
     if (title.isNull()) {
@@ -373,6 +382,22 @@ void MainWindow::clearKeyPoints()
 {
     ui->SequenceAnalyzeWdg->clearKeyPoints();
 }
+/*
+void MainWindow::setCurrentGraphicsView(MGraphicsViewEA *newGraphicsView)
+{
+    graphicsView = newGraphicsView;
+    
+    if (graphicsView) {    
+        graphicsView->addAction(ui->actionSave_Image); 
+
+        // particle show checkable
+        connect(ui->actionShow_particles, SIGNAL(toggled(bool)), 
+                graphicsView, SLOT(toogleKeyPoints(bool)));
+        
+        // add showparticles menu item to graphicsview   context menu 
+        graphicsView->addContextMenuAction(ui->actionShow_particles);
+    }
+}*/
 
 KeyPoints *MainWindow::createNewKeyPoints()
 {
@@ -391,10 +416,13 @@ void MainWindow::setCurrentKeyPoints(KeyPoints *keyPoints)
         connect(ui->sldKeyProp, SIGNAL(valueChanged(int)),
                 keyPoints, SLOT(setProportion(int)));
         connect(keyPoints, SIGNAL(proportionChange(int)),
-                ui->graphicsView, SLOT(update()));
+                ui->mdiArea, SLOT(update()));
     }
     this->keyPoints = keyPoints;
-    ui->graphicsView->setKeyPoints(keyPoints);
+    
+    if (ui->mdiArea->currentGraphicsView()) {
+        ui->mdiArea->currentGraphicsView()->setKeyPoints(keyPoints);
+    }
     
     emit currentKeyPointsChanged(this->keyPoints);
     
@@ -411,6 +439,19 @@ void MainWindow::removeCurrentKeyPoints()
         keyPoints = 0;
     }
 }
+
+void MainWindow::fitToView()
+{
+    if (ui->mdiArea->currentGraphicsView()) {
+        ui->mdiArea->currentGraphicsView()->fitToScreen();
+    }
+}
+
+/*MGraphicsViewEA *MainWindow::createNewGraphicsViewWindow(QString title)
+{
+    MGraphicsViewEA *window = new MGraphicsViewEA(this);
+    return window;
+}*/
 
 void MainWindow::loadIni()
 {
@@ -513,7 +554,10 @@ void MainWindow::on_actionSave_Image_triggered()
                                                     QString(),
                                                     tr("Images (*.png)"));
     if (fileName.isNull()) return;
-    ui->graphicsView->pixmap().save(fileName, "png");
+    
+    if (ui->mdiArea->currentGraphicsView()) {
+        ui->mdiArea->currentGraphicsView()->pixmap().save(fileName, "png");
+    }
 }
 
 void MainWindow::on_lstImageStack_clicked(const QModelIndex &index)
@@ -585,7 +629,9 @@ void MainWindow::on_actionOpen_Image_triggered()
 
 void MainWindow::on_actionFit_To_View_triggered()
 {
-    ui->graphicsView->fitToScreen();
+    if (ui->mdiArea->currentGraphicsView()) {
+        ui->mdiArea->currentGraphicsView()->fitToScreen();
+    }
 }
 
 void MainWindow::setKeyPointsProportion(int value)

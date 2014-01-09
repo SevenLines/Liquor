@@ -9,6 +9,7 @@
 #include "Core/imagestack.h"
 #include "Core/keypoints.h"
 #include "Utils/opencvutils.h"
+#include "mgraphicsviewea.h"
 #include "MainInclude.h"
 
 class QSettings;
@@ -27,6 +28,7 @@ class MainWindow : public QMainWindow
 public:
     explicit MainWindow(QString imagePath, QWidget *parent = 0);
     Mat QPixmapToMat(QPixmap pixmap);
+    
     QPixmap currentImage();
 
 
@@ -103,6 +105,10 @@ private:
     QString lastImagePath;
     ImageStack imageStack;
     
+    /// текущий виджет
+    //MGraphicsViewEA *graphicsView;
+    //void setCurrentGraphicsView(MGraphicsViewEA *newGraphicsView);
+    
     QPixmap mImage;
     Mick::KeyPoints *keyPoints;
     
@@ -118,6 +124,10 @@ private slots:
     void setCurrentKeyPoints(KeyPoints *keyPoints);
     /// удаляет текущуий набор точек, если они принадлежат этому объекту
     void removeCurrentKeyPoints();
+    /// устанавливает размер изображения по окну
+    void fitToView();
+    
+    //MGraphicsViewEA *createNewGraphicsViewWindow(QString title);
     
 signals:
     void currentKeyPointsChanged(KeyPoints* keyPoints);
