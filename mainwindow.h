@@ -66,12 +66,6 @@ private slots:
     
     void on_lstImageStack_clicked(const QModelIndex &index);
 
-    void on_btnNormalize_clicked();
-    
-    void on_btnInvert_clicked();
-    
-    void on_btnEqHist_clicked();
-
     void on_cmbChannels_currentIndexChanged(const QString &arg1);
     
     void on_actionDump_keyPoints_triggered();
@@ -128,6 +122,11 @@ private slots:
 signals:
     void currentKeyPointsChanged(KeyPoints* keyPoints);
 
+    
+    // QWidget interface
+protected:
+    void dragEnterEvent(QDragEnterEvent *e);
+    void dropEvent(QDropEvent *e);
 };
 
 #endif // MAINWINDOW_H

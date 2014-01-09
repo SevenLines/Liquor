@@ -143,8 +143,11 @@ void MultiKeyPoints::getPoints()
         
         // передаем данные в список под график
         for (int i=0;i<mScale;++i) {
-            mKeys.append(graph[i].x());
-            mValues.append(graph[i].y());
+            // чтобы не добавлять в график пустые
+            if (graph[i].y() != 0) {
+                mKeys.append(graph[i].x());
+                mValues.append(graph[i].y());
+            }
         }
         
     }
@@ -198,6 +201,9 @@ void MultiKeyPoints::saveDumpToFile(QString filePath)
         
         int counter = 1;
         
+        out << tr("# number, radius (px), x position (px), y position (px)") 
+            << endl;
+        
         foreach(KeyPoints *set, keyPointsSets) {
             if (!set->isEnabled()) 
                 continue;
@@ -226,6 +232,11 @@ void MultiKeyPoints::loadDumpFromFile(QString filePath)
         
         while(!out.atEnd()) {
             QString line = out.readLine();
+            
+            // check if comment
+            if (line[0] == '#')
+                continue;
+            
             QStringList values = line.split("\t",  QString::SkipEmptyParts);
             if (values.count() == 4) {
                 Mick::KeyPoint k;

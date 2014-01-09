@@ -39,6 +39,8 @@ protected:
     void mouseMoveEvent(QMouseEvent *);
     void resizeEvent(QResizeEvent *);
     void wheelEvent(QWheelEvent *);
+    void dragMoveEvent(QDragMoveEvent *e);
+    
 };
 
 #endif // MGRAPHICSVIEW_H

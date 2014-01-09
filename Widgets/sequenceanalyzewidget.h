@@ -44,10 +44,12 @@ private:
     QString lastPath;
     
 signals:
-    /// график обноился
+    /// график обновился
     void graphUpdated();
     /// был актирован набор точек
     void keyPointsSetActivated(KeyPoints *keyPoints);
+    /// 
+    void addKeyPointsToGraph();
     
 public slots:
     /// обновить график
@@ -65,6 +67,8 @@ public slots:
     
     void saveIni(QSettings *ini);
     void loadIni(QSettings *ini);
+    
+    void setAddParticlesButtonText(QString text);
     
 private slots:
     void on_lstSets_activated(const QModelIndex &index);

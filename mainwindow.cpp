@@ -7,7 +7,7 @@
 #include <QPicture>
 #include <QSplitter>
 #include <QPropertyAnimation>
-
+#include <QUrl>
 
 #include "Utils/imageprocessing.h"
 #include "Core/emisionanalyzer.h"
@@ -90,13 +90,21 @@ MainWindow::MainWindow(QString imagePath, QWidget *parent) :
             this, SLOT(median(int)));
     
     // keyPoints graph buttons
-    connect(ui->btnAddParticleSet, SIGNAL(clicked()),
+    connect(ui->SequenceAnalyzeWdg, SIGNAL(addKeyPointsToGraph()),
             SLOT(addKeyPointsToGraph()));
     connect(ui->SequenceAnalyzeWdg, SIGNAL(graphUpdated()),
             SLOT(updateAddSetButtonState()));
     
     connect(ui->SequenceAnalyzeWdg, SIGNAL(keyPointsSetActivated(KeyPoints*)),
             SLOT(setCurrentKeyPoints(KeyPoints*)));
+    
+    // image processing buttons
+    connect(ui->btnInvert, SIGNAL(clicked()),
+            SLOT(invert()));
+    connect(ui->btnEqHist, SIGNAL(clicked()),
+            SLOT(equalizehist()));
+    connect(ui->btnNormalize, SIGNAL(clicked()),
+            SLOT(normalize()));
     
     setCurrentKeyPoints(0);
 }
@@ -349,9 +357,9 @@ void MainWindow::stackIterate(QString title)
 void MainWindow::updateAddSetButtonState()
 {
     if (!ui->SequenceAnalyzeWdg->isContains(keyPoints)) {
-        ui->btnAddParticleSet->setText(tr("Add particle set"));
+        ui->SequenceAnalyzeWdg->setAddParticlesButtonText(tr("Add particle set"));
     } else {
-        ui->btnAddParticleSet->setText(tr("Update particle set"));
+        ui->SequenceAnalyzeWdg->setAddParticlesButtonText(tr("Update particle set"));
     }
 }
 
@@ -517,22 +525,6 @@ void MainWindow::on_lstImageStack_clicked(const QModelIndex &index)
     setCurrentImage( info.Pixmap );
 }
 
-
-void MainWindow::on_btnNormalize_clicked()
-{
-    normalize();
-}
-
-void MainWindow::on_btnInvert_clicked()
-{
-    invert();
-}
-
-void MainWindow::on_btnEqHist_clicked()
-{
-    equalizehist();
-}
-
 void MainWindow::on_cmbChannels_currentIndexChanged(const QString &value)
 {
     if (value == "") showImage(currentImage());
@@ -598,7 +590,6 @@ void MainWindow::on_actionFit_To_View_triggered()
 
 void MainWindow::setKeyPointsProportion(int value)
 {
-    //this->keyPoints.setProportion(value);
     ui->sldKeyProp->setValue(value);
 }
 
@@ -612,3 +603,21 @@ void MainWindow::on_actionFind_Areas_triggered()
     FindParticleAreas();
 }
 
+
+
+void MainWindow::dragEnterEvent(QDragEnterEvent *e)
+{
+    if (e->mimeData()->hasUrls()) {
+        e->acceptProposedAction();
+    }
+}
+
+void MainWindow::dropEvent(QDropEvent *e)
+{
+    const QMimeData *mimeData = e->mimeData();
+    if (mimeData->hasUrls()) {
+        QString path = mimeData->urls().at(0).toLocalFile();
+        qDebug() << path;
+        loadImage(path);
+    }
+}

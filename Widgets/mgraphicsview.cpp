@@ -117,3 +117,9 @@ void MGraphicsView::wheelEvent(QWheelEvent *e)
         }
     }
 }
+
+
+void MGraphicsView::dragMoveEvent(QDragMoveEvent *e)
+{
+    e->acceptProposedAction();
+}

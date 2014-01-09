@@ -62,6 +62,9 @@ SequenceAnalyzeWidget::SequenceAnalyzeWidget(QWidget *parent) :
     // connect load / save buttons
     connect(ui->btnSave, SIGNAL(clicked()), SLOT(savePoints()));
     connect(ui->btnLoad, SIGNAL(clicked()), SLOT(loadPoints()));
+    
+    // add partices button
+    connect(ui->btnAddParticleSet, SIGNAL(clicked()),SIGNAL(addKeyPointsToGraph()));
             
 }
 
@@ -169,6 +172,11 @@ void SequenceAnalyzeWidget::loadIni(QSettings *ini)
     ui->btnFitToScreen->setChecked(
                 ini->value("fitGraphic", true).toBool());
     ini->endGroup();
+}
+
+void SequenceAnalyzeWidget::setAddParticlesButtonText(QString text)
+{
+    ui->btnAddParticleSet->setText(text);
 }
 
 void SequenceAnalyzeWidget::on_lstSets_activated(const QModelIndex &index)

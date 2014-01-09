@@ -71,6 +71,8 @@ void logMsgHandler(QtMsgType type, const char *message)
             break;
         }
         
+       std::cout << str.toLocal8Bit().constData() << std::endl;
+        
         // запись в лог
         QFile file(applicationInfo.logFilePath);
         if (file.open( QIODevice::Append | QIODevice::Text)) {
