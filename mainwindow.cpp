@@ -107,7 +107,7 @@ MainWindow::MainWindow(QString imagePath, QWidget *parent) :
 
 QPixmap MainWindow::currentImage()
 {
-    return mImage;
+    return ui->tabDocuments->currentFixedImage();
 }
 
 MainWindow::~MainWindow()
@@ -125,8 +125,8 @@ void MainWindow::showImage(Mat image)
 
 void MainWindow::showImage(QPixmap pixmap)
 {
-    if (ui->mdiArea->currentGraphicsView()) {
-        ui->mdiArea->currentGraphicsView()->setPixmap(pixmap);     
+    if (ui->tabDocuments->currentGraphicsView()) {
+        ui->tabDocuments->currentGraphicsView()->setPixmap(pixmap);     
     }
 }
 
@@ -145,17 +145,14 @@ void MainWindow::loadImage(QString path, bool setActive)
     
     lastImagePath = path;
    
-    if (setActive) {
+    /*if (setActive) {
         mImage = QPixmap::fromImage(temp.copy());
-    }
+    }*/
     
-    /*MGraphicsViewEA *view = createNewGraphicsViewWindow("");
-    setCurrentGraphicsView(view);
-    ui->mdiArea->addSubWindow(view);*/
-    ui->mdiArea->addGraphicsViewEA(QPixmap());
+    // добавляем
+    ui->tabDocuments->addGraphicsViewEA(QPixmap::fromImage(temp),
+                                        QFileInfo(path).fileName());
     
-    showImage(temp.copy());
-    fitToView();
     ui->actionShow_particles->setChecked(false);
     
     pushCurrentImage(QFileInfo(path).baseName(), true);
@@ -174,8 +171,8 @@ void MainWindow::FindParticles()
     ea.setImage(temp);
 
     // отключаем предыдущий набор    
-    if (ui->mdiArea->currentGraphicsView()) {
-        ui->mdiArea->currentGraphicsView()->setKeyPoints(0);
+    if (ui->tabDocuments->currentGraphicsView()) {
+        ui->tabDocuments->currentGraphicsView()->setKeyPoints(0);
     }
     
     // создаем новый набор под ключевые точки
@@ -228,6 +225,8 @@ void MainWindow::pushCurrentImage(QString title, bool asKey, int index)
         currentKeyImageName = title;
     }
     imageStack.push(currentImage(), title, asKey, index); 
+
+    ui->tabDocuments->fixCurrentImage();
     
     qDebug() << tr("push current image to stack as '%1'").arg(title);
 }
@@ -235,8 +234,8 @@ void MainWindow::pushCurrentImage(QString title, bool asKey, int index)
 void MainWindow::setCurrentImage(QPixmap pixmap)
 {
     mImage = pixmap;
-    if (ui->mdiArea->currentGraphicsView()) {
-        ui->mdiArea->currentGraphicsView()->setPixmap( pixmap);
+    if (ui->tabDocuments->currentGraphicsView()) {
+        ui->tabDocuments->currentGraphicsView()->setPixmap( pixmap);
     }
     qDebug() << tr("change current image");
 }
@@ -345,9 +344,9 @@ void MainWindow::log(QString message, QtMsgType type)
 
 void MainWindow::stackIterate(QString title)
 {
-    if (!ui->mdiArea->currentGraphicsView()) return;
+    if (!ui->tabDocuments->currentGraphicsView()) return;
     
-    setCurrentImage(ui->mdiArea->currentGraphicsView()->pixmap());
+    setCurrentImage(ui->tabDocuments->currentGraphicsView()->pixmap());
     int row = ui->lstImageStack->currentIndex().row();
     QString label;
     if (title.isNull()) {
@@ -416,12 +415,12 @@ void MainWindow::setCurrentKeyPoints(KeyPoints *keyPoints)
         connect(ui->sldKeyProp, SIGNAL(valueChanged(int)),
                 keyPoints, SLOT(setProportion(int)));
         connect(keyPoints, SIGNAL(proportionChange(int)),
-                ui->mdiArea, SLOT(update()));
+                ui->tabDocuments, SLOT(update()));
     }
     this->keyPoints = keyPoints;
     
-    if (ui->mdiArea->currentGraphicsView()) {
-        ui->mdiArea->currentGraphicsView()->setKeyPoints(keyPoints);
+    if (ui->tabDocuments->currentGraphicsView()) {
+        ui->tabDocuments->currentGraphicsView()->setKeyPoints(keyPoints);
     }
     
     emit currentKeyPointsChanged(this->keyPoints);
@@ -442,9 +441,7 @@ void MainWindow::removeCurrentKeyPoints()
 
 void MainWindow::fitToView()
 {
-    if (ui->mdiArea->currentGraphicsView()) {
-        ui->mdiArea->currentGraphicsView()->fitToScreen();
-    }
+    ui->tabDocuments->fitToTab();
 }
 
 /*MGraphicsViewEA *MainWindow::createNewGraphicsViewWindow(QString title)
@@ -555,8 +552,8 @@ void MainWindow::on_actionSave_Image_triggered()
                                                     tr("Images (*.png)"));
     if (fileName.isNull()) return;
     
-    if (ui->mdiArea->currentGraphicsView()) {
-        ui->mdiArea->currentGraphicsView()->pixmap().save(fileName, "png");
+    if (ui->tabDocuments->currentGraphicsView()) {
+        ui->tabDocuments->currentGraphicsView()->pixmap().save(fileName, "png");
     }
 }
 
@@ -629,8 +626,8 @@ void MainWindow::on_actionOpen_Image_triggered()
 
 void MainWindow::on_actionFit_To_View_triggered()
 {
-    if (ui->mdiArea->currentGraphicsView()) {
-        ui->mdiArea->currentGraphicsView()->fitToScreen();
+    if (ui->tabDocuments->currentGraphicsView()) {
+        ui->tabDocuments->currentGraphicsView()->fitToScreen();
     }
 }
 

@@ -36,6 +36,7 @@ public:
     
 private slots:
    
+    /// изменение изображение текущего таба
     void showImage(Mat image);
     void showImage(QPixmap pixmap);
     void showImage(QImage image);
