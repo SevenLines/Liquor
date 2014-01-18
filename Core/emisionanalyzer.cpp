@@ -14,6 +14,7 @@ using namespace boost;
 EmisionAnalyzer::EmisionAnalyzer()
 {
     progressCallback = 0;
+    keyPoints = 0;
 }
 
 void EmisionAnalyzer::setImage(Mat &image)
@@ -58,6 +59,16 @@ void EmisionAnalyzer::setMaxRadius(int value)
 int EmisionAnalyzer::maxRadius()
 {
     return gMaxRadius;
+}
+
+void EmisionAnalyzer::setKeyPoints(KeyPoints *keyPoints)
+{
+    this->keyPoints = keyPoints;
+}
+
+KeyPoints *EmisionAnalyzer::getKeyPoints()
+{
+    return this->keyPoints;
 }
 
 void EmisionAnalyzer::getMinMax(QList<Point> area,
@@ -186,12 +197,16 @@ void __getAreaPoints(cv::Point const &point, MatXX &,
  * @param in, CV_8UC3 Mat image
  * @return image representaion of findin pixels
  */
-void EmisionAnalyzer::findCircles(KeyPoints &keyPoints)
+void EmisionAnalyzer::findCircles()
 {
     if ( gImage.empty() ) {
         qWarning() << "image is not set!";
         return;
     }    
+    if (keyPoints == 0) {
+        qWarning() << "keypoints is not set";
+        return;
+    }
     
     // изображение для хранения хначений пикселей
     Mat valueImageOrigin = Mat::zeros(gImage.rows, gImage.cols, CV_16SC1);
@@ -276,8 +291,8 @@ void EmisionAnalyzer::findCircles(KeyPoints &keyPoints)
             // проверяем не находится ли центр масс области 
             // в зоне действия какой-либо другой точки
             bool fWas = false;
-            for(int i=0;i<keyPoints.count();++i) {
-                Mick::KeyPoint &k = keyPoints[i];
+            for(int i=0;i<keyPoints->count();++i) {
+                Mick::KeyPoint &k = (*keyPoints)[i];
                 int diff = (k.pos() - key.pos()).manhattanLength();
                 if ( diff - k.value() - key.value() < 0 ) {
                     fWas = true;
@@ -286,9 +301,10 @@ void EmisionAnalyzer::findCircles(KeyPoints &keyPoints)
             }
             // если наложений не было добавляем точку
             if (!fWas)
-                keyPoints.addKey(key);
+                keyPoints->addKey(key);
         }
     }
+    emit finishedLookingForCircles(this);
 }
 
 void EmisionAnalyzer::findBlackAreas(QList<QList<Point> > &areas)

@@ -8,6 +8,8 @@
 #include <QSplitter>
 #include <QPropertyAnimation>
 #include <QUrl>
+#include <QThread>
+#include <QDialog>
 
 #include "Utils/imageprocessing.h"
 #include "Core/emisionanalyzer.h"
@@ -166,31 +168,42 @@ void MainWindow::FindParticles()
     
     Mat temp =  OpenCVUtils::FromQPixmap(currentImage());
 
-    EmisionAnalyzer ea;
-    
-    ea.setMaxRadius(100);
-    ea.setMinRadius(5);
-    ea.setImage(temp);
-/*
-    // отключаем предыдущий набор    
-    if (ui->tabDocuments->currentGraphicsView()) {
-        ui->tabDocuments->currentGraphicsView()->setKeyPoints(0);
-    }*/
-    
     // создаем новый набор под ключевые точки
     KeyPoints *points = createNewKeyPoints();
     points->setTitle(currentKeyImageName);
     
-    // ищем частицы
-    ea.findCircles(*points);
-    qDebug() << QString(tr("find %1 particle(s)")).arg(points->count());
+    EmisionAnalyzer *ea = new EmisionAnalyzer;
+    ea->setMaxRadius(100);
+    ea->setMinRadius(5);
+    ea->setImage(temp);
+    ea->setKeyPoints(points);
     
-    ui->tabDocuments->setKeyPoints(points, true);
+    QThread *thread = new QThread;
+    ea->moveToThread(thread);
     
-    setCurrentStateAccordingActiveTab();
+    progressDialog.setLabel(tr("Looking for particles..."));
+    progressDialog.showCancelButton(false);
+    progressDialog.showProgressBar(false);
     
-    ui->actionShow_particles->setChecked(true);
+    // подключаем сигналы отвечающие за удаление потока 
+    // и обработчика после поиска частиц
+    connect(thread, SIGNAL(started()),
+            &progressDialog, SLOT(show()));
+    connect(thread, SIGNAL(started()), 
+            ea, SLOT(findCircles()));
+    connect(ea, SIGNAL(finishedLookingForCircles(EmisionAnalyzer*)), 
+            thread, SLOT(quit()));
+    connect(ea, SIGNAL(finishedLookingForCircles(EmisionAnalyzer*)), 
+            ea, SLOT(deleteLater()));  
+    connect(ea, SIGNAL(finishedLookingForCircles(EmisionAnalyzer*)),
+            SLOT(finishLookingForCircles(EmisionAnalyzer*))); 
+    connect(thread, SIGNAL(finished()),
+            &progressDialog, SLOT(hide()));
+    connect(thread, SIGNAL(finished()), 
+            thread, SLOT(deleteLater()));
     
+    // запускаю поток
+    thread->start();
 }
 
 
@@ -416,6 +429,17 @@ void MainWindow::setCurrentStateAccordingActiveTab()
     }
     // обновляем кнопку
     updateAddSetButtonState();
+}
+
+void MainWindow::finishLookingForCircles(EmisionAnalyzer *sender)
+{
+    qDebug() << QString(tr("find %1 particle(s)"))
+                .arg(sender->getKeyPoints()->count());
+    
+    ui->tabDocuments->setKeyPoints(sender->getKeyPoints(), true);
+    ui->actionShow_particles->setChecked(true);
+    
+    setCurrentStateAccordingActiveTab();
 }
 
 

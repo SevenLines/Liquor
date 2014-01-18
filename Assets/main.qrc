@@ -2,4 +2,9 @@
     <qresource prefix="/logos">
         <file>logo_3.png</file>
     </qresource>
+    <qresource prefix="/images">
+        <file>loading.gif</file>
+        <file>loading2.gif</file>
+        <file>loading5.gif</file>
+    </qresource>
 </RCC>

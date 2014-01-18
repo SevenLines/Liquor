@@ -37,7 +37,8 @@ SOURCES  += main.cpp\
     Settings/formsettings.cpp \
     Settings/formsettingsgeneral.cpp \
     Widgets/tabdocumentswidget.cpp \
-    Widgets/progressdialog.cpp
+    Widgets/progressdialog.cpp \
+    Core/pointvalue.cpp
 
 HEADERS  += mainwindow.h \
     Core/imagestack.h \
@@ -61,7 +62,8 @@ HEADERS  += mainwindow.h \
     ApplicationInfo.h \
     MainInclude.h \
     Widgets/tabdocumentswidget.h \
-    Widgets/progressdialog.h
+    Widgets/progressdialog.h \
+    Core/pointvalue.h
 
 FORMS    += mainwindow.ui \
     Widgets/horizontalsliderex.ui \
@@ -120,6 +122,8 @@ OTHER_FILES += \
     VERSION.txt \
     BUILD.txt \
     Assets/logo_3.png \
+    Assets/loading.gif \
+    Assets/loading2.gif
 
 # copy linquist files
 for(FILE, TRANSLATIONS) {

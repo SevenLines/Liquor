@@ -1,11 +1,26 @@
 #include "progressdialog.h"
 #include "ui_progressdialog.h"
 
+#include <QMovie>
+#include <QDebug>
+
 ProgressDialog::ProgressDialog(QWidget *parent) :
-    QDialog(parent),
+    QDialog(parent, Qt::FramelessWindowHint),
     ui(new Ui::ProgressDialog)
 {
     ui->setupUi(this);
+    //ui->wdgAnimate->init(, QSize());
+    
+    movieIcon = new QMovie(":images/loading5.gif");
+    movieIcon->setParent(this);
+    movieIcon->start();
+    
+    movieIconSmall= new QMovie(":images/loading2.gif");
+    movieIconSmall->setParent(this);
+    movieIconSmall->start();
+    
+    ui->lblIcon2->setMovie(movieIconSmall);
+    ui->lblIcon->setMovie(movieIcon);
 }
 
 ProgressDialog::~ProgressDialog()
@@ -26,6 +41,11 @@ QString ProgressDialog::label()
 void ProgressDialog::showCancelButton(bool fShow)
 {
     ui->btnCancel->setVisible(fShow);
+}
+
+void ProgressDialog::showProgressBar(bool fShow)
+{
+    ui->progressBar->setVisible(fShow);
 }
 
 void ProgressDialog::setProgress(int value)

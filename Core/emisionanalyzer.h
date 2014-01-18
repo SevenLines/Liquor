@@ -4,40 +4,24 @@
 #include <opencv/cv.hpp>
 #include <boost/tuple/tuple.hpp>
 #include "keypoints.h"
+#include "pointvalue.h"
+#include <QObject>
 
 using namespace boost::tuples;
 using namespace cv;
 using namespace Mick;
 
 
-
-struct PointValue
+class EmisionAnalyzer  : public QObject
 {
-    cv::Point point;
-    int value;
-    
-public :
-    
-    PointValue() {
-        PointValue(cv::Point(), 0);
-    }
-    
-    PointValue(cv::Point point, int value) 
-    {
-        this->point = point;
-        this->value = value;
-    }
-    
-};
-
-
-class EmisionAnalyzer
-{
+    Q_OBJECT
     
 private:
 
     int gMinRadius;
     int gMaxRadius;
+    
+    KeyPoints *keyPoints;
     
     Mat gImage; // копия изображения, тип CV_8U
     Mat1b gImageRef; // для упрощения доступа к изображению
@@ -63,7 +47,7 @@ private:
      * @param flagImage -- изображения для фиксирования пройденных точек, CV_8U
      */
     void getBlackArea(Point point, QList<cv::Point> &areaPoints, Mat1b &flagImage);
-    
+
 public:
     
     /// функция вызывается при каждом изменении прогресса
@@ -76,7 +60,6 @@ public:
         EA_EMPTY = 255
     }; 
     
-    
     EmisionAnalyzer();
     
     // only binary images accepted
@@ -88,6 +71,9 @@ public:
     
     void setMaxRadius(int value);
     int maxRadius();
+    
+    void setKeyPoints(KeyPoints *keyPoints);
+    KeyPoints *getKeyPoints();
 
     
     /**
@@ -101,11 +87,13 @@ public:
      */
     bool isOnEdge(cv::Point point);
 
+public slots:
 
+    
     /**
      * @brief поиск заполненых окружностей на изображении
      */
-    void findCircles(KeyPoints &keyPoints);
+    void findCircles();
     
     /**
      * @brief Заполняет массив areas списком областей у которых в 1-ом канале 
@@ -113,6 +101,9 @@ public:
      * @param areas -- список под точки
      */
     void findBlackAreas(QList<QList<cv::Point> > &areas);  
+    
+signals:
+    void finishedLookingForCircles(EmisionAnalyzer *sender);
     
 };
 

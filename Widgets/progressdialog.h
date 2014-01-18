@@ -18,7 +18,8 @@ public:
     void setLabel(QString label);
     QString label();
     
-    void showCancelButton(bool fShow);
+    void showCancelButton(bool fShow = true);
+    void showProgressBar(bool fShow = true);
     
     void setProgress(int value);
     void setMax(int value);
@@ -30,6 +31,8 @@ public:
     
     
 private:
+    QMovie *movieIcon;
+    QMovie *movieIconSmall;
     Ui::ProgressDialog *ui;
 };
 

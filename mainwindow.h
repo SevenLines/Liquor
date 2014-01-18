@@ -3,6 +3,7 @@
 
 #include <QMainWindow>
 #include <QDebug>
+#include <emisionanalyzer.h>
 #include <opencv/cv.h>
 #include <opencv/highgui.h>
 
@@ -11,6 +12,7 @@
 #include "Utils/opencvutils.h"
 #include "mgraphicsviewea.h"
 #include "MainInclude.h"
+#include "progressdialog.h"
 
 class QSettings;
 
@@ -104,11 +106,7 @@ private:
     Ui::MainWindow *ui;
     Mat lastShowedImage;
     QString lastImagePath;
-    
-    
-    /// текущий виджет
-    //MGraphicsViewEA *graphicsView;
-    //void setCurrentGraphicsView(MGraphicsViewEA *newGraphicsView);
+    ProgressDialog progressDialog;
     
     QPixmap mImage;
     Mick::KeyPoints *keyPoints;
@@ -125,17 +123,18 @@ private slots:
     /// устанавливает размер изображения по окну
     void fitToView();
     
+    /// установить пропорции текущего набора ключевых точек 
     void setCurrentKeyPointsProportions(int value);
     
+    /// устаналивает виджеты в соответствии с текущим выбраным изображением
+    /// (история, слайдеры и т.д.)
     void setCurrentStateAccordingActiveTab();
     
-    //MGraphicsViewEA *createNewGraphicsViewWindow(QString title);
+    /// вызывается когда приложение окончило поиск частиц
+    void finishLookingForCircles(EmisionAnalyzer *sender);
     
 signals:
-    void currentKeyPointsChanged(KeyPoints* keyPoints);
-
     
-    // QWidget interface
 protected:
     void dragEnterEvent(QDragEnterEvent *e);
     void dropEvent(QDropEvent *e);
