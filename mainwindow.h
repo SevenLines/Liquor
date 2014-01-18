@@ -104,7 +104,7 @@ private:
     Ui::MainWindow *ui;
     Mat lastShowedImage;
     QString lastImagePath;
-    ImageStack imageStack;
+    
     
     /// текущий виджет
     //MGraphicsViewEA *graphicsView;
@@ -121,12 +121,13 @@ private:
     KeyPoints *createNewKeyPoints();
     
 private slots:
-    /// устанавливает текущим набором точек
-    void setCurrentKeyPoints(KeyPoints *keyPoints);
-    /// удаляет текущуий набор точек, если они принадлежат этому объекту
-    void removeCurrentKeyPoints();
+
     /// устанавливает размер изображения по окну
     void fitToView();
+    
+    void setCurrentKeyPointsProportions(int value);
+    
+    void setCurrentStateAccordingActiveTab();
     
     //MGraphicsViewEA *createNewGraphicsViewWindow(QString title);
     

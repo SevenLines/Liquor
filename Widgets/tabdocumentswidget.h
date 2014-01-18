@@ -3,6 +3,10 @@
 
 #include <QTabWidget>
 #include "mgraphicsviewea.h"
+#include "imagestack.h"
+#include "keypoints.h"
+
+using namespace Mick;
 
 class TabDocumentsWidget : public QTabWidget
 {
@@ -13,17 +17,22 @@ public:
     
 private:
     
+    
+    
     /// специальное расширение класс под табы
     class MGraphicsViewEATab : public MGraphicsViewEA 
     {
+    friend class TabDocumentsWidget;
     private:
         QPixmap fixedImage;
+        ImageStack imageStack;
     public:
         explicit MGraphicsViewEATab(QWidget *parent = 0);
         
         /// фиксирует текущее изображение
-        void fixCurrentImage();
-        QPixmap currentFixedImage();  
+        void fixCurrentImage(QString title, bool asKey = false, int pos = -1);
+        void setKeyPoints(Mick::KeyPoints *keyPoints, bool takeParentship);
+        Mick::KeyPoints *getKeyPoints();
     };
     
     MGraphicsViewEATab *__currentGraphicsView();
@@ -41,7 +50,13 @@ public slots:
     /// зафиксированное изображение текущего таба
     QPixmap currentFixedImage();
     /// фиксирует текущее изображение
-    QPixmap fixCurrentImage();
+    void fixCurrentImage(QString title, bool asKey = false, int pos = -1);
+    
+    ImageStack *currentImageStack();
+    Mick::KeyPoints *currentKeyPoints();
+    
+    // set wiget keyPoints and take parenting under it
+    void setKeyPoints(KeyPoints *keyPoints, bool takeParentship = false);
     
     /// закруть текущую вкладку
     void closeTab(int index);

@@ -20,9 +20,16 @@ TabDocumentsWidget::MGraphicsViewEATab *TabDocumentsWidget::__currentGraphicsVie
 MGraphicsViewEA *TabDocumentsWidget::addGraphicsViewEA(QPixmap pixmap, QString title)
 {
     MGraphicsViewEATab *viewTab = new MGraphicsViewEATab();
+    
+    // еняем политику изменения размеров
+    QSizePolicy sizePolicy = viewTab->sizePolicy();
+    sizePolicy.setHorizontalPolicy(QSizePolicy::Preferred);
+    sizePolicy.setVerticalPolicy(QSizePolicy::Preferred);
+    viewTab->setSizePolicy(sizePolicy);
+    
     viewTab->setPixmap(pixmap);
     // фиксируем текущее изображение
-    viewTab->fixCurrentImage();
+    viewTab->fixCurrentImage(title);
     
     // создаем новый таб
     int windowIndex = addTab(viewTab, QIcon(), title);
@@ -62,20 +69,49 @@ QPixmap TabDocumentsWidget::currentFixedImage()
 {
     MGraphicsViewEATab *viewTab = __currentGraphicsView();
     if (viewTab)
-        return viewTab->currentFixedImage();
+        return viewTab->fixedImage;
     return QPixmap();
 }
 
-QPixmap TabDocumentsWidget::fixCurrentImage()
+void TabDocumentsWidget::fixCurrentImage(QString title, bool asKey, int pos)
 {
     MGraphicsViewEATab *viewTab = __currentGraphicsView();
     if (viewTab)
-        viewTab->fixCurrentImage();
+        viewTab->fixCurrentImage(title, asKey, pos);
+}
+
+ImageStack *TabDocumentsWidget::currentImageStack()
+{
+    MGraphicsViewEATab *viewTab = __currentGraphicsView();
+    if (viewTab)
+        return &viewTab->imageStack;
+    return 0;
+}
+
+Mick::KeyPoints *TabDocumentsWidget::currentKeyPoints()
+{
+    MGraphicsViewEATab *viewTab = __currentGraphicsView();
+    if (viewTab)
+        return viewTab->keyPoints;
+    return 0; 
+}
+
+void TabDocumentsWidget::setKeyPoints(Mick::KeyPoints *keyPoints, bool takeParentship)
+{
+    MGraphicsViewEATab *viewTab = __currentGraphicsView();
+    if (viewTab) {
+        keyPoints->setTitle(tabText(currentIndex()));
+        viewTab->setKeyPoints(keyPoints, takeParentship);
+    }
 }
 
 void TabDocumentsWidget::closeTab(int index)
 {
-    removeTab(index);
+    QWidget *wgt = widget(index);
+    if (wgt) {
+        wgt->close();
+        delete wgt;
+    }
 }
 
 void TabDocumentsWidget::fitToTab()
@@ -94,12 +130,23 @@ TabDocumentsWidget::MGraphicsViewEATab::MGraphicsViewEATab(QWidget *parent)
 {    
 }
 
-void TabDocumentsWidget::MGraphicsViewEATab::fixCurrentImage()
+void TabDocumentsWidget::MGraphicsViewEATab::fixCurrentImage(QString title, bool asKey, int pos)
 {
     fixedImage = pixmap();
+    
+    imageStack.push(pixmap(), title, asKey, pos);
+    qDebug() << tr("push current image to stack as '%1'").arg(title);
 }
 
-QPixmap TabDocumentsWidget::MGraphicsViewEATab::currentFixedImage()
+void TabDocumentsWidget::MGraphicsViewEATab::setKeyPoints(Mick::KeyPoints *keyPoints, bool takeParentship)
 {
-    return fixedImage;
+    MGraphicsViewEA::setKeyPoints(keyPoints);
+    if (takeParentship) {
+        keyPoints->setParent(this);
+    }
+}
+
+Mick::KeyPoints *TabDocumentsWidget::MGraphicsViewEATab::getKeyPoints()
+{
+    return keyPoints;
 }

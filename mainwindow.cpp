@@ -34,11 +34,11 @@ MainWindow::MainWindow(QString imagePath, QWidget *parent) :
     applicationInfo.mainWindow = this;
     
     lastImageIndex = -1;
-    keyPoints = 0;
+    // keyPoints = 0;
     //graphicsView = 0;
     
     // set Image stack
-    ui->lstImageStack->setModel(&imageStack);
+    // ui->lstImageStack->setModel(&imageStack);
     
     // fill channels combobox
     ui->cmbChannels->addItem("");
@@ -55,12 +55,18 @@ MainWindow::MainWindow(QString imagePath, QWidget *parent) :
     ui->sldKeyProp->setValue(100);
     ui->sldKeyProp->toggleButtonVisible(false);
 
+    // tab widget
+    connect(ui->tabDocuments, SIGNAL(currentChanged(int)),
+            SLOT(setCurrentStateAccordingActiveTab()));
     
     // load image is any passed as parameter to cmd
     loadImage(imagePath);
       
     // load saved presets
     loadIni();
+    
+    connect(ui->SequenceAnalyzeWdg, SIGNAL(keyPointsSetActivated(KeyPoints*)),
+            ui->tabDocuments, SLOT(setKeyPoints(KeyPoints*)));
     
     // threshold control init
     ui->sldThreshold->setMax(255);
@@ -76,6 +82,7 @@ MainWindow::MainWindow(QString imagePath, QWidget *parent) :
     connect(ui->sldErode, SIGNAL(valueChanged(int)),
             this, SLOT(erode(int)));  
     
+    
     // median control init
     ui->sldMedian->setMax(50);
     connect(ui->sldMedian, SIGNAL(apply()),
@@ -89,9 +96,6 @@ MainWindow::MainWindow(QString imagePath, QWidget *parent) :
     connect(ui->SequenceAnalyzeWdg, SIGNAL(graphUpdated()),
             SLOT(updateAddSetButtonState()));
     
-    connect(ui->SequenceAnalyzeWdg, SIGNAL(keyPointsSetActivated(KeyPoints*)),
-            SLOT(setCurrentKeyPoints(KeyPoints*)));
-    
     // image processing buttons
     connect(ui->btnInvert, SIGNAL(clicked()),
             SLOT(invert()));
@@ -100,7 +104,11 @@ MainWindow::MainWindow(QString imagePath, QWidget *parent) :
     connect(ui->btnNormalize, SIGNAL(clicked()),
             SLOT(normalize()));
     
-    setCurrentKeyPoints(0);
+    // sldKeyProp;
+    connect(ui->sldKeyProp, SIGNAL(valueChanged(int)),
+            SLOT(setCurrentKeyPointsProportions(int)));
+    
+    //setCurrentKeyPoints(0);
 }
 
 
@@ -144,18 +152,12 @@ void MainWindow::loadImage(QString path, bool setActive)
     temp.load(path);
     
     lastImagePath = path;
-   
-    /*if (setActive) {
-        mImage = QPixmap::fromImage(temp.copy());
-    }*/
     
     // добавляем
     ui->tabDocuments->addGraphicsViewEA(QPixmap::fromImage(temp),
                                         QFileInfo(path).fileName());
     
     ui->actionShow_particles->setChecked(false);
-    
-    pushCurrentImage(QFileInfo(path).baseName(), true);
 }
 
 void MainWindow::FindParticles()
@@ -169,25 +171,26 @@ void MainWindow::FindParticles()
     ea.setMaxRadius(100);
     ea.setMinRadius(5);
     ea.setImage(temp);
-
+/*
     // отключаем предыдущий набор    
     if (ui->tabDocuments->currentGraphicsView()) {
         ui->tabDocuments->currentGraphicsView()->setKeyPoints(0);
-    }
+    }*/
     
     // создаем новый набор под ключевые точки
     KeyPoints *points = createNewKeyPoints();
     points->setTitle(currentKeyImageName);
+    
     // ищем частицы
     ea.findCircles(*points);
-    setCurrentKeyPoints(points);
-    // сохраняем обработанное изображение
-    // stackIterate(tr("analyze"));
+    qDebug() << QString(tr("find %1 particle(s)")).arg(points->count());
     
+    ui->tabDocuments->setKeyPoints(points, true);
+    
+    setCurrentStateAccordingActiveTab();
     
     ui->actionShow_particles->setChecked(true);
     
-    qDebug() << QString(tr("find %1 particle(s)")).arg(keyPoints->count());
 }
 
 
@@ -224,11 +227,7 @@ void MainWindow::pushCurrentImage(QString title, bool asKey, int index)
     if (asKey) {
         currentKeyImageName = title;
     }
-    imageStack.push(currentImage(), title, asKey, index); 
-
-    ui->tabDocuments->fixCurrentImage();
-    
-    qDebug() << tr("push current image to stack as '%1'").arg(title);
+    ui->tabDocuments->fixCurrentImage(title, asKey, index);
 }
 
 void MainWindow::setCurrentImage(QPixmap pixmap)
@@ -346,6 +345,8 @@ void MainWindow::stackIterate(QString title)
 {
     if (!ui->tabDocuments->currentGraphicsView()) return;
     
+    if (!ui->lstImageStack->model()) return;
+    
     setCurrentImage(ui->tabDocuments->currentGraphicsView()->pixmap());
     int row = ui->lstImageStack->currentIndex().row();
     QString label;
@@ -364,6 +365,7 @@ void MainWindow::stackIterate(QString title)
 
 void MainWindow::updateAddSetButtonState()
 {
+    KeyPoints *keyPoints = ui->tabDocuments->currentKeyPoints(); 
     if (!ui->SequenceAnalyzeWdg->isContains(keyPoints)) {
         ui->SequenceAnalyzeWdg->setAddParticlesButtonText(tr("Add particle set"));
     } else {
@@ -373,6 +375,7 @@ void MainWindow::updateAddSetButtonState()
 
 void MainWindow::addKeyPointsToGraph()
 {
+    KeyPoints *keyPoints = ui->tabDocuments->currentKeyPoints(); 
     ui->LeftTabWidget->setCurrentIndex(1);
     ui->SequenceAnalyzeWdg->addKeyPoints(keyPoints);
 }
@@ -381,62 +384,12 @@ void MainWindow::clearKeyPoints()
 {
     ui->SequenceAnalyzeWdg->clearKeyPoints();
 }
-/*
-void MainWindow::setCurrentGraphicsView(MGraphicsViewEA *newGraphicsView)
-{
-    graphicsView = newGraphicsView;
-    
-    if (graphicsView) {    
-        graphicsView->addAction(ui->actionSave_Image); 
-
-        // particle show checkable
-        connect(ui->actionShow_particles, SIGNAL(toggled(bool)), 
-                graphicsView, SLOT(toogleKeyPoints(bool)));
-        
-        // add showparticles menu item to graphicsview   context menu 
-        graphicsView->addContextMenuAction(ui->actionShow_particles);
-    }
-}*/
 
 KeyPoints *MainWindow::createNewKeyPoints()
 {
     KeyPoints *keyPoints = new KeyPoints(this);
+    keyPoints->setProportion(ui->sldKeyProp->value());
     return keyPoints;
-}
-
-void MainWindow::setCurrentKeyPoints(KeyPoints *keyPoints)
-{
-    if (this->keyPoints) {   
-        removeCurrentKeyPoints();
-    }
-    // подключаем сигналы
-    if (keyPoints) {
-        keyPoints->setProportion(ui->sldKeyProp->value());
-        connect(ui->sldKeyProp, SIGNAL(valueChanged(int)),
-                keyPoints, SLOT(setProportion(int)));
-        connect(keyPoints, SIGNAL(proportionChange(int)),
-                ui->tabDocuments, SLOT(update()));
-    }
-    this->keyPoints = keyPoints;
-    
-    if (ui->tabDocuments->currentGraphicsView()) {
-        ui->tabDocuments->currentGraphicsView()->setKeyPoints(keyPoints);
-    }
-    
-    emit currentKeyPointsChanged(this->keyPoints);
-    
-    ui->SequenceAnalyzeWdg->setActive(keyPoints);
-    
-    updateAddSetButtonState();
-}
-
-void MainWindow::removeCurrentKeyPoints()
-{
-    this->keyPoints->disconnect(this);
-    if (keyPoints && keyPoints->parent() == this) {
-        delete keyPoints;
-        keyPoints = 0;
-    }
 }
 
 void MainWindow::fitToView()
@@ -444,11 +397,27 @@ void MainWindow::fitToView()
     ui->tabDocuments->fitToTab();
 }
 
-/*MGraphicsViewEA *MainWindow::createNewGraphicsViewWindow(QString title)
+void MainWindow::setCurrentKeyPointsProportions(int value)
 {
-    MGraphicsViewEA *window = new MGraphicsViewEA(this);
-    return window;
-}*/
+    KeyPoints *keyPoints = ui->tabDocuments->currentKeyPoints(); 
+    if (keyPoints) {
+        keyPoints->setProportion(value);
+    }
+}
+
+void MainWindow::setCurrentStateAccordingActiveTab()
+{
+    // меняем модель
+    ui->lstImageStack->setModel(ui->tabDocuments->currentImageStack());
+    // сдвигаем слайдер для изменеия пропорций точек
+    KeyPoints *keyPoints = ui->tabDocuments->currentKeyPoints();
+    if (keyPoints) {
+        ui->sldKeyProp->setValue(keyPoints->proportion());
+    }
+    // обновляем кнопку
+    updateAddSetButtonState();
+}
+
 
 void MainWindow::loadIni()
 {
@@ -559,11 +528,14 @@ void MainWindow::on_actionSave_Image_triggered()
 
 void MainWindow::on_lstImageStack_clicked(const QModelIndex &index)
 {
-    PixmapInfo info = this->imageStack.data(index);
-    if (info.keyImage) {
-        currentKeyImageName = info.Title;
+    ImageStack * imageStack = ui->tabDocuments->currentImageStack();
+    if (imageStack) {
+        PixmapInfo info = imageStack->data(index);
+        if (info.keyImage) {
+            currentKeyImageName = info.Title;
+        }
+        setCurrentImage( info.Pixmap );
     }
-    setCurrentImage( info.Pixmap );
 }
 
 void MainWindow::on_cmbChannels_currentIndexChanged(const QString &value)
@@ -579,7 +551,7 @@ void MainWindow::on_cmbChannels_currentIndexChanged(const QString &value)
 
 void MainWindow::on_actionDump_keyPoints_triggered()
 {
-    QString fileName 
+    /*QString fileName 
             = QFileDialog::getSaveFileName( 0,
                                             tr("Dump file the file"),
                                             QString(),
@@ -587,7 +559,7 @@ void MainWindow::on_actionDump_keyPoints_triggered()
     if (fileName.isNull()) return;
     
     if (keyPoints) 
-        keyPoints->dumpToFile(fileName);
+        keyPoints->dumpToFile(fileName);*/
 }
 
 void MainWindow::on_btnHideLeftPanel_clicked()

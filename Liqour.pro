@@ -36,7 +36,8 @@ SOURCES  += main.cpp\
     Core/multikeypointsmodel.cpp \
     Settings/formsettings.cpp \
     Settings/formsettingsgeneral.cpp \
-    Widgets/tabdocumentswidget.cpp
+    Widgets/tabdocumentswidget.cpp \
+    Widgets/progressdialog.cpp
 
 HEADERS  += mainwindow.h \
     Core/imagestack.h \
@@ -59,14 +60,16 @@ HEADERS  += mainwindow.h \
     Settings/formsettingsgeneral.h \
     ApplicationInfo.h \
     MainInclude.h \
-    Widgets/tabdocumentswidget.h
+    Widgets/tabdocumentswidget.h \
+    Widgets/progressdialog.h
 
 FORMS    += mainwindow.ui \
     Widgets/horizontalsliderex.ui \
     Widgets/sequenceanalyzewidget.ui \
     Widgets/qimagebrowser.ui \
     Settings/formsettings.ui \
-    Settings/formsettingsgeneral.ui
+    Settings/formsettingsgeneral.ui \
+    Widgets/progressdialog.ui
 
 
 

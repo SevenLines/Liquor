@@ -56,7 +56,10 @@ QPointF MGraphicsView::centerOfScene()
 
 QPixmap MGraphicsView::pixmap()
 {
-    return pixmapItem->pixmap();
+    if (pixmapItem) {
+        return pixmapItem->pixmap();
+    } 
+    return QPixmap();
 }
 
 

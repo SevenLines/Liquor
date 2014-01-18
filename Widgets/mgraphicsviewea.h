@@ -10,7 +10,7 @@ class MGraphicsViewEA : public MGraphicsView
 {
     Q_OBJECT
     
-private:
+protected:
     Mick::KeyPoints *keyPoints;
     
     QGraphicsItemGroup *keyPointsRoot;
