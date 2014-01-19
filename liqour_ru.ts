@@ -60,7 +60,7 @@
         <translation type="obsolete">ГлавноеОкно</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="529"/>
+        <location filename="mainwindow.ui" line="523"/>
         <source>Sequence analyze</source>
         <translation>Последовательность изображений</translation>
     </message>
@@ -99,7 +99,7 @@
         <translation>Порог</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="428"/>
+        <location filename="mainwindow.ui" line="490"/>
         <source>&lt;</source>
         <translation>&lt;</translation>
     </message>
@@ -138,82 +138,82 @@
         <translation>Каналы</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="360"/>
+        <location filename="mainwindow.cpp" line="366"/>
         <source>Add particle set</source>
         <translation>Добавить набор</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="496"/>
+        <location filename="mainwindow.ui" line="432"/>
         <source>...</source>
         <translation type="unfinished">...</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="557"/>
+        <location filename="mainwindow.ui" line="551"/>
         <source>View</source>
         <translation>Вид
 </translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="573"/>
+        <location filename="mainwindow.ui" line="567"/>
         <source>Analyze</source>
         <translation>Анализ
 </translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="592"/>
+        <location filename="mainwindow.ui" line="586"/>
         <source>Exit</source>
         <translation>Выход
 </translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="616"/>
+        <location filename="mainwindow.ui" line="610"/>
         <source>Open Image...</source>
         <translation>Открыть изображение...</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="619"/>
+        <location filename="mainwindow.ui" line="613"/>
         <source>Ctrl+O</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="624"/>
+        <location filename="mainwindow.ui" line="618"/>
         <source>Fit To View</source>
         <translation>На экран</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="627"/>
+        <location filename="mainwindow.ui" line="621"/>
         <source>Ctrl+1</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="632"/>
+        <location filename="mainwindow.ui" line="626"/>
         <source>Find particles</source>
         <translation>Найти частицы</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="635"/>
+        <location filename="mainwindow.ui" line="629"/>
         <source>Ctrl+E</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="640"/>
+        <location filename="mainwindow.ui" line="634"/>
         <source>Find areas</source>
         <translation>Найти области
 </translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="643"/>
+        <location filename="mainwindow.ui" line="637"/>
         <source>Find asreas</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="651"/>
+        <location filename="mainwindow.ui" line="645"/>
         <source>Show particles</source>
         <translation>Отображать частицы</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="216"/>
-        <location filename="mainwindow.ui" line="580"/>
+        <location filename="mainwindow.ui" line="574"/>
         <source>Particles</source>
         <translation>Частицы</translation>
     </message>
@@ -230,7 +230,7 @@
         <translation type="obsolete">Вид</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="563"/>
+        <location filename="mainwindow.ui" line="557"/>
         <source>File</source>
         <translation>Файл</translation>
     </message>
@@ -247,78 +247,83 @@
         <translation type="obsolete">выйти</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="595"/>
+        <location filename="mainwindow.ui" line="589"/>
         <source>Ctrl+Q</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="600"/>
+        <location filename="mainwindow.ui" line="594"/>
         <source>Save image...</source>
         <translation>Сохранить изображение...</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="603"/>
+        <location filename="mainwindow.ui" line="597"/>
         <source>Ctrl+S</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="608"/>
+        <location filename="mainwindow.ui" line="602"/>
         <source>Dump key points</source>
         <translation>Сохранить дамп точек</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="611"/>
+        <location filename="mainwindow.ui" line="605"/>
         <source>Ctrl+Shift+D</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="44"/>
-        <location filename="mainwindow.cpp" line="531"/>
+        <location filename="mainwindow.cpp" line="43"/>
+        <location filename="mainwindow.cpp" line="580"/>
         <source>Red</source>
         <translation>Красный</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="45"/>
-        <location filename="mainwindow.cpp" line="532"/>
+        <location filename="mainwindow.cpp" line="44"/>
+        <location filename="mainwindow.cpp" line="581"/>
         <source>Green</source>
         <translation>Зеленый</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="46"/>
-        <location filename="mainwindow.cpp" line="533"/>
+        <location filename="mainwindow.cpp" line="45"/>
+        <location filename="mainwindow.cpp" line="582"/>
         <source>Blue</source>
         <translation>Синий</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="47"/>
-        <location filename="mainwindow.cpp" line="534"/>
+        <location filename="mainwindow.cpp" line="46"/>
+        <location filename="mainwindow.cpp" line="583"/>
         <source>Hue</source>
         <translation>Оттенок</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="48"/>
-        <location filename="mainwindow.cpp" line="535"/>
+        <location filename="mainwindow.cpp" line="47"/>
+        <location filename="mainwindow.cpp" line="584"/>
         <source>Saturation</source>
         <translation>Насыщеность</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="49"/>
-        <location filename="mainwindow.cpp" line="536"/>
+        <location filename="mainwindow.cpp" line="48"/>
+        <location filename="mainwindow.cpp" line="585"/>
         <source>Value</source>
         <translation>Значение</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="576"/>
+        <location filename="mainwindow.cpp" line="185"/>
+        <source>Looking for particles...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="mainwindow.cpp" line="625"/>
         <source>Open File</source>
         <translation>Открыть файл</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="578"/>
+        <location filename="mainwindow.cpp" line="627"/>
         <source>Images (*.png *.jpeg *.jpg *.xpm)</source>
         <translation>Изображения (*.png *.jpeg *.jpg *.xpm)</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="164"/>
+        <location filename="mainwindow.cpp" line="168"/>
         <source>looking for particles</source>
         <translation>Ищу частицы</translation>
     </message>
@@ -327,92 +332,91 @@
         <translation type="obsolete">Анализирую</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="188"/>
+        <location filename="mainwindow.cpp" line="425"/>
         <source>find %1 particle(s)</source>
         <translation>нашел %1 частиц(у)</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="227"/>
         <source>push current image to stack as &apos;%1&apos;</source>
-        <translation>добавил текущее изображение в стэк как &apos;%1&apos;</translation>
+        <translation type="obsolete">добавил текущее изображение в стэк как &apos;%1&apos;</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="234"/>
+        <location filename="mainwindow.cpp" line="231"/>
         <source>change current image</source>
         <translation>изменил текущее изображение</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="239"/>
+        <location filename="mainwindow.cpp" line="236"/>
         <source>threshold: %1</source>
         <translation>порог: %1</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="248"/>
+        <location filename="mainwindow.cpp" line="245"/>
         <source>erode: %1</source>
         <translation>рзъедание: %1</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="257"/>
+        <location filename="mainwindow.cpp" line="254"/>
         <source>median filter: %1</source>
         <translation>усреднение: %1</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="281"/>
+        <location filename="mainwindow.cpp" line="278"/>
         <source>switch channel to hue</source>
         <translation>сменил канал на оттенок</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="282"/>
+        <location filename="mainwindow.cpp" line="279"/>
         <source>switch channel to staturation</source>
         <translation>сменил канал на насыщенность</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="283"/>
+        <location filename="mainwindow.cpp" line="280"/>
         <source>switch channel to value</source>
         <translation>сменил канал на значение</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="299"/>
+        <location filename="mainwindow.cpp" line="296"/>
         <source>switch channel to red</source>
         <translation>выбран красный канал</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="300"/>
+        <location filename="mainwindow.cpp" line="297"/>
         <source>switch channel to green</source>
         <translation>выбран зеленый канал</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="301"/>
+        <location filename="mainwindow.cpp" line="298"/>
         <source>switch channel to blue</source>
         <translation>выбран синий канал</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="307"/>
+        <location filename="mainwindow.cpp" line="304"/>
         <source>normalize</source>
         <translation>нормализую</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="315"/>
+        <location filename="mainwindow.cpp" line="312"/>
         <source>invert</source>
         <translation>инвертирую</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="323"/>
+        <location filename="mainwindow.cpp" line="320"/>
         <source>equalize hist</source>
         <translation>выравниваю гистограмму</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="362"/>
+        <location filename="mainwindow.cpp" line="368"/>
         <source>Update particle set</source>
         <translation>Обновить набор</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="512"/>
+        <location filename="mainwindow.cpp" line="555"/>
         <source>Select the file</source>
         <translation>Выберите файл</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="514"/>
+        <location filename="mainwindow.cpp" line="557"/>
         <source>Images (*.png)</source>
         <translation>Изображения (*.png)</translation>
     </message>
@@ -425,14 +429,12 @@
         <translation type="obsolete">порог 95</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="543"/>
         <source>Dump file the file</source>
-        <translation>Сохранить дамп в файл</translation>
+        <translation type="obsolete">Сохранить дамп в файл</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="545"/>
         <source>Texts (*.txt)</source>
-        <translation>Тексты (*.txt)</translation>
+        <translation type="obsolete">Тексты (*.txt)</translation>
     </message>
 </context>
 <context>
@@ -456,6 +458,47 @@
     <message>
         <location filename="Core/multikeypointsmodel.cpp" line="63"/>
         <source>&gt; %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>ParticlesSeeker</name>
+    <message>
+        <location filename="Core/particlesseeker.cpp" line="229"/>
+        <source>Looking for black areas</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="Core/particlesseeker.cpp" line="234"/>
+        <source>Caclulate symmetry indicies</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="Core/particlesseeker.cpp" line="246"/>
+        <source>Bluring values</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="Core/particlesseeker.cpp" line="252"/>
+        <source>Looking for symmetry consistent areas</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="Core/particlesseeker.cpp" line="281"/>
+        <source>Building key points set</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>ProgressDialog</name>
+    <message>
+        <location filename="Widgets/progressdialog.ui" line="52"/>
+        <source>Label</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="Widgets/progressdialog.ui" line="74"/>
+        <source>Cancel</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -584,6 +627,14 @@ pos:(%2; %3)</source>
         <location filename="Widgets/sequenceanalyzewidget.cpp" line="141"/>
         <source>Text files (*.txt)</source>
         <translation>Текстовые файлы (*.txt)</translation>
+    </message>
+</context>
+<context>
+    <name>TabDocumentsWidget</name>
+    <message>
+        <location filename="Widgets/tabdocumentswidget.cpp" line="142"/>
+        <source>push current image to stack as &apos;%1&apos;</source>
+        <translation type="unfinished">добавил текущее изображение в стэк как &apos;%1&apos;</translation>
     </message>
 </context>
 </TS>

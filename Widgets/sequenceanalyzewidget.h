@@ -69,6 +69,7 @@ public slots:
     void loadIni(QSettings *ini);
     
     void setAddParticlesButtonText(QString text);
+    void toggleAddParticleButtonEnbaled(bool fEnabled);
     
 private slots:
     void on_lstSets_activated(const QModelIndex &index);

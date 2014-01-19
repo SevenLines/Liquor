@@ -13,11 +13,14 @@ ProgressDialog::ProgressDialog(QWidget *parent) :
     
     movieIcon = new QMovie(":images/loading5.gif");
     movieIcon->setParent(this);
-    movieIcon->start();
+
     
     movieIconSmall= new QMovie(":images/loading2.gif");
     movieIconSmall->setParent(this);
-    movieIconSmall->start();
+
+    
+    connect(ui->btnCancel, SIGNAL(clicked()),
+            SIGNAL(cancel()));
     
     ui->lblIcon2->setMovie(movieIconSmall);
     ui->lblIcon->setMovie(movieIcon);
@@ -53,6 +56,13 @@ void ProgressDialog::setProgress(int value)
     ui->progressBar->setValue(value);
 }
 
+void ProgressDialog::setProgress(int value, int max, QString label)
+{
+    setMax(max);
+    setProgress(value);
+    if (!label.isNull()) setLabel(label);
+}
+
 void ProgressDialog::setMax(int value)
 {
     ui->progressBar->setMaximum(value);
@@ -76,4 +86,19 @@ int ProgressDialog::max()
 int ProgressDialog::progress()
 {
     return ui->progressBar->value();
+}
+
+
+void ProgressDialog::showEvent(QShowEvent *)
+{
+    // запускаю анимацию
+    movieIconSmall->start();
+    movieIcon->start();
+}
+
+void ProgressDialog::hideEvent(QHideEvent *)
+{
+    // останавливаю анимацию
+    movieIconSmall->stop();
+    movieIcon->stop();
 }

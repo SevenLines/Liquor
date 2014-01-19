@@ -1,5 +1,7 @@
-#ifndef EMISIONANALYZER_H
-#define EMISIONANALYZER_H
+#ifndef PARTICLESSEEKER_H
+#define PARTICLESSEEKER_H
+
+#include "qthreadex.h"
 
 #include <opencv/cv.hpp>
 #include <boost/tuple/tuple.hpp>
@@ -11,8 +13,7 @@ using namespace boost::tuples;
 using namespace cv;
 using namespace Mick;
 
-
-class EmisionAnalyzer  : public QObject
+class ParticlesSeeker : public QThreadEx
 {
     Q_OBJECT
     
@@ -50,17 +51,13 @@ private:
 
 public:
     
-    /// функция вызывается при каждом изменении прогресса
-    /// value, min, max, object
-    void (*progressCallback)(int, int, int, void*);
-    
     enum flags{
         EA_BLACK = 0,
         EA_VISITED = 1,
         EA_EMPTY = 255
     }; 
     
-    EmisionAnalyzer();
+    ParticlesSeeker();
     
     // only binary images accepted
     void setImage(Mat &image);
@@ -86,14 +83,6 @@ public:
      * @brief Возвращает true если пиксель угловой
      */
     bool isOnEdge(cv::Point point);
-
-public slots:
-
-    
-    /**
-     * @brief поиск заполненых окружностей на изображении
-     */
-    void findCircles();
     
     /**
      * @brief Заполняет массив areas списком областей у которых в 1-ом канале 
@@ -101,10 +90,19 @@ public slots:
      * @param areas -- список под точки
      */
     void findBlackAreas(QList<QList<cv::Point> > &areas);  
+
+    /**
+     * @brief поиск заполненых окружностей на изображении
+     */
+    void findCircles();
+    
+public slots:
+    void run();
     
 signals:
-    void finishedLookingForCircles(EmisionAnalyzer *sender);
+    void finished(ParticlesSeeker *sender);
+
     
 };
 
-#endif // EMlISIONANALYZER_H
+#endif // PARTICLESSEEKER_H

@@ -3,7 +3,8 @@
 
 #include <QMainWindow>
 #include <QDebug>
-#include <emisionanalyzer.h>
+#include <qthreadex.h>
+#include <particlesseeker.h>
 #include <opencv/cv.h>
 #include <opencv/highgui.h>
 
@@ -102,6 +103,8 @@ public slots:
     // очищает точки графику
     void clearKeyPoints();
     
+    void toggleCurrentParticles(bool fShow);
+    
 private:
     Ui::MainWindow *ui;
     Mat lastShowedImage;
@@ -131,7 +134,10 @@ private slots:
     void setCurrentStateAccordingActiveTab();
     
     /// вызывается когда приложение окончило поиск частиц
-    void finishLookingForCircles(EmisionAnalyzer *sender);
+    void finishLookingForCircles(ParticlesSeeker *sender);
+    
+    /// запускает долгий процесс, открывает прогресс диалог
+    void startLongProcess(QThreadEx *process, QString title="");
     
 signals:
     

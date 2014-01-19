@@ -179,6 +179,11 @@ void SequenceAnalyzeWidget::setAddParticlesButtonText(QString text)
     ui->btnAddParticleSet->setText(text);
 }
 
+void SequenceAnalyzeWidget::toggleAddParticleButtonEnbaled(bool fEnabled)
+{
+    ui->btnAddParticleSet->setEnabled(fEnabled);
+}
+
 void SequenceAnalyzeWidget::on_lstSets_activated(const QModelIndex &index)
 {
     emit keyPointsSetActivated(multiKeyPointsModel.data(index));

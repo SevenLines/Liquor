@@ -21,7 +21,6 @@ SOURCES  += main.cpp\
     mainwindow.cpp \
     Core/imagestack.cpp \
     Core/keypoints.cpp \
-    Core/emisionanalyzer.cpp \
     Utils/imageprocessing.cpp \
     Utils/opencvutils.cpp \
     Utils/qcustomplot.cpp \
@@ -38,13 +37,14 @@ SOURCES  += main.cpp\
     Settings/formsettingsgeneral.cpp \
     Widgets/tabdocumentswidget.cpp \
     Widgets/progressdialog.cpp \
-    Core/pointvalue.cpp
+    Core/pointvalue.cpp \
+    Core/particlesseeker.cpp \
+    Core/qthreadex.cpp
 
 HEADERS  += mainwindow.h \
     Core/imagestack.h \
     Core/keypoints.h \
     Core/opencvutils_tempates.h \
-    Core/emisionanalyzer.h \
     Utils/imageprocessing.h \
     Utils/opencvutils.h \
     Utils/qcustomplot.h \
@@ -63,7 +63,9 @@ HEADERS  += mainwindow.h \
     MainInclude.h \
     Widgets/tabdocumentswidget.h \
     Widgets/progressdialog.h \
-    Core/pointvalue.h
+    Core/pointvalue.h \
+    Core/particlesseeker.h \
+    Core/qthreadex.h
 
 FORMS    += mainwindow.ui \
     Widgets/horizontalsliderex.ui \

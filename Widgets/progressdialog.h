@@ -21,19 +21,30 @@ public:
     void showCancelButton(bool fShow = true);
     void showProgressBar(bool fShow = true);
     
-    void setProgress(int value);
-    void setMax(int value);
-    void setMin(int value);
+
     
     int min();
     int max();
     int progress();
     
+public slots:
+    void setProgress(int value);
+    void setProgress(int value, int max, QString label);
+    void setMax(int value);
+    void setMin(int value);
+    
+signals:
+    void cancel();
     
 private:
     QMovie *movieIcon;
     QMovie *movieIconSmall;
     Ui::ProgressDialog *ui;
+    
+    // QWidget interface
+protected:
+    void showEvent(QShowEvent *);
+    void hideEvent(QHideEvent *);
 };
 
 #endif // PROGRESSDIALOG_H

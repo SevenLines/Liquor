@@ -10,9 +10,10 @@
 #include <QUrl>
 #include <QThread>
 #include <QDialog>
+#include <qthreadex.h>
+#include <particlesseeker.h>
 
 #include "Utils/imageprocessing.h"
-#include "Core/emisionanalyzer.h"
 
 #include "opencv2/features2d/features2d.hpp"
 #include "opencv2/nonfree/features2d.hpp"
@@ -36,12 +37,7 @@ MainWindow::MainWindow(QString imagePath, QWidget *parent) :
     applicationInfo.mainWindow = this;
     
     lastImageIndex = -1;
-    // keyPoints = 0;
-    //graphicsView = 0;
-    
-    // set Image stack
-    // ui->lstImageStack->setModel(&imageStack);
-    
+
     // fill channels combobox
     ui->cmbChannels->addItem("");
     ui->cmbChannels->addItem(tr("Red"));
@@ -60,6 +56,7 @@ MainWindow::MainWindow(QString imagePath, QWidget *parent) :
     // tab widget
     connect(ui->tabDocuments, SIGNAL(currentChanged(int)),
             SLOT(setCurrentStateAccordingActiveTab()));
+    ui->tabDocuments->addAction(ui->actionShow_particles);
     
     // load image is any passed as parameter to cmd
     loadImage(imagePath);
@@ -69,6 +66,10 @@ MainWindow::MainWindow(QString imagePath, QWidget *parent) :
     
     connect(ui->SequenceAnalyzeWdg, SIGNAL(keyPointsSetActivated(KeyPoints*)),
             ui->tabDocuments, SLOT(setKeyPoints(KeyPoints*)));
+    
+    // showParticles action
+    connect(ui->actionShow_particles, SIGNAL(toggled(bool)),
+            SLOT(toggleCurrentParticles(bool)));
     
     // threshold control init
     ui->sldThreshold->setMax(255);
@@ -172,44 +173,22 @@ void MainWindow::FindParticles()
     KeyPoints *points = createNewKeyPoints();
     points->setTitle(currentKeyImageName);
     
-    EmisionAnalyzer *ea = new EmisionAnalyzer;
-    ea->setMaxRadius(100);
-    ea->setMinRadius(5);
-    ea->setImage(temp);
-    ea->setKeyPoints(points);
+    ParticlesSeeker *particlesSeeker = new ParticlesSeeker();
+    particlesSeeker->setMaxRadius(100);
+    particlesSeeker->setMinRadius(5);
+    particlesSeeker->setImage(temp);
+    particlesSeeker->setKeyPoints(points);
     
-    QThread *thread = new QThread;
-    ea->moveToThread(thread);
-    
-    progressDialog.setLabel(tr("Looking for particles..."));
-    progressDialog.showCancelButton(false);
-    progressDialog.showProgressBar(false);
-    
-    // подключаем сигналы отвечающие за удаление потока 
-    // и обработчика после поиска частиц
-    connect(thread, SIGNAL(started()),
-            &progressDialog, SLOT(show()));
-    connect(thread, SIGNAL(started()), 
-            ea, SLOT(findCircles()));
-    connect(ea, SIGNAL(finishedLookingForCircles(EmisionAnalyzer*)), 
-            thread, SLOT(quit()));
-    connect(ea, SIGNAL(finishedLookingForCircles(EmisionAnalyzer*)), 
-            ea, SLOT(deleteLater()));  
-    connect(ea, SIGNAL(finishedLookingForCircles(EmisionAnalyzer*)),
-            SLOT(finishLookingForCircles(EmisionAnalyzer*))); 
-    connect(thread, SIGNAL(finished()),
-            &progressDialog, SLOT(hide()));
-    connect(thread, SIGNAL(finished()), 
-            thread, SLOT(deleteLater()));
-    
-    // запускаю поток
-    thread->start();
+    connect(particlesSeeker, SIGNAL(finished(ParticlesSeeker*)),
+            SLOT(finishLookingForCircles(ParticlesSeeker*)));
+
+    startLongProcess(particlesSeeker, tr("Looking for particles..."));
 }
 
 
 void MainWindow::FindParticleAreas()
 {
-    EmisionAnalyzer emisionAnalyzer;
+    /*EmisionAnalyzer emisionAnalyzer;
     
     Mat temp = OpenCVUtils::FromQPixmap(currentImage());
     emisionAnalyzer.setImage(temp);
@@ -232,7 +211,7 @@ void MainWindow::FindParticleAreas()
         colorFlag++;
     }
     
-    setCurrentImage(OpenCVUtils::ToQPixmap(temp));
+    setCurrentImage(OpenCVUtils::ToQPixmap(temp));*/
 }
 
 void MainWindow::pushCurrentImage(QString title, bool asKey, int index)
@@ -245,9 +224,9 @@ void MainWindow::pushCurrentImage(QString title, bool asKey, int index)
 
 void MainWindow::setCurrentImage(QPixmap pixmap)
 {
-    mImage = pixmap;
     if (ui->tabDocuments->currentGraphicsView()) {
         ui->tabDocuments->currentGraphicsView()->setPixmap( pixmap);
+        ui->tabDocuments->fixCurrentImage();
     }
     qDebug() << tr("change current image");
 }
@@ -379,6 +358,10 @@ void MainWindow::stackIterate(QString title)
 void MainWindow::updateAddSetButtonState()
 {
     KeyPoints *keyPoints = ui->tabDocuments->currentKeyPoints(); 
+    
+    ui->SequenceAnalyzeWdg->toggleAddParticleButtonEnbaled(
+                !(keyPoints==0 || keyPoints->count()==0));
+    
     if (!ui->SequenceAnalyzeWdg->isContains(keyPoints)) {
         ui->SequenceAnalyzeWdg->setAddParticlesButtonText(tr("Add particle set"));
     } else {
@@ -396,6 +379,12 @@ void MainWindow::addKeyPointsToGraph()
 void MainWindow::clearKeyPoints()
 {
     ui->SequenceAnalyzeWdg->clearKeyPoints();
+}
+
+void MainWindow::toggleCurrentParticles(bool fShow)
+{
+    MGraphicsViewEA *view = ui->tabDocuments->currentGraphicsView();
+    if (view) view->toogleKeyPoints(fShow);
 }
 
 KeyPoints *MainWindow::createNewKeyPoints()
@@ -431,7 +420,7 @@ void MainWindow::setCurrentStateAccordingActiveTab()
     updateAddSetButtonState();
 }
 
-void MainWindow::finishLookingForCircles(EmisionAnalyzer *sender)
+void MainWindow::finishLookingForCircles(ParticlesSeeker *sender)
 {
     qDebug() << QString(tr("find %1 particle(s)"))
                 .arg(sender->getKeyPoints()->count());
@@ -440,6 +429,29 @@ void MainWindow::finishLookingForCircles(EmisionAnalyzer *sender)
     ui->actionShow_particles->setChecked(true);
     
     setCurrentStateAccordingActiveTab();
+}
+
+void MainWindow::startLongProcess(QThreadEx *process, QString title)
+{
+    progressDialog.showCancelButton(process->cancelEnabled());
+    progressDialog.showProgressBar(process->progressEnabled());
+    progressDialog.setLabel(title);
+    
+    connect(&progressDialog, SIGNAL(cancel()),
+            process, SLOT(cancel()));
+    
+    connect(process, SIGNAL(started()),
+            &progressDialog, SLOT(show()));
+    connect(process, SIGNAL(finished()),
+            &progressDialog, SLOT(hide()));
+    
+    connect(process, SIGNAL(progressChanged(int,int,QString)),
+            &progressDialog, SLOT(setProgress(int,int,QString)));
+
+    connect(process, SIGNAL(finished()), 
+            process, SLOT(deleteLater()));
+    
+    process->start();
 }
 
 

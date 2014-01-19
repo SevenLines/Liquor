@@ -49,8 +49,9 @@ public slots:
     
     /// зафиксированное изображение текущего таба
     QPixmap currentFixedImage();
-    /// фиксирует текущее изображение
-    void fixCurrentImage(QString title, bool asKey = false, int pos = -1);
+    /// фиксирует текущее изображение, чтобы изображение не добавлялось
+    /// в стэк изображений, укажите в качестве названия QString()
+    void fixCurrentImage(QString title = QString(), bool asKey = false, int pos = -1);
     
     ImageStack *currentImageStack();
     Mick::KeyPoints *currentKeyPoints();

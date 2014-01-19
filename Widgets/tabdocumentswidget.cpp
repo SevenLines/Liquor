@@ -21,6 +21,10 @@ MGraphicsViewEA *TabDocumentsWidget::addGraphicsViewEA(QPixmap pixmap, QString t
 {
     MGraphicsViewEATab *viewTab = new MGraphicsViewEATab();
     
+    foreach(QAction *action, actions()) {
+        viewTab->addContextMenuAction(action);
+    }
+    
     // еняем политику изменения размеров
     QSizePolicy sizePolicy = viewTab->sizePolicy();
     sizePolicy.setHorizontalPolicy(QSizePolicy::Preferred);
@@ -133,9 +137,10 @@ TabDocumentsWidget::MGraphicsViewEATab::MGraphicsViewEATab(QWidget *parent)
 void TabDocumentsWidget::MGraphicsViewEATab::fixCurrentImage(QString title, bool asKey, int pos)
 {
     fixedImage = pixmap();
-    
-    imageStack.push(pixmap(), title, asKey, pos);
-    qDebug() << tr("push current image to stack as '%1'").arg(title);
+    if (!title.isNull()) {
+        imageStack.push(pixmap(), title, asKey, pos);
+        qDebug() << tr("push current image to stack as '%1'").arg(title);
+    }
 }
 
 void TabDocumentsWidget::MGraphicsViewEATab::setKeyPoints(Mick::KeyPoints *keyPoints, bool takeParentship)

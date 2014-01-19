@@ -1,23 +1,24 @@
 #include <QDebug>
-#include "emisionanalyzer.h"
+#include "particlesseeker.h"
 #include "Utils/opencvutils.h"
 #include "Utils/opencvutils_tempates.h"
 #include <boost/tuple/tuple.hpp>
 
 using namespace cv;
 using namespace std;
-using namespace boost::lambda;
 using namespace boost::tuples;
 using namespace boost;
 
 
-EmisionAnalyzer::EmisionAnalyzer()
+ParticlesSeeker::ParticlesSeeker()
 {
-    progressCallback = 0;
     keyPoints = 0;
+    
+    fCancelEnabled = true;
+    fProgressEnabled = true;
 }
 
-void EmisionAnalyzer::setImage(Mat &image)
+void ParticlesSeeker::setImage(Mat &image)
 {
     // чтобы не было ошибок преобразования 
     if (image.type() != CV_8UC3) {
@@ -35,43 +36,43 @@ void EmisionAnalyzer::setImage(Mat &image)
     gSymmetryInfo = Mat::zeros(gImage.rows, gImage.cols, CV_32SC3);
 }
 
-Mat &EmisionAnalyzer::image()
+Mat &ParticlesSeeker::image()
 {
     return gImage;
 }
 
 
-void EmisionAnalyzer::setMinRadius(int value)
+void ParticlesSeeker::setMinRadius(int value)
 {
     gMinRadius = value;
 }
 
-int EmisionAnalyzer::minRadius()
+int ParticlesSeeker::minRadius()
 {
     return gMinRadius;
 }
 
-void EmisionAnalyzer::setMaxRadius(int value)
+void ParticlesSeeker::setMaxRadius(int value)
 {
     gMaxRadius = value;
 }
 
-int EmisionAnalyzer::maxRadius()
+int ParticlesSeeker::maxRadius()
 {
     return gMaxRadius;
 }
 
-void EmisionAnalyzer::setKeyPoints(KeyPoints *keyPoints)
+void ParticlesSeeker::setKeyPoints(KeyPoints *keyPoints)
 {
     this->keyPoints = keyPoints;
 }
 
-KeyPoints *EmisionAnalyzer::getKeyPoints()
+KeyPoints *ParticlesSeeker::getKeyPoints()
 {
     return this->keyPoints;
 }
 
-void EmisionAnalyzer::getMinMax(QList<Point> area,
+void ParticlesSeeker::getMinMax(QList<Point> area,
                                 Mat1i image,
                                 int &min, int &max)
 {
@@ -83,7 +84,7 @@ void EmisionAnalyzer::getMinMax(QList<Point> area,
     }
 }
 
-bool EmisionAnalyzer::isOnEdge(Point point)
+bool ParticlesSeeker::isOnEdge(Point point)
 {
     for(int i=1;i<=8;++i) {
         Point neigh = OpenCVUtils::getNeighboor(point, i);
@@ -95,7 +96,7 @@ bool EmisionAnalyzer::isOnEdge(Point point)
 }
 
 // return radius of the most available circle
-int EmisionAnalyzer::getSymmetryValue(Point pos, int i)
+int ParticlesSeeker::getSymmetryValue(Point pos, int i)
 {  
     if ( gImageRef(pos) != EA_BLACK ) return 0;
     
@@ -139,7 +140,7 @@ int EmisionAnalyzer::getSymmetryValue(Point pos, int i)
 }
 
 
-Point EmisionAnalyzer::findMaxPoint(Mat &in, Point p, int minValue)
+Point ParticlesSeeker::findMaxPoint(Mat &in, Point p, int minValue)
 {
     Mat_<Vec3b> inref = in;
     int newValue, curValue = inref(p)[0];
@@ -189,16 +190,21 @@ void __getAreaPoints(cv::Point const &point, MatXX &,
     p->y += point.y;
     
     cv::Mat1b* flagImage = get<2>(info);
-    (*flagImage)(point) |= EmisionAnalyzer::EA_VISITED;
+    (*flagImage)(point) |= ParticlesSeeker::EA_VISITED;
 }
 
 /**
- * @brief EmisionAnalyzer::findCircles
+ * @brief ParticlesSeeker::findCircles
  * @param in, CV_8UC3 Mat image
  * @return image representaion of findin pixels
  */
-void EmisionAnalyzer::findCircles()
+void ParticlesSeeker::findCircles()
 {
+    fCancel = false;
+    
+    int progressMax = 5;
+    int progress = 0;
+    
     if ( gImage.empty() ) {
         qWarning() << "image is not set!";
         return;
@@ -208,7 +214,8 @@ void EmisionAnalyzer::findCircles()
         return;
     }
     
-    // изображение для хранения хначений пикселей
+    
+    // изображение для хранения значений пикселей
     Mat valueImageOrigin = Mat::zeros(gImage.rows, gImage.cols, CV_16SC1);
     Mat1i valueImage = valueImageOrigin;
     
@@ -217,19 +224,32 @@ void EmisionAnalyzer::findCircles()
     // заполненые области    
     QList< QList<cv::Point> > blackAreas;
     // нахожу заполненые области
+    
+    emit progressChanged(progress++,progressMax,
+                         tr("Looking for black areas"));
+    
     OpenCVUtils::getKeyAreas<cv::Mat1b>(blackAreas, EA_BLACK, gImageRef);
+    
+    emit progressChanged(progress++,progressMax,
+                         tr("Caclulate symmetry indicies"));
     
     int symmValue = 0;
     foreach(QList<cv::Point> area, blackAreas) {
         foreach(cv::Point p, area) {
+            if (fCancel) return;
             symmValue = getSymmetryValue(p, 1);
             valueImage(p) = symmValue;
         }
     }
     
+    emit progressChanged(progress++,progressMax,
+                         tr("Bluring values"));
+    
     // размываю индексы симметрии
     cv::GaussianBlur(valueImageOrigin, valueImageOrigin,cv::Size(5, 5), 3);
 
+    emit progressChanged(progress++,progressMax,
+                         tr("Looking for symmetry consistent areas"));
     
     int countOfPointsWithGreaterValue;
     // Ищем точки, в радиусе depth от которых 
@@ -240,6 +260,7 @@ void EmisionAnalyzer::findCircles()
             countOfPointsWithGreaterValue = 0;
             for (int i=-depth; i<depth; ++i) {
                 for (int j=-depth;j<depth; ++j) {
+                    if (fCancel) return;
                     cv::Point neigh(p.x+j, p.y+i);
                     if(OpenCVUtils::isInside(valueImage, neigh)) {
                         if (valueImage(p) < valueImage(neigh)) {
@@ -256,11 +277,15 @@ void EmisionAnalyzer::findCircles()
         }
     }
     
+    emit progressChanged(progress++,progressMax,
+                         tr("Building key points set"));
+    
     // флаги
     Mat1b flagImage = Mat::zeros(gImage.rows, gImage.cols, CV_8U);
     
     // Для каждой области с экстремум выбираем среднюю точку
     foreach (Point p, extremPoints) {
+        if (fCancel) return;
         // если пиксел не посещенный
         if ( !(flagImage(p) & EA_VISITED) ) {
             // помечаем как посещенный
@@ -304,10 +329,17 @@ void EmisionAnalyzer::findCircles()
                 keyPoints->addKey(key);
         }
     }
-    emit finishedLookingForCircles(this);
+    
+    emit progressChanged(progressMax,progressMax);
 }
 
-void EmisionAnalyzer::findBlackAreas(QList<QList<Point> > &areas)
+void ParticlesSeeker::run()
+{
+    findCircles();
+    emit finished(this);
+}
+
+void ParticlesSeeker::findBlackAreas(QList<QList<Point> > &areas)
 {
     if ( gImage.empty() ) {
         qWarning() << "image is not set!";
