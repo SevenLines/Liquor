@@ -37,6 +37,9 @@ private:
     int checkForFunction(cv::Point pos, int depth,
                          bool (*predicate)(cv::Point pos) );
     
+    inline int getInfoValue(cv::Point pos, int channel = 0);
+    inline int getInfoValue(int y, int x, int channel = 0);
+    inline void setInfoValue(int value, cv::Point pos, int channel = 0);
     
     cv::Point findMaxPoint(Mat &in, cv::Point p, int minValue);
     

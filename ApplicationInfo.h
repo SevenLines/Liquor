@@ -16,6 +16,7 @@ public:
     
     /// путь к файлу с переводом
     QString translationPath;
+    QString qtTranslationPath;
     
     /// ссылка на главное окно, используется логером, 
     /// обнуляется при закрытии главного окна
@@ -25,6 +26,7 @@ public:
         name = "liqour"; 
         logFilePath = QString("%1.log").arg(name);
         translationPath = QString("%1_%2").arg(name).arg(QLocale::system().name());
+        qtTranslationPath = QString("qt_%1").arg(QLocale::system().name());
         mainWindow = 0;
     }
 };

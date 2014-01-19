@@ -32,8 +32,6 @@ void ParticlesSeeker::setImage(Mat &image)
     // 
     gImageRef = gImage;
 
-    // using for storing specific info about each pixel
-    gSymmetryInfo = Mat::zeros(gImage.rows, gImage.cols, CV_32SC3);
 }
 
 Mat &ParticlesSeeker::image()
@@ -100,49 +98,105 @@ int ParticlesSeeker::getSymmetryValue(Point pos, int i)
 {  
     if ( gImageRef(pos) != EA_BLACK ) return 0;
     
-    int offset = 0;
+    int offset = 1;
+    int maxOffset = -1;
+    int newX, newY;
+    
+    // определяем максимально допустимое значение, на основе ранее расчитанных пикселей
+    // больше которого искать смысла нет
+    
     // кол-во направлений по которым перестала расширяться область
     i = qMin(i, 8);
     int stopItems = 0;
     do {
-        if ( pos.y + offset >= gImageRef.rows
-             || gImageRef(pos.y + offset, pos.x) != EA_BLACK ) stopItems++; // to right
-        
-        if ( pos.y - offset < 0 
-              ||gImageRef(pos.y - offset, pos.x) != EA_BLACK ) stopItems++; // to left
-        
-        if ( pos.x - offset < 0 
-             || gImageRef(pos.y, pos.x - offset) != EA_BLACK ) stopItems++; // to top
-        
-        if ( pos.y + offset >= gImageRef.rows
-             || gImageRef(pos.y, pos.x + offset) != EA_BLACK ) stopItems++; // to bottom
-        
-        if ( pos.y + offset >= gImageRef.rows || pos.x - offset < 0
-             || gImageRef(pos.y + offset, pos.x - offset) != EA_BLACK ) stopItems++;
-        
-        if ( pos.y - offset < 0 || pos.x - offset < 0 
-             || gImageRef(pos.y - offset, pos.x - offset) != EA_BLACK ) stopItems++;
-        
-        if ( pos.y - offset < 0 || pos.x + offset >= gImageRef.cols
-             || gImageRef(pos.y - offset, pos.x + offset) != EA_BLACK ) stopItems++; 
-        
-        if ( pos.y + offset >= gImageRef.rows || pos.x + offset >= gImageRef.cols
-             || gImageRef(pos.y + offset, pos.x + offset) != EA_BLACK ) stopItems++; 
+        // прохожу по сем восьми направлениям
+        for (int i=0;i<8;++i) {
+            switch(i) {
+            case 0: // bottom
+                newY = pos.y + offset;
+                newX = pos.x;
+                break;
+            case 1: // right
+                newY = pos.y;
+                newX = pos.x + offset;
+                break;
+            case 2: // top
+                newY = pos.y - offset;
+                newX = pos.x;
+                break;
+            case 3: // left
+                newY = pos.y;
+                newX = pos.x - offset;
+                break;
+            case 4: 
+                newY = pos.y + offset;
+                newX = pos.x + offset;
+                break;
+            case 5:
+                newY = pos.y - offset;
+                newX = pos.x + offset;
+                break;
+            case 6:
+                newY = pos.y + offset;
+                newX = pos.x - offset;
+                break;
+            case 7:
+                newY = pos.y - offset;
+                newX = pos.x - offset;
+                break;
+            }
+            
+            if ( newY >= gImageRef.rows || newY < 0 || newX <0 || newX >= gImageRef.cols ) {
+                // проверка на остановку
+                if ( gImageRef(newY, newX) != EA_BLACK ) {
+                    stopItems++;
+                } /*else { // расчет максимально допустимого отклонения на основе предыдущих рассчетов
+                    if ( maxOffset == -1 ) {
+                        if ( int value = getInfoValue(newY, newX) != 0 ) {
+                            maxOffset = value;
+                        }
+                    }
+                }*/
+            }
+        }
         
         if (stopItems >= i) {
             break;
         }
+        offset ++;  
         
-        offset ++;        
+        if (maxOffset!=-1 && offset==maxOffset) {
+            break;
+        }
     }while(true);
     
+    //setInfoValue(offset, pos);
+    
     return offset;
+}
+
+int ParticlesSeeker::getInfoValue(Point pos, int channel)
+{
+    return gSymmetryInfo.at<Vec3i>(pos)[channel];
+}
+
+int ParticlesSeeker::getInfoValue(int y, int x, int channel)
+{
+    return getInfoValue(cv::Point(x,y), channel);
+}
+
+void ParticlesSeeker::setInfoValue(int value, Point pos, int channel)
+{
+    gSymmetryInfo.at<Vec3i>(pos)[channel] = value ;
 }
 
 
 Point ParticlesSeeker::findMaxPoint(Mat &in, Point p, int minValue)
 {
     Mat_<Vec3b> inref = in;
+    // using for storing specific info about each pixel
+    //gSymmetryInfo = Mat::zeros(gImage.rows, gImage.cols, CV_32SC3);
+    
     int newValue, curValue = inref(p)[0];
     
     inref(p)[1] |= EA_VISITED;

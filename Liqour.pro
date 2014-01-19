@@ -125,12 +125,14 @@ OTHER_FILES += \
     BUILD.txt \
     Assets/logo_3.png \
     Assets/loading.gif \
-    Assets/loading2.gif
+    Assets/loading2.gif \
+    Assets/qt_ru.qm
 
 # copy linquist files
 for(FILE, TRANSLATIONS) {
     QMAKE_POST_LINK += $${QMAKE_COPY} $${SDIR}$$replace(FILE,ts,qm) $${DDIR}$$escape_expand(\\n\\t)
 }
+
 
 RESOURCES += \
     Assets/main.qrc

@@ -26,6 +26,10 @@ int main(int argc, char *argv[])
     myappTranslator.load(applicationInfo.translationPath);
     app.installTranslator(&myappTranslator); 
     
+    QTranslator qtTranslator;
+    qtTranslator.load(applicationInfo.qtTranslationPath);
+    app.installTranslator(&qtTranslator);
+    
     // открытие главного окна приложения
     MainWindow w(argv[1]);
     w.show();
