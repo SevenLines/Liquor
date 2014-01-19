@@ -59,8 +59,9 @@ public slots:
     // set wiget keyPoints and take parenting under it
     void setKeyPoints(KeyPoints *keyPoints, bool takeParentship = false);
     
-    /// закруть текущую вкладку
+    /// закруть вкладку
     void closeTab(int index);
+    void closeCurrentTab();
     /// растянуть изображение по виджету
     void fitToTab();
     

@@ -1,6 +1,8 @@
 <RCC>
     <qresource prefix="/logos">
         <file>logo_3.png</file>
+        <file>logo2.png</file>
+        <file>logo2_alone.svg</file>
     </qresource>
     <qresource prefix="/images">
         <file>loading.gif</file>

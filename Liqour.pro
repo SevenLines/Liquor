@@ -39,7 +39,8 @@ SOURCES  += main.cpp\
     Widgets/progressdialog.cpp \
     Core/pointvalue.cpp \
     Core/particlesseeker.cpp \
-    Core/qthreadex.cpp
+    Core/qthreadex.cpp \
+    Widgets/aboutdialog.cpp
 
 HEADERS  += mainwindow.h \
     Core/imagestack.h \
@@ -65,7 +66,8 @@ HEADERS  += mainwindow.h \
     Widgets/progressdialog.h \
     Core/pointvalue.h \
     Core/particlesseeker.h \
-    Core/qthreadex.h
+    Core/qthreadex.h \
+    Widgets/aboutdialog.h
 
 FORMS    += mainwindow.ui \
     Widgets/horizontalsliderex.ui \
@@ -73,7 +75,8 @@ FORMS    += mainwindow.ui \
     Widgets/qimagebrowser.ui \
     Settings/formsettings.ui \
     Settings/formsettingsgeneral.ui \
-    Widgets/progressdialog.ui
+    Widgets/progressdialog.ui \
+    Widgets/aboutdialog.ui
 
 
 

@@ -147,16 +147,17 @@ int ParticlesSeeker::getSymmetryValue(Point pos, int i)
             }
             
             if ( newY >= gImageRef.rows || newY < 0 || newX <0 || newX >= gImageRef.cols ) {
-                // проверка на остановку
+                stopItems++;
+            } else {
                 if ( gImageRef(newY, newX) != EA_BLACK ) {
                     stopItems++;
-                } /*else { // расчет максимально допустимого отклонения на основе предыдущих рассчетов
+                } else { // расчет максимально допустимого отклонения на основе предыдущих рассчетов
                     if ( maxOffset == -1 ) {
                         if ( int value = getInfoValue(newY, newX) != 0 ) {
                             maxOffset = value;
                         }
                     }
-                }*/
+                }
             }
         }
         
@@ -170,7 +171,7 @@ int ParticlesSeeker::getSymmetryValue(Point pos, int i)
         }
     }while(true);
     
-    //setInfoValue(offset, pos);
+    setInfoValue(offset, pos);
     
     return offset;
 }
@@ -194,9 +195,7 @@ void ParticlesSeeker::setInfoValue(int value, Point pos, int channel)
 Point ParticlesSeeker::findMaxPoint(Mat &in, Point p, int minValue)
 {
     Mat_<Vec3b> inref = in;
-    // using for storing specific info about each pixel
-    //gSymmetryInfo = Mat::zeros(gImage.rows, gImage.cols, CV_32SC3);
-    
+
     int newValue, curValue = inref(p)[0];
     
     inref(p)[1] |= EA_VISITED;
@@ -268,6 +267,8 @@ void ParticlesSeeker::findCircles()
         return;
     }
     
+    // using for storing specific info about each pixel
+    gSymmetryInfo = Mat::zeros(gImage.rows, gImage.cols, CV_32SC3);
     
     // изображение для хранения значений пикселей
     Mat valueImageOrigin = Mat::zeros(gImage.rows, gImage.cols, CV_16SC1);

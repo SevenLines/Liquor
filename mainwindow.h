@@ -141,6 +141,8 @@ private slots:
 
     void on_actionAbout_Qt_triggered();
     
+    void on_actionAbout_triggered();
+    
 signals:
     
 protected:

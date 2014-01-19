@@ -118,6 +118,11 @@ void TabDocumentsWidget::closeTab(int index)
     }
 }
 
+void TabDocumentsWidget::closeCurrentTab()
+{
+    closeTab(currentIndex());
+}
+
 void TabDocumentsWidget::fitToTab()
 {
     MGraphicsViewEATab *viewTab = __currentGraphicsView();

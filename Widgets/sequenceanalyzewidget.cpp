@@ -22,9 +22,9 @@ SequenceAnalyzeWidget::SequenceAnalyzeWidget(QWidget *parent) :
     multiKeyPointsModel.setData(&multiKeyPoints);
     ui->lstSets->setModel(&multiKeyPointsModel);
     
-    // отмечаем актывный набор в списке
+    /*// отмечаем актывный набор в списке
     connect(this, SIGNAL(keyPointsSetActivated(KeyPoints*)),
-            &multiKeyPointsModel, SLOT(setActive(KeyPoints*)));
+            &multiKeyPointsModel, SLOT(setActive(KeyPoints*)));*/
     
     // setup graph style
     graph = ui->plotGraph->addGraph();

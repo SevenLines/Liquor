@@ -13,6 +13,7 @@
 #include <qthreadex.h>
 #include <particlesseeker.h>
 #include <QMessageBox>
+#include <aboutdialog.h>
 
 #include "Utils/imageprocessing.h"
 
@@ -65,8 +66,8 @@ MainWindow::MainWindow(QString imagePath, QWidget *parent) :
     // load saved presets
     loadIni();
     
-    connect(ui->SequenceAnalyzeWdg, SIGNAL(keyPointsSetActivated(KeyPoints*)),
-            ui->tabDocuments, SLOT(setKeyPoints(KeyPoints*)));
+    /*connect(ui->SequenceAnalyzeWdg, SIGNAL(keyPointsSetActivated(KeyPoints*)),
+            ui->tabDocuments, SLOT(setKeyPoints(KeyPoints*)));*/
     
     // showParticles action
     connect(ui->actionShow_particles, SIGNAL(toggled(bool)),
@@ -112,7 +113,8 @@ MainWindow::MainWindow(QString imagePath, QWidget *parent) :
     connect(ui->sldKeyProp, SIGNAL(valueChanged(int)),
             SLOT(setCurrentKeyPointsProportions(int)));
     
-    //setCurrentKeyPoints(0);
+    connect(ui->actionClose_current_tab, SIGNAL(triggered()),
+            ui->tabDocuments, SLOT(closeCurrentTab()));
 }
 
 
@@ -419,6 +421,15 @@ void MainWindow::setCurrentStateAccordingActiveTab()
     }
     // обновляем кнопку
     updateAddSetButtonState();
+    
+    // 
+    ui->SequenceAnalyzeWdg->setActive(keyPoints);
+    
+    // включаем/выключаем итемы меню
+    ui->actionFind_Areas->setEnabled(ui->tabDocuments->currentIndex()!=-1);
+    ui->actionSave_Image->setEnabled(ui->tabDocuments->currentIndex()!=-1);
+    ui->actionFind_particles->setEnabled(ui->tabDocuments->currentIndex()!=-1);
+    ui->actionClose_current_tab->setEnabled(ui->tabDocuments->currentIndex()!=-1);
 }
 
 void MainWindow::finishLookingForCircles(ParticlesSeeker *sender)
@@ -677,4 +688,10 @@ void MainWindow::dropEvent(QDropEvent *e)
 void MainWindow::on_actionAbout_Qt_triggered()
 {
      QMessageBox::aboutQt(this);   
+}
+
+void MainWindow::on_actionAbout_triggered()
+{
+    AboutDialog about(0);
+    about.exec();
 }

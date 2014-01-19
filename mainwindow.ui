@@ -18,7 +18,7 @@
   </property>
   <property name="windowIcon">
    <iconset resource="Assets/main.qrc">
-    <normaloff>:/logos/logo_3.png</normaloff>:/logos/logo_3.png</iconset>
+    <normaloff>:/logos/logo2_alone.svg</normaloff>:/logos/logo2_alone.svg</iconset>
   </property>
   <widget class="QWidget" name="centralWidget">
    <property name="sizePolicy">
@@ -551,6 +551,7 @@
      <string>View</string>
     </property>
     <addaction name="actionFit_To_View"/>
+    <addaction name="actionClose_current_tab"/>
    </widget>
    <widget class="QMenu" name="menuFile">
     <property name="title">
@@ -580,6 +581,7 @@
      <string>Help</string>
     </property>
     <addaction name="actionAbout_Qt"/>
+    <addaction name="actionAbout"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuEdit"/>
@@ -660,6 +662,14 @@
   <action name="actionAbout_Qt">
    <property name="text">
     <string>About Qt</string>
+   </property>
+  </action>
+  <action name="actionClose_current_tab">
+   <property name="text">
+    <string>Close current tab</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+W</string>
    </property>
   </action>
  </widget>
