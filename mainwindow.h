@@ -138,6 +138,8 @@ private slots:
     
     /// запускает долгий процесс, открывает прогресс диалог
     void startLongProcess(QThreadEx *process, QString title="");
+
+    void on_actionAbout_Qt_triggered();
     
 signals:
     

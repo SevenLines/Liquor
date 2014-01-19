@@ -33,9 +33,6 @@ public slots:
     void setMax(int value);
     void setMin(int value);
     
-signals:
-    void cancel();
-    
 private:
     QMovie *movieIcon;
     QMovie *movieIconSmall;
@@ -45,6 +42,12 @@ private:
 protected:
     void showEvent(QShowEvent *);
     void hideEvent(QHideEvent *);
+    void keyPressEvent(QKeyEvent *);
+    
+    // QDialog interface
+public slots:
+    void reject();
+    void accept();
 };
 
 #endif // PROGRESSDIALOG_H

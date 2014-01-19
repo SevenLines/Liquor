@@ -12,6 +12,7 @@
 #include <QDialog>
 #include <qthreadex.h>
 #include <particlesseeker.h>
+#include <QMessageBox>
 
 #include "Utils/imageprocessing.h"
 
@@ -437,7 +438,7 @@ void MainWindow::startLongProcess(QThreadEx *process, QString title)
     progressDialog.showProgressBar(process->progressEnabled());
     progressDialog.setLabel(title);
     
-    connect(&progressDialog, SIGNAL(cancel()),
+    connect(&progressDialog, SIGNAL(rejected()),
             process, SLOT(cancel()));
     
     connect(process, SIGNAL(started()),
@@ -671,4 +672,9 @@ void MainWindow::dropEvent(QDropEvent *e)
         qDebug() << path;
         loadImage(path);
     }
+}
+
+void MainWindow::on_actionAbout_Qt_triggered()
+{
+     QMessageBox::aboutQt(this);   
 }
