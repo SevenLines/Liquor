@@ -7,18 +7,35 @@
 #include <QGraphicsDropShadowEffect>
 #include <QGraphicsBlurEffect>
 
+#include <math.h>
+
 void QGraphicsParticleItem::recalculate()
 {
     if (!keyPoint)
         return;
-    
-    float k = (float)percentsProp / 100;
-    float r = keyPoint->calcValue() * k;
-    setRect(keyPoint->pos().x() - r, keyPoint->pos().y() - r, r * 2, r *2);
-    setToolTip( QObject::tr("rad: %1\npos:(%2; %3)")
-                .arg(r)
-                .arg(keyPoint->pos().x())
-                .arg(keyPoint->pos().y()) );
+    float k, r;
+//    qDebug() << mType;
+    switch(mType) {
+    case Mick::KeyPoints::Undefined:
+        r = 25;
+        setRect(keyPoint->pos().x() - r, keyPoint->pos().y() - r, r * 2, r *2);
+        break;
+    case Mick::KeyPoints::Particles:
+        k = (float)percentsProp / 100;
+        r = keyPoint->calcValue() * k;
+        setRect(keyPoint->pos().x() - r, keyPoint->pos().y() - r, r * 2, r *2);
+        setToolTip( QObject::tr("rad: %1 px\npos:(%2; %3)")
+                    .arg(r)
+                    .arg(keyPoint->pos().x())
+                    .arg(keyPoint->pos().y()) );
+        break;
+    case Mick::KeyPoints::Area:
+        r = sqrt(keyPoint->calcValue() * M_1_PI);
+        setRect(keyPoint->pos().x() - r, keyPoint->pos().y() - r, r * 2, r *2);
+        setToolTip( QObject::tr("Area: %1 px<sup>2</sup>")
+                    .arg(keyPoint->value()) );
+        break;
+    }
 }
 
 QGraphicsParticleItem::QGraphicsParticleItem(QGraphicsItem *parent) :
@@ -27,6 +44,7 @@ QGraphicsParticleItem::QGraphicsParticleItem(QGraphicsItem *parent) :
     percentsProp = 100;
     fSelected = false;
     keyPoint = 0;
+    mType = Mick::KeyPoints::Undefined;
    
     brushDefault = QBrush(QColor::fromRgb(0,255,0,128));
     brushIgnore = QBrush(QColor::fromRgb(255,0,0,64));
@@ -71,6 +89,11 @@ void QGraphicsParticleItem::setPos(QPointF pos)
     }
 }
 
+void QGraphicsParticleItem::setType(Mick::KeyPoints::Type type)
+{
+    mType = type;
+}
+
 void QGraphicsParticleItem::move(QPointF offset)
 {
     if (keyPoint) {
@@ -90,7 +113,14 @@ void QGraphicsParticleItem::toggleSelect(bool fSelected)
         eff->setColor(Qt::yellow);
         eff->setOffset(0);
         if (keyPoint) {
-            eff->setBlurRadius(keyPoint->calcValue());
+            switch(mType) {
+            case Mick::KeyPoints::Particles:
+                eff->setBlurRadius(keyPoint->calcValue());
+                break;
+            case Mick::KeyPoints::Area:
+                eff->setBlurRadius(25);
+                break;
+            }
         }   
         setGraphicsEffect(eff);
         setPen(penSelected);
@@ -109,6 +139,11 @@ bool QGraphicsParticleItem::isIgnore()
 QPointF QGraphicsParticleItem::pos()
 {
     return keyPoint? keyPoint->pos() : QPointF(-1.0f,-1.0f);
+}
+
+Mick::KeyPoints::Type QGraphicsParticleItem::type()
+{
+    return mType;
 }
 
 int QGraphicsParticleItem::particleProportion()

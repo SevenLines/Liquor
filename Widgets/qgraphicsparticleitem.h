@@ -16,6 +16,8 @@ private:
     QPen penSelected;
     QPen previousPen;
     
+    Mick::KeyPoints::Type mType;
+    
     bool fSelected;
     
     //float radius;
@@ -32,11 +34,13 @@ public:
     void setProportion(int percents);
     void setParticleProportion(int percents);
     void setPos(QPointF pos);
+    void setType(Mick::KeyPoints::Type type);
     void move(QPointF offset);
     
     void toggleSelect(bool fSelected);
     
     QPointF pos();
+    Mick::KeyPoints::Type type();
     bool isIgnore();
     int particleProportion();
     

@@ -73,11 +73,14 @@ void MGraphicsViewEA::setKeyPoints(Mick::KeyPoints *keyPoints)
         // добавляем новы частицы
         for(int i=0;i<keyPoints->count();i++) {
             Mick::KeyPoint &k = (*keyPoints)[i];
-            QGraphicsParticleItem *circle = new QGraphicsParticleItem();
+            QGraphicsParticleItem *keyPoint = new QGraphicsParticleItem();
             
-            gScene->addItem(circle);
-            circle->setKeyPoint(&k); 
-            keyPointsRoot->addToGroup(circle);
+            gScene->addItem(keyPoint);
+            
+            keyPoint->setKeyPoint(&k); 
+            keyPoint->setType(keyPoints->type());
+            
+            keyPointsRoot->addToGroup(keyPoint);
         }
         setProportion(this->keyPoints->proportion());
     }
@@ -203,6 +206,7 @@ void MGraphicsViewEA::mouseMoveEvent(QMouseEvent *e)
                         cPointSceneF.y() - pressPointScene.y()).normalized());
         } else {
             // иначе двигаем выбранные частицы
+            
             foreach(QGraphicsParticleItem *p, selectedParticles) {
                 p->move(offset);
             }
@@ -218,6 +222,7 @@ void MGraphicsViewEA::mousePressEvent(QMouseEvent *e)
     // управление выбором частиц
     if (e->buttons().testFlag(Qt::LeftButton)) {
         QGraphicsParticleItem *particle = getParticleAtPos(e->pos());
+        
         if (particle) {
             fParticleSelected  = true;
             if (!selectedParticles.contains(particle)) {

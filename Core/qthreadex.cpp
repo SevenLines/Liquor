@@ -18,7 +18,18 @@ bool QThreadEx::cancelEnabled()
     return fCancelEnabled;
 }
 
+void QThreadEx::setCancelEnabled(bool value)
+{
+    fCancelEnabled = value;
+}
+
+void QThreadEx::setProgressEnabled(bool value)
+{
+    fProgressEnabled = value;
+}
+
 void QThreadEx::cancel()
 {
     fCancel = true;
+    emit canceled();
 }

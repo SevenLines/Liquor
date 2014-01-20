@@ -39,22 +39,24 @@ private:
     
 signals:
     
-public slots:
+public:
+    
     MGraphicsViewEA *addGraphicsViewEA(QPixmap pixmap, QString title);
     MGraphicsViewEA *currentGraphicsView();
     
     /// изображение текущем табе
     QPixmap currentImage();
-    void setCurrentImage(QPixmap pixmap);
-    
     /// зафиксированное изображение текущего таба
-    QPixmap currentFixedImage();
+    QPixmap currentFixedImage();    
+    ImageStack *currentImageStack();
+    Mick::KeyPoints *currentKeyPoints();
+    QString currentTabName();
+    
+public slots:
+    void setCurrentImage(QPixmap pixmap);
     /// фиксирует текущее изображение, чтобы изображение не добавлялось
     /// в стэк изображений, укажите в качестве названия QString()
     void fixCurrentImage(QString title = QString(), bool asKey = false, int pos = -1);
-    
-    ImageStack *currentImageStack();
-    Mick::KeyPoints *currentKeyPoints();
     
     // set wiget keyPoints and take parenting under it
     void setKeyPoints(KeyPoints *keyPoints, bool takeParentship = false);

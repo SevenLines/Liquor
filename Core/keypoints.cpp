@@ -81,6 +81,7 @@ KeyPoints::KeyPoints(QObject *parent) :
 {
         mProportion = 1;
         mEnabled = true;
+        mType = KeyPoints::Undefined;
 }
 
 void KeyPoints::setProportion(int value)
@@ -170,6 +171,18 @@ void KeyPoints::dumpToFile(QString filePath)
     }
     file.close();
 }
+
+
+KeyPoints::Type KeyPoints::type()
+{
+    return mType;
+}
+
+void KeyPoints::setType(KeyPoints::Type type)
+{
+    mType = type;
+}
+
 
 void KeyPoints::clear()
 {

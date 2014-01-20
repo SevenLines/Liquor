@@ -38,9 +38,12 @@ SOURCES  += main.cpp\
     Widgets/tabdocumentswidget.cpp \
     Widgets/progressdialog.cpp \
     Core/pointvalue.cpp \
-    Core/particlesseeker.cpp \
     Core/qthreadex.cpp \
-    Widgets/aboutdialog.cpp
+    Widgets/aboutdialog.cpp \
+    Core/emisionanalyzer.cpp \
+    Core/particlesseeker.cpp \
+    Core/areasseeker.cpp \
+    Core/emisionanalyzerthread.cpp
 
 HEADERS  += mainwindow.h \
     Core/imagestack.h \
@@ -65,9 +68,13 @@ HEADERS  += mainwindow.h \
     Widgets/tabdocumentswidget.h \
     Widgets/progressdialog.h \
     Core/pointvalue.h \
-    Core/particlesseeker.h \
     Core/qthreadex.h \
-    Widgets/aboutdialog.h
+    Widgets/aboutdialog.h \
+    Core/emisionanalyzer.h \
+    Core/particlesseeker.h \
+    Core/areasseeker.h \
+    Core/emisionanalyzerthread.h \
+    Utils/opencvutils_tempates.h
 
 FORMS    += mainwindow.ui \
     Widgets/horizontalsliderex.ui \
@@ -129,7 +136,8 @@ OTHER_FILES += \
     Assets/logo_3.png \
     Assets/loading.gif \
     Assets/loading2.gif \
-    Assets/qt_ru.qm
+    Assets/qt_ru.qm \
+    Assets/icon2.ico
 
 # copy linquist files
 for(FILE, TRANSLATIONS) {

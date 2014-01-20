@@ -134,7 +134,9 @@ private slots:
     void setCurrentStateAccordingActiveTab();
     
     /// вызывается когда приложение окончило поиск частиц
-    void finishLookingForCircles(ParticlesSeeker *sender);
+    void finishLookingForKeyPoints(EmisionAnalyzer *sender);
+    
+    void prepareEmisionAnalyzerThread(EmisionAnalyzerThread *thread);
     
     /// запускает долгий процесс, открывает прогресс диалог
     void startLongProcess(QThreadEx *process, QString title="");

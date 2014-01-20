@@ -100,6 +100,14 @@ Mick::KeyPoints *TabDocumentsWidget::currentKeyPoints()
     return 0; 
 }
 
+QString TabDocumentsWidget::currentTabName()
+{
+    if (currentIndex()!=-1) {
+        return tabText(currentIndex());
+    }
+    return QString();
+}
+
 void TabDocumentsWidget::setKeyPoints(Mick::KeyPoints *keyPoints, bool takeParentship)
 {
     MGraphicsViewEATab *viewTab = __currentGraphicsView();

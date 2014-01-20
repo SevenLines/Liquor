@@ -19,9 +19,13 @@ public:
     bool progressEnabled();
     bool cancelEnabled();
     
+    
+    void setCancelEnabled(bool value);
+    void setProgressEnabled(bool value);
+    
 signals:
     void progressChanged(int value, int max, QString label = QString());
-    
+    void canceled();
 public slots:
     void cancel();
 };

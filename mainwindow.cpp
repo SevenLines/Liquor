@@ -11,9 +11,11 @@
 #include <QThread>
 #include <QDialog>
 #include <qthreadex.h>
-#include <particlesseeker.h>
 #include <QMessageBox>
 #include <aboutdialog.h>
+
+#include "particlesseeker.h"
+#include "areasseeker.h"
 
 #include "Utils/imageprocessing.h"
 
@@ -169,21 +171,12 @@ void MainWindow::loadImage(QString path, bool setActive)
 void MainWindow::FindParticles()
 {
     log(tr("looking for particles"));
-    
-    Mat temp =  OpenCVUtils::FromQPixmap(currentImage());
 
-    // создаем новый набор под ключевые точки
-    KeyPoints *points = createNewKeyPoints();
-    points->setTitle(currentKeyImageName);
-    
-    ParticlesSeeker *particlesSeeker = new ParticlesSeeker();
+    ParticlesSeeker *particlesSeeker = new ParticlesSeeker(0);
     particlesSeeker->setMaxRadius(100);
     particlesSeeker->setMinRadius(5);
-    particlesSeeker->setImage(temp);
-    particlesSeeker->setKeyPoints(points);
     
-    connect(particlesSeeker, SIGNAL(finished(ParticlesSeeker*)),
-            SLOT(finishLookingForCircles(ParticlesSeeker*)));
+    prepareEmisionAnalyzerThread(particlesSeeker);
 
     startLongProcess(particlesSeeker, tr("Looking for particles..."));
 }
@@ -191,30 +184,11 @@ void MainWindow::FindParticles()
 
 void MainWindow::FindParticleAreas()
 {
-    /*EmisionAnalyzer emisionAnalyzer;
+    AreasSeeker *areasSeeker = new AreasSeeker(0);
     
-    Mat temp = OpenCVUtils::FromQPixmap(currentImage());
-    emisionAnalyzer.setImage(temp);
+    prepareEmisionAnalyzerThread(areasSeeker);
     
-    QList<QList<cv::Point> > areas;
-    
-    emisionAnalyzer.findBlackAreas(areas);
-
-    QList<cv::Point> area;
-    int colorFlag =0;
-    foreach(area, areas) {
-        cv::Point p;
-        foreach(p, area) {
-            if (emisionAnalyzer.isOnEdge(p)) {
-                temp.at<Vec3b>(p)[0] = 255;
-            } else {
-                temp.at<Vec3b>(p)[1] = colorFlag%2?196:64;
-            }
-        }
-        colorFlag++;
-    }
-    
-    setCurrentImage(OpenCVUtils::ToQPixmap(temp));*/
+    startLongProcess(areasSeeker, tr("Looking for black areas"));
 }
 
 void MainWindow::pushCurrentImage(QString title, bool asKey, int index)
@@ -432,7 +406,7 @@ void MainWindow::setCurrentStateAccordingActiveTab()
     ui->actionClose_current_tab->setEnabled(ui->tabDocuments->currentIndex()!=-1);
 }
 
-void MainWindow::finishLookingForCircles(ParticlesSeeker *sender)
+void MainWindow::finishLookingForKeyPoints(EmisionAnalyzer *sender)
 {
     qDebug() << QString(tr("find %1 particle(s)"))
                 .arg(sender->getKeyPoints()->count());
@@ -441,6 +415,21 @@ void MainWindow::finishLookingForCircles(ParticlesSeeker *sender)
     ui->actionShow_particles->setChecked(true);
     
     setCurrentStateAccordingActiveTab();
+}
+
+void MainWindow::prepareEmisionAnalyzerThread(EmisionAnalyzerThread *thread)
+{
+    Mat temp =  OpenCVUtils::FromQPixmap(currentImage());
+
+    // создаем новый набор под ключевые точки
+    KeyPoints *points = createNewKeyPoints();
+    points->setTitle(ui->tabDocuments->currentTabName());
+    
+    thread->setImage(temp);
+    thread->setKeyPoints(points);
+
+    connect(thread, SIGNAL(finished(EmisionAnalyzer*)),
+            SLOT(finishLookingForKeyPoints(EmisionAnalyzer*)));
 }
 
 void MainWindow::startLongProcess(QThreadEx *process, QString title)

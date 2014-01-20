@@ -9,6 +9,8 @@
 namespace Mick {
 
     class KeyPoint {
+
+        
     private:
         float mProportion;
         bool mIgnore; // set to true if u want to ignore this particle
@@ -34,6 +36,7 @@ namespace Mick {
         void setValue(int value);
         int value();
 
+
           
         /// returns overcalculated value, with proportion
         float calcValue();
@@ -48,13 +51,25 @@ namespace Mick {
     class KeyPoints : public QObject
     {
         Q_OBJECT
+        
+    public:
+        
+        enum Type {
+            Undefined = 0, // неопределенный тип
+            Particles = 1, // частицы
+            Area = 2 // области
+        };
+        
     private:
         QVector<KeyPoint> mPoints; 
         float mProportion;
         bool mEnabled;
         QString mTitle;
+        KeyPoints::Type mType;
         
     public:
+
+        
         explicit KeyPoints(QObject *parent = 0);
         
         int proportion();
@@ -72,6 +87,10 @@ namespace Mick {
         
         void setTitle(QString title);
         QString title();
+        
+        
+        KeyPoints::Type type();
+        void setType(KeyPoints::Type type);
         
     signals:
         void proportionChange(int newValue);
