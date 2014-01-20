@@ -385,6 +385,11 @@
                 <verstretch>0</verstretch>
                </sizepolicy>
               </property>
+              <property name="styleSheet">
+               <string notr="true">background-image:url(:/images/logo2_back.png) ;
+background-repeat:no-repeat;
+background-position: center center;</string>
+              </property>
               <property name="documentMode">
                <bool>true</bool>
               </property>

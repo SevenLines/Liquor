@@ -27,6 +27,7 @@ MGraphicsView::MGraphicsView(QWidget *parent) :
     setScene(gScene);
     
     // set pixmap
+    //backgroundImageItem = gScene->addPixmap(QPixmap());
     pixmapItem = gScene->addPixmap(QPixmap());
     
     // set background brush
@@ -38,9 +39,16 @@ MGraphicsView::MGraphicsView(QWidget *parent) :
     // отключаем скроллбары чтобы избежать проблем с изменением размеров
     setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-
+/*
+    bgPixmap = QPixmap(":/images/logo2_back.svg");
+    backgroundImageItem->setPixmap(bgPixmap);
+    backgroundImageItem->setFlags( QGraphicsItem::ItemIgnoresTransformations);*/
 
     fFitToScreen = false;
+}
+
+MGraphicsView::~MGraphicsView()
+{
 }
 
 void MGraphicsView::setPixmap(QPixmap img)
@@ -125,4 +133,10 @@ void MGraphicsView::wheelEvent(QWheelEvent *e)
 void MGraphicsView::dragMoveEvent(QDragMoveEvent *e)
 {
     e->acceptProposedAction();
+}
+
+
+void MGraphicsView::drawBackground(QPainter *painter, const QRectF &rect)
+{
+    QGraphicsView::drawBackground(painter, rect); 
 }

@@ -12,8 +12,12 @@ class MGraphicsView : public QGraphicsView
     
 protected:
     QGraphicsScene *gScene;
+    
+    QPixmap bgPixmap;
+    QBrush backgroundBrush2;
 
     QGraphicsPixmapItem *pixmapItem;
+    QGraphicsPixmapItem *backgroundImageItem;
     bool fFitToScreen;
     bool fMovedAfterPress;
     QPointF pressPointScene;
@@ -21,6 +25,7 @@ protected:
     
 public:
     explicit MGraphicsView(QWidget *parent = 0);
+    ~MGraphicsView();
     void setPixmap(QPixmap img);
     QPointF centerOfScene();
     QPixmap pixmap();
@@ -41,6 +46,10 @@ protected:
     void wheelEvent(QWheelEvent *);
     void dragMoveEvent(QDragMoveEvent *e);
     
+    
+    // QGraphicsView interface
+protected:
+    void drawBackground(QPainter *painter, const QRectF &rect);
 };
 
 #endif // MGRAPHICSVIEW_H
