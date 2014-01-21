@@ -142,5 +142,4 @@ void ProgressDialog::reject()
 
 void ProgressDialog::accept()
 {
-    qDebug() << "accept";
 }

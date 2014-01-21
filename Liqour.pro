@@ -137,7 +137,10 @@ OTHER_FILES += \
     Assets/loading.gif \
     Assets/loading2.gif \
     Assets/qt_ru.qm \
-    Assets/icon2.ico
+    Assets/icon2.ico \
+    Assets/icon_16x16.ico \
+    Assets/icon_32x32.ico \
+    Assets/icon_64x64.ico
 
 # copy linquist files
 for(FILE, TRANSLATIONS) {

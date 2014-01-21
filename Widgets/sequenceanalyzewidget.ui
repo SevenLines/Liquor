@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>344</width>
-    <height>415</height>
+    <height>434</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -81,6 +81,9 @@
     <layout class="QHBoxLayout" name="horizontalLayout">
      <item>
       <widget class="QSlider" name="sldScale">
+       <property name="toolTip">
+        <string>Steps count</string>
+       </property>
        <property name="minimum">
         <number>1</number>
        </property>
@@ -89,6 +92,28 @@
        </property>
        <property name="orientation">
         <enum>Qt::Horizontal</enum>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QSpinBox" name="spnPower">
+       <property name="toolTip">
+        <string>Power</string>
+       </property>
+       <property name="buttonSymbols">
+        <enum>QAbstractSpinBox::PlusMinus</enum>
+       </property>
+       <property name="specialValueText">
+        <string/>
+       </property>
+       <property name="suffix">
+        <string/>
+       </property>
+       <property name="minimum">
+        <number>0</number>
+       </property>
+       <property name="maximum">
+        <number>10</number>
        </property>
       </widget>
      </item>
@@ -111,6 +136,9 @@
          <width>30</width>
          <height>16777215</height>
         </size>
+       </property>
+       <property name="toolTip">
+        <string>Fit to screen</string>
        </property>
        <property name="text">
         <string>X</string>
@@ -148,6 +176,12 @@
       </property>
       <item row="0" column="0">
        <widget class="QListView" name="lstSets">
+        <property name="contextMenuPolicy">
+         <enum>Qt::ActionsContextMenu</enum>
+        </property>
+        <property name="horizontalScrollBarPolicy">
+         <enum>Qt::ScrollBarAlwaysOff</enum>
+        </property>
         <property name="selectionBehavior">
          <enum>QAbstractItemView::SelectItems</enum>
         </property>
@@ -242,6 +276,13 @@
       </widget>
      </item>
      <item>
+      <widget class="QPushButton" name="btnClear">
+       <property name="text">
+        <string>Clear</string>
+       </property>
+      </widget>
+     </item>
+     <item>
       <spacer name="horizontalSpacer_3">
        <property name="orientation">
         <enum>Qt::Horizontal</enum>
@@ -257,6 +298,11 @@
     </layout>
    </item>
   </layout>
+  <action name="actionRemove_item">
+   <property name="text">
+    <string>Remove item</string>
+   </property>
+  </action>
  </widget>
  <customwidgets>
   <customwidget>

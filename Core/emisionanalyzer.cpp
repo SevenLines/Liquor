@@ -264,6 +264,7 @@ void EmisionAnalyzer::findCircles()
 {
     fCancel = false;
     
+    
     int progressMax = 5;
     int progress = 0;
     
@@ -275,6 +276,8 @@ void EmisionAnalyzer::findCircles()
         qWarning() << "keypoints is not set";
         return;
     }
+    
+    emit progressChanged(0,progressMax, QString());
     
     // using for storing specific info about each pixel
     gSymmetryInfo = Mat::zeros(gImage.rows, gImage.cols, CV_32SC3);
@@ -414,7 +417,7 @@ void EmisionAnalyzer::findBlackAreas(QList<QList<Point> > &areas)
 }
 
 void EmisionAnalyzer::findBlackAreas()
-{
+{    
     QList< QList<cv::Point> > blackAreas;
     // нахожу заполненые области
     

@@ -40,6 +40,13 @@ void MultiKeyPointsModel::setActive(KeyPoints *keyPoints)
     endResetModel();
 }
 
+void MultiKeyPointsModel::removeSetUnderCursor(QPoint point)
+{
+    beginResetModel();
+
+    endResetModel();  
+}
+
 
 int MultiKeyPointsModel::rowCount(const QModelIndex &parent) const
 {

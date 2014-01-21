@@ -18,6 +18,7 @@ private:
     
     int mScale;
     int mCount;
+    int mPower;
     float mMin;
     float mMax;
     float mMinValue;
@@ -27,29 +28,16 @@ private:
     //void recountParticlesCount();
     
 private slots:
-    void getPoints();
-    
-    
+
+
 public:
     MultiKeyPoints();
     
     bool isContains(KeyPoints *keyPoints);
-    
-    /// удаляет набор из списка
-    void removeSet(KeyPoints *keyPoints, bool force = false);
-    
-    /// добавляет набор точек к объекту и становиться его родителем
-    void addSet(KeyPoints *keyPoints);
-    
-    /// очитска списка наборов, force(true) - с удалением из памяти
-    void clearSets(bool force = false);
-    void clearGraph();
-    
 
     int scale();
     int countOfParticles();
     int count();
-    
     
     float minKey();
     float maxKey();
@@ -59,18 +47,38 @@ public:
     // возвращает график
     const QVector<double> &keys();
     const QVector<double> &values();
+
+    int power();
     
     KeyPoints *operator[](int index);
     KeyPoints *at(int index);
     
-    void saveDumpToFile(QString filePath);
-    void loadDumpFromFile(QString filePath);
-    
 public slots:
+    
+    // степень значения используемого при расчете графика
+    void setPower(int power);
     void setScale(int scale);
+    
+    void saveDumpToFile(QString filePath);
+    void loadDumpFromFile(QString filePath);   
+    
+    /// удаляет набор из списка
+    void removeSet(KeyPoints *keyPoints, bool force = false);
+    /// удаляет набор из списка
+    void removeSet(int i, bool force = false);  
+    
+    /// добавляет набор точек к объекту и становиться его родителем
+    void addSet(KeyPoints *keyPoints);
+    
+    /// очитска списка наборов, force(true) - с удалением из памяти
+    void clearSets(bool force = false);
+    void clearGraph();
+    
+    void recalculateGraph();
     
 signals:
     void graphChanged();
+    void powerChanged(int newValue);
     void aboutToAddSet();
     void afterAddSet();
 };

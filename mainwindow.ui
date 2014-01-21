@@ -20,15 +20,15 @@
    <iconset resource="Assets/main.qrc">
     <normaloff>:/logos/logo2_alone.svg</normaloff>:/logos/logo2_alone.svg</iconset>
   </property>
+  <property name="styleSheet">
+   <string notr="true"/>
+  </property>
   <widget class="QWidget" name="centralWidget">
    <property name="sizePolicy">
     <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
      <horstretch>0</horstretch>
      <verstretch>0</verstretch>
     </sizepolicy>
-   </property>
-   <property name="acceptDrops">
-    <bool>true</bool>
    </property>
    <layout class="QGridLayout" name="gridLayout_9">
     <item row="0" column="1">
@@ -315,9 +315,6 @@
          <verstretch>0</verstretch>
         </sizepolicy>
        </property>
-       <property name="acceptDrops">
-        <bool>true</bool>
-       </property>
        <layout class="QGridLayout" name="gridLayout_7">
         <property name="leftMargin">
          <number>0</number>
@@ -358,8 +355,8 @@
              <verstretch>1</verstretch>
             </sizepolicy>
            </property>
-           <property name="acceptDrops">
-            <bool>true</bool>
+           <property name="styleSheet">
+            <string notr="true"/>
            </property>
            <layout class="QGridLayout" name="gridLayout_4">
             <property name="leftMargin">
@@ -386,9 +383,7 @@
                </sizepolicy>
               </property>
               <property name="styleSheet">
-               <string notr="true">background-image:url(:/images/logo2_back.png) ;
-background-repeat:no-repeat;
-background-position: center center;</string>
+               <string notr="true"/>
               </property>
               <property name="documentMode">
                <bool>true</bool>
@@ -564,7 +559,6 @@ background-position: center center;</string>
     </property>
     <addaction name="actionOpen_Image"/>
     <addaction name="actionSave_Image"/>
-    <addaction name="actionDump_keyPoints"/>
     <addaction name="separator"/>
     <addaction name="actionExit"/>
    </widget>
@@ -580,6 +574,7 @@ background-position: center center;</string>
      <string>Particles</string>
     </property>
     <addaction name="actionShow_particles"/>
+    <addaction name="actionAdd_set_to_graph"/>
    </widget>
    <widget class="QMenu" name="menuHelp">
     <property name="title">
@@ -647,9 +642,6 @@ background-position: center center;</string>
    <property name="text">
     <string>Find areas</string>
    </property>
-   <property name="toolTip">
-    <string>Find asreas</string>
-   </property>
   </action>
   <action name="actionShow_particles">
    <property name="checkable">
@@ -675,6 +667,14 @@ background-position: center center;</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+W</string>
+   </property>
+  </action>
+  <action name="actionAdd_set_to_graph">
+   <property name="text">
+    <string>Add set to graph</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+A</string>
    </property>
   </action>
  </widget>

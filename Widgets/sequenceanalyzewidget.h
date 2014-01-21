@@ -3,6 +3,7 @@
 
 #include <QSettings>
 #include <QWidget>
+#include <QMenu>
 #include "qcustomplot.h"
 #include "multikeypoints.h"
 #include "multikeypointsmodel.h"
@@ -20,11 +21,8 @@ public:
     ~SequenceAnalyzeWidget();
     
     /// добавляет список точек
-    void addKeyPoints(KeyPoints* keyPoints);
-    
-    /// очистка списка наборов
-    /// force - удаление из памяти прямо сейчас
-    void clearKeyPoints(bool force = false);
+    void addKeyPoints(KeyPoints* keyPoints);   
+
     /// удалить набор
     void removeSet(KeyPoints *keyPoints, bool force = false);
     /// проверят содержиться ли набор 
@@ -37,6 +35,8 @@ private:
     MultiKeyPoints multiKeyPoints;
     MultiKeyPointsModel multiKeyPointsModel;
     
+    QMenu lstSetsContextMenu;
+    
     QCPGraph *graph;
     QCPPlotTitle *title;
     QCPItemText *label;
@@ -44,14 +44,18 @@ private:
     QString lastPath;
     
 signals:
+    
     /// график обновился
     void graphUpdated();
     /// был актирован набор точек
     void keyPointsSetActivated(KeyPoints *keyPoints);
-    /// 
+    /// посылает сигнал о том что виджет хочет чтобы к нему добавили точки
     void addKeyPointsToGraph();
     
 public slots:
+    /// очистка списка наборов
+    /// force - удаление из памяти прямо сейчас
+    void clearKeyPoints(bool force = false);
     /// обновить график
     void updateGraph();
     /// установить кол-во точек на графике (шкалу)
@@ -70,6 +74,11 @@ public slots:
     
     void setAddParticlesButtonText(QString text);
     void toggleAddParticleButtonEnbaled(bool fEnabled);
+    
+    // удаляет набор под номером index
+    void remove(int index);
+    // удаляет текущий набор
+    void removeCurrentSet();
     
 private slots:
     void on_lstSets_activated(const QModelIndex &index);

@@ -63,6 +63,8 @@ void MGraphicsViewEA::setKeyPoints(Mick::KeyPoints *keyPoints)
                     SLOT(setProportion(int)));
             connect(keyPoints, SIGNAL(cleared()), 
                     SLOT(clearParticleItems()));
+            connect(keyPoints, SIGNAL(destroyed()),
+                    SLOT(clearKeyPoints()));
         }
     }
         
@@ -86,6 +88,11 @@ void MGraphicsViewEA::setKeyPoints(Mick::KeyPoints *keyPoints)
     }
 }
 
+Mick::KeyPoints *MGraphicsViewEA::getKeyPoints()
+{
+    return keyPoints;
+}
+
 void MGraphicsViewEA::toogleKeyPoints(bool fShow)
 {
     keyPointsRoot->setVisible(fShow);
@@ -103,6 +110,11 @@ void MGraphicsViewEA::clearParticleItems()
 {
     selectedParticles.clear();
     qDeleteAll(keyPointsRoot->childItems());
+}
+
+void MGraphicsViewEA::clearKeyPoints()
+{
+    setKeyPoints(0);
 }
 
 void MGraphicsViewEA::clearSelected()

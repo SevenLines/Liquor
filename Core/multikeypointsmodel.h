@@ -28,6 +28,8 @@ public slots:
     
     // костыль для того чтобы было видно активный набор
     void setActive(KeyPoints *keyPoints);
+    
+    void removeSetUnderCursor(QPoint point);
 };
 
 #endif // MULTIKEYPOINTSMODEL_H

@@ -13,6 +13,7 @@
 #include <qthreadex.h>
 #include <QMessageBox>
 #include <aboutdialog.h>
+#include <QImageReader>
 
 #include "particlesseeker.h"
 #include "areasseeker.h"
@@ -62,18 +63,21 @@ MainWindow::MainWindow(QString imagePath, QWidget *parent) :
             SLOT(setCurrentStateAccordingActiveTab()));
     ui->tabDocuments->addAction(ui->actionShow_particles);
     
-    // load image is any passed as parameter to cmd
-    loadImage(imagePath);
+//    load image is any passed as parameter to cmd
+//    loadImage(imagePath);
       
     // load saved presets
     loadIni();
     
-    /*connect(ui->SequenceAnalyzeWdg, SIGNAL(keyPointsSetActivated(KeyPoints*)),
-            ui->tabDocuments, SLOT(setKeyPoints(KeyPoints*)));*/
+    connect(ui->SequenceAnalyzeWdg, SIGNAL(keyPointsSetActivated(KeyPoints*)),
+            ui->tabDocuments, SLOT(setKeyPoints(KeyPoints*)));
     
-    // showParticles action
+    // actions
     connect(ui->actionShow_particles, SIGNAL(toggled(bool)),
             SLOT(toggleCurrentParticles(bool)));
+    connect(ui->actionAdd_set_to_graph, SIGNAL(triggered()),
+            SLOT(addKeyPointsToGraph()));
+    
     
     // threshold control init
     ui->sldThreshold->setMax(255);
@@ -156,15 +160,23 @@ void MainWindow::loadImage(QString path, bool setActive)
     if(path.isNull() || path.isEmpty())
         return;
     
-    QImage temp;
-    temp.load(path);
+    qDebug() << tr("Open: '%1'").arg(path);
     
+    QImageReader imageReader(path);
+    QImage temp = imageReader.read();
+    if ( temp.isNull() ) {
+        qWarning() << imageReader.errorString();
+        if (imageReader.error() == QImageReader::UnsupportedFormatError) {
+            qWarning() << imageReader.supportedImageFormats();
+        }
+        return;
+    }
+
     lastImagePath = path;
     
     // добавляем
     ui->tabDocuments->addGraphicsViewEA(QPixmap::fromImage(temp),
                                         QFileInfo(path).fileName());
-    
     ui->actionShow_particles->setChecked(false);
 }
 
@@ -336,14 +348,18 @@ void MainWindow::updateAddSetButtonState()
 {
     KeyPoints *keyPoints = ui->tabDocuments->currentKeyPoints(); 
     
-    ui->SequenceAnalyzeWdg->toggleAddParticleButtonEnbaled(
-                !(keyPoints==0 || keyPoints->count()==0));
+    bool enabled =  !(keyPoints==0 || keyPoints->count()==0);
+    ui->SequenceAnalyzeWdg->toggleAddParticleButtonEnbaled(enabled);
+    ui->actionAdd_set_to_graph->setEnabled(enabled);
     
+    QString buttonText;
     if (!ui->SequenceAnalyzeWdg->isContains(keyPoints)) {
-        ui->SequenceAnalyzeWdg->setAddParticlesButtonText(tr("Add particle set"));
+        buttonText = tr("Add particle set");
     } else {
-        ui->SequenceAnalyzeWdg->setAddParticlesButtonText(tr("Update particle set"));
+        buttonText = tr("Update particle set");
     }
+    ui->SequenceAnalyzeWdg->setAddParticlesButtonText(buttonText);
+    ui->actionAdd_set_to_graph->setText(buttonText);
 }
 
 void MainWindow::addKeyPointsToGraph()
@@ -668,9 +684,10 @@ void MainWindow::dropEvent(QDropEvent *e)
 {
     const QMimeData *mimeData = e->mimeData();
     if (mimeData->hasUrls()) {
-        QString path = mimeData->urls().at(0).toLocalFile();
-        qDebug() << path;
-        loadImage(path);
+        foreach(QUrl url, mimeData->urls()) {
+            QString path = url.toLocalFile();
+            loadImage(path);
+        }
     }
 }
 

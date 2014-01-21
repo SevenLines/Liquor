@@ -1,5 +1,7 @@
 #include <QMdiSubWindow>
 #include <QDebug>
+#include <QMessageBox>
+#include "keypoints.h"
 #include "tabdocumentswidget.h"
 
 TabDocumentsWidget::TabDocumentsWidget(QWidget *parent) :
@@ -108,19 +110,37 @@ QString TabDocumentsWidget::currentTabName()
     return QString();
 }
 
-void TabDocumentsWidget::setKeyPoints(Mick::KeyPoints *keyPoints, bool takeParentship)
+void TabDocumentsWidget::setKeyPoints(Mick::KeyPoints *keyPoints, bool takeParentship, bool setName)
 {
     MGraphicsViewEATab *viewTab = __currentGraphicsView();
     if (viewTab) {
-        keyPoints->setTitle(tabText(currentIndex()));
+        if (setName) {
+            keyPoints->setTitle(tabText(currentIndex()));
+        }
         viewTab->setKeyPoints(keyPoints, takeParentship);
     }
+}
+
+void TabDocumentsWidget::setKeyPointsWithName(KeyPoints *keyPoints)
+{
+    setKeyPoints(keyPoints, false, true);
 }
 
 void TabDocumentsWidget::closeTab(int index)
 {
     QWidget *wgt = widget(index);
     if (wgt) {
+        if (MGraphicsViewEA *view = dynamic_cast<MGraphicsViewEA*>(wgt)) {
+            // если родиель совпадает с текущим виджетом значит
+            // стоит спросить пользователя не нажал ли он случайно
+            if (view->getKeyPoints() && view->getKeyPoints()->parent() == wgt) {
+                if (QMessageBox::No == QMessageBox::question(0,tr("Confirmation"),
+                                      tr("Are u sure u want to close this window"),
+                                      QMessageBox::Yes | QMessageBox::No)) {
+                    return;
+                }
+            }
+        }
         wgt->close();
         delete wgt;
     }

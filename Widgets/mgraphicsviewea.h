@@ -36,6 +36,7 @@ public:
     
     void addContextMenuAction(QAction *action);
     void setKeyPoints(Mick::KeyPoints *keyPoints);
+    Mick::KeyPoints *getKeyPoints();
     
     ~MGraphicsViewEA();
 public slots:
@@ -43,6 +44,7 @@ public slots:
     void setProportion(int value);
     void clearParticleItems();
     
+    void clearKeyPoints();
     // очищает список выбранных объектов
     void clearSelected();
     // добавляет объект к списку выделенных объектов

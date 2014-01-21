@@ -14,7 +14,6 @@ void QGraphicsParticleItem::recalculate()
     if (!keyPoint)
         return;
     float k, r;
-//    qDebug() << mType;
     switch(mType) {
     case Mick::KeyPoints::Undefined:
         r = 25;
@@ -120,6 +119,8 @@ void QGraphicsParticleItem::toggleSelect(bool fSelected)
             case Mick::KeyPoints::Area:
                 eff->setBlurRadius(25);
                 break;
+            default:
+                eff->setBlurRadius(25);
             }
         }   
         setGraphicsEffect(eff);

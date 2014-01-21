@@ -27,8 +27,7 @@ void ImageProcessing::colorReduce(Mat &image, int div)
     int nc = image.cols*image.channels();
     
     //длина одного цвет
-    double k = 256.0 / div;
-    qDebug() << k;
+    //double k = 256.0 / div;
     uchar converter[256];
     for (int i=0; i< 256; ++i) {
         converter[i] = 256-i;   

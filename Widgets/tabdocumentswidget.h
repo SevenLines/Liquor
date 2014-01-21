@@ -59,7 +59,8 @@ public slots:
     void fixCurrentImage(QString title = QString(), bool asKey = false, int pos = -1);
     
     // set wiget keyPoints and take parenting under it
-    void setKeyPoints(KeyPoints *keyPoints, bool takeParentship = false);
+    void setKeyPoints(KeyPoints *keyPoints, bool takeParentship = false, bool setName = false);
+    void setKeyPointsWithName(KeyPoints *keyPoints);
     
     /// закруть вкладку
     void closeTab(int index);

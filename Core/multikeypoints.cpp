@@ -1,6 +1,7 @@
 #include "multikeypoints.h"
 #include <QDebug>
 #include <QFile>
+#include <qmath.h>
 
 using namespace Mick;
 
@@ -9,6 +10,7 @@ MultiKeyPoints::MultiKeyPoints()
     setScale(10);
     mMin = mMax = mMaxValue = mMinValue = 0;
     mCount = 0;
+    mPower = 1;
 }
 
 bool MultiKeyPoints::isContains(KeyPoints *keyPoints)
@@ -27,7 +29,12 @@ void MultiKeyPoints::removeSet(KeyPoints *keyPoints, bool force)
         }
     }
     
-    getPoints();
+    recalculateGraph();
+}
+
+void MultiKeyPoints::removeSet(int i, bool force)
+{
+    removeSet(keyPointsSets.at(i), force);
 }
 
 void MultiKeyPoints::addSet(KeyPoints *keyPoints)
@@ -44,9 +51,9 @@ void MultiKeyPoints::addSet(KeyPoints *keyPoints)
         keyPoints->setParent(this);
         
         connect(keyPoints, SIGNAL(enabledChange(bool)),
-                SLOT(getPoints()));
+                SLOT(recalculateGraph()));
     }        
-    getPoints();
+    recalculateGraph();
     emit afterAddSet();
 }
 
@@ -60,10 +67,10 @@ void MultiKeyPoints::clearSets(bool force)
     }
 
     keyPointsSets.clear();
-    getPoints();
+    recalculateGraph();
 }
 
-void MultiKeyPoints::getPoints()
+void MultiKeyPoints::recalculateGraph()
 {
     clearGraph();
     
@@ -95,20 +102,23 @@ void MultiKeyPoints::getPoints()
             if (!(*set)[i].isIgnore()) {
                 ++countOfPoints;
                 
+                // значения ключа с учетом минимума, то есть от нуля и более
                 float value = (set->keyValue(i) - mMin);//(*set)[i].calcValue();
-                
+
+                // индекс
                 index = (int)(value / step);
-                
+                // точное положение по x
                 iValue = (float)index * step;
-                leftValue = value - iValue;
-                rightValue = iValue + step - value;
                 
-                /*qDebug() << "left:" << leftValue 
-                         << "right:" << rightValue
-                         << "summ:" << leftValue + rightValue;*/
+                float multiplier = value * qPow(value, mPower);
+                
+                leftValue = (value - iValue) * multiplier;
+                rightValue = (iValue + step - value) * multiplier;
                 
                 QPointF &pLeft = graph[index];
                 pLeft.setY(pLeft.y() + leftValue);
+                
+                // множетель графика, учитывается степень значения ключа
                 
                 if (index < mScale - 1 ) {
                     QPointF &pRight = graph[index + 1];
@@ -263,7 +273,7 @@ void MultiKeyPoints::setScale(int scale)
         scale = 1;
     }
     mScale = scale;
-    getPoints();
+    recalculateGraph();
 }
 
 int MultiKeyPoints::scale()
@@ -309,4 +319,16 @@ const QVector<double> &MultiKeyPoints::keys()
 const QVector<double> &MultiKeyPoints::values()
 {
     return mValues;
+}
+
+void MultiKeyPoints::setPower(int power)
+{
+    mPower = power;
+    emit powerChanged(power);
+    recalculateGraph();
+}
+
+int MultiKeyPoints::power()
+{
+    return mPower;
 }

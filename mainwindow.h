@@ -98,7 +98,7 @@ public slots:
     
     void updateAddSetButtonState();
     
-    // добавляет точки к графику
+    // добавляет точки к графику по требования SequenceAnalyzerWidget
     void addKeyPointsToGraph();
     // очищает точки графику
     void clearKeyPoints();
