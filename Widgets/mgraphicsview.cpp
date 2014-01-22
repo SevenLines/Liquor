@@ -6,16 +6,31 @@
 #include <QScrollBar>
 #include <QGraphicsDropShadowEffect>
 #include "mgraphicsview.h"
+#include "MainInclude.h"
 
 QGraphicsScene *MGraphicsView::scene() const
 {
     return gScene;
 }
 
+bool MGraphicsView::isLightCorrecterUnderMouse(QPoint p)
+{
+    QGraphicsItem *item = itemAt(p);
+    if (item  && item->parentItem() ) {
+        return dynamic_cast<LightCorrector*>(item->parentItem())!=0;
+    }
+    return false;
+}
+
 void MGraphicsView::fitToScreen()
 {
     fitInView(pixmapItem, Qt::KeepAspectRatio);
     fFitToScreen = true;
+}
+
+void MGraphicsView::toggleLightCorrector(bool fShow)
+{
+    lightCorrector->setVisible(fShow);
 }
 
 
@@ -25,6 +40,7 @@ MGraphicsView::MGraphicsView(QWidget *parent) :
     // init scene
     gScene = new QGraphicsScene(this);
     setScene(gScene);
+
     
     // set pixmap
     //backgroundImageItem = gScene->addPixmap(QPixmap());
@@ -45,6 +61,10 @@ MGraphicsView::MGraphicsView(QWidget *parent) :
     backgroundImageItem->setFlags( QGraphicsItem::ItemIgnoresTransformations);*/
 
     fFitToScreen = false;
+    
+    // set light corrector;
+    lightCorrector = new LightCorrector(0);
+    gScene->addItem(lightCorrector);
 }
 
 MGraphicsView::~MGraphicsView()
@@ -93,7 +113,7 @@ void MGraphicsView::mouseMoveEvent(QMouseEvent *e)
     }
     
     // двигаем вьюпорт сцены если нажата средняя кнопка
-    if (e->buttons() & Qt::MiddleButton) {
+    if (applicationInfo.isMoveCameraButtons(e->buttons())) {
         setCursor(Qt::ClosedHandCursor);
         QScrollBar *yScroll = verticalScrollBar();
         yScroll->setValue(yScroll->value() - offset.y());
@@ -104,6 +124,12 @@ void MGraphicsView::mouseMoveEvent(QMouseEvent *e)
         setCursor(QCursor());
     }
     
+    if (applicationInfo.isMoveObjectButtons(e->buttons()) ){
+        if (isLightCorrecterUnderMouse(e->pos())) {
+            //lightCorrector->acceptedMouseButtons() setPos(mapToScene(e->pos()));
+        }
+    } 
+ 
     lastPoint = curPoint;
 }
 

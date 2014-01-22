@@ -5,6 +5,7 @@
 #include <QGraphicsScene>
 #include <QGraphicsPixmapItem>
 #include <QPixmap>
+#include "lightcorrector.h"
 
 class MGraphicsView : public QGraphicsView
 {
@@ -18,6 +19,9 @@ protected:
 
     QGraphicsPixmapItem *pixmapItem;
     QGraphicsPixmapItem *backgroundImageItem;
+    LightCorrector *lightCorrector;
+    
+    
     bool fFitToScreen;
     bool fMovedAfterPress;
     QPointF pressPointScene;
@@ -32,10 +36,13 @@ public:
     
     QGraphicsScene *scene() const;
     
+    bool isLightCorrecterUnderMouse(QPoint p);
+    
 signals:
     
 public slots:
     void fitToScreen();
+    void toggleLightCorrector(bool fShow);
     
     // QWidget interface
 protected:

@@ -29,6 +29,24 @@ public:
         qtTranslationPath = QString("qt_%1").arg(QLocale::system().name());
         mainWindow = 0;
     }
+    
+    bool isMoveCameraButtons(Qt::MouseButtons buttons) {
+        return buttons.testFlag(Qt::MidButton) &
+                !buttons.testFlag(Qt::LeftButton) &
+                !buttons.testFlag(Qt::RightButton);
+    }
+    
+    bool isMoveObjectButtons(Qt::MouseButtons buttons) {
+        return !buttons.testFlag(Qt::MidButton) &
+                buttons.testFlag(Qt::LeftButton) &
+                !buttons.testFlag(Qt::RightButton);
+    }
+    
+    bool isContextButtons(Qt::MouseButtons buttons) {
+        return !buttons.testFlag(Qt::MidButton) &
+                !buttons.testFlag(Qt::LeftButton) &
+                buttons.testFlag(Qt::RightButton);
+    }
 };
 
 #endif // APPLICATIONINFO_H

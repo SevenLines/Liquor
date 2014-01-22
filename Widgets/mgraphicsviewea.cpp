@@ -5,6 +5,7 @@
 #include <QContextMenuEvent>
 #include <QDebug>
 #include <QMenu>
+#include "MainInclude.h"
 
 QGraphicsParticleItem *MGraphicsViewEA::getParticleAtPos(QPoint pos)
 {
@@ -212,7 +213,7 @@ void MGraphicsViewEA::mouseMoveEvent(QMouseEvent *e)
     QPointF offset = cPointSceneF - lPointSceneF;
     
     MGraphicsView::mouseMoveEvent(e); 
-    if (e->buttons().testFlag(Qt::LeftButton)) {   
+    if (applicationInfo.isMoveObjectButtons(e->buttons())) {   
         // если не было выбрано частиц рисуем рамку выделения
         if (fParticleSelected == false) {
             clearSelected();
@@ -228,7 +229,6 @@ void MGraphicsViewEA::mouseMoveEvent(QMouseEvent *e)
                 p->move(offset);
             }
         }
-    } else {
     }
 }
 
@@ -237,7 +237,7 @@ void MGraphicsViewEA::mousePressEvent(QMouseEvent *e)
 {
     MGraphicsView::mousePressEvent(e);
     // управление выбором частиц
-    if (e->buttons().testFlag(Qt::LeftButton)) {
+    if (applicationInfo.isMoveObjectButtons(e->buttons())) {
         QGraphicsParticleItem *particle = getParticleAtPos(e->pos());
         
         if (particle) {
@@ -262,7 +262,7 @@ void MGraphicsViewEA::mousePressEvent(QMouseEvent *e)
     }
     
     // для правильной обработки вызова контекстного меню
-    if ( e->buttons().testFlag(Qt::RightButton)) {
+    if ( applicationInfo.isContextButtons(e->buttons()) ) {
         fParticleSelected = true;
     }
 }

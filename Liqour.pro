@@ -43,7 +43,8 @@ SOURCES  += main.cpp\
     Core/emisionanalyzer.cpp \
     Core/particlesseeker.cpp \
     Core/areasseeker.cpp \
-    Core/emisionanalyzerthread.cpp
+    Core/emisionanalyzerthread.cpp \
+    Widgets/lightcorrector.cpp
 
 HEADERS  += mainwindow.h \
     Core/imagestack.h \
@@ -74,7 +75,8 @@ HEADERS  += mainwindow.h \
     Core/particlesseeker.h \
     Core/areasseeker.h \
     Core/emisionanalyzerthread.h \
-    Utils/opencvutils_tempates.h
+    Utils/opencvutils_tempates.h \
+    Widgets/lightcorrector.h
 
 FORMS    += mainwindow.ui \
     Widgets/horizontalsliderex.ui \
