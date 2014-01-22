@@ -650,6 +650,9 @@
    <property name="text">
     <string>Show particles</string>
    </property>
+   <property name="shortcut">
+    <string>S</string>
+   </property>
   </action>
   <action name="actionAbout">
    <property name="text">

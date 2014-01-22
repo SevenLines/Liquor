@@ -154,10 +154,10 @@ void MultiKeyPoints::recalculateGraph()
         // передаем данные в список под график
         for (int i=0;i<mScale;++i) {
             // чтобы не добавлять в график пустые
-            if (graph[i].y() != 0) {
+            //if (graph[i].y() != 0) {
                 mKeys.append(graph[i].x());
                 mValues.append(graph[i].y());
-            }
+            //}
         }
         
     }
