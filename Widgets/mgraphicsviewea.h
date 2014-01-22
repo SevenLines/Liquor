@@ -16,7 +16,7 @@ protected:
     Mick::KeyPoints *keyPoints;
     
     QGraphicsItemGroup *keyPointsRoot;
-    QGraphicsRectItem *selectionFrame;
+
     
     QAction *toggleParticleAction;
     QAction *toggleShowParticlesAction;
@@ -57,8 +57,9 @@ public slots:
     void toggleIgnoreSeletItems(bool fIgnore);
     
     bool selectedItemsIgnoreState();
-    // выделеяет все объекты внутри рамки
-    void selectInsideFrame();
+    
+    // выделеяет все частицы внутри рамки
+    void selectParticlesInsideFrame();
     
     // QWidget interface
 protected:

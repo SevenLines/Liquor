@@ -15,11 +15,13 @@ protected:
     
     QPixmap bgPixmap;
     QBrush backgroundBrush2;
+    QGraphicsRectItem *selectionFrame;
 
     QGraphicsPixmapItem *pixmapItem;
     QGraphicsPixmapItem *backgroundImageItem;
     bool fFitToScreen;
     bool fMovedAfterPress;
+    bool fCursorAboveItems;
     QPointF pressPointScene;
     QPoint lastPoint;
     
@@ -31,6 +33,10 @@ public:
     QPixmap pixmap();
     
     QGraphicsScene *scene() const;
+    
+    /// возвращает объект под курсором, 
+    /// кроме тех которые не отслеживают события мыши
+    QGraphicsItem *itemAtPos(QPoint p);
     
 signals:
     

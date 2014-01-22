@@ -12,6 +12,15 @@ QGraphicsScene *MGraphicsView::scene() const
     return gScene;
 }
 
+QGraphicsItem *MGraphicsView::itemAtPos(QPoint p)
+{
+   QGraphicsItem *item = itemAt(p);
+   if (item) {
+       return (item->acceptedMouseButtons() == 0)?0:item;
+   }
+   return 0;
+}
+
 void MGraphicsView::fitToScreen()
 {
     fitInView(pixmapItem, Qt::KeepAspectRatio);
@@ -29,6 +38,7 @@ MGraphicsView::MGraphicsView(QWidget *parent) :
     // set pixmap
     //backgroundImageItem = gScene->addPixmap(QPixmap());
     pixmapItem = gScene->addPixmap(QPixmap());
+    pixmapItem->setAcceptedMouseButtons(0);
     
     // set background brush
     setBackgroundBrush(QBrush(Qt::gray));
@@ -38,7 +48,12 @@ MGraphicsView::MGraphicsView(QWidget *parent) :
     
     // отключаем скроллбары чтобы избежать проблем с изменением размеров
     setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-    setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff); 
+    
+    // рамка для выделения
+    selectionFrame = gScene->addRect(0,0,0,0);
+    selectionFrame->setPen(QPen(QBrush(Qt::blue), 0, Qt::DashLine));
+    selectionFrame->setVisible(false);
 /*
     bgPixmap = QPixmap(":/images/logo2_back.svg");
     backgroundImageItem->setPixmap(bgPixmap);
@@ -75,18 +90,44 @@ void MGraphicsView::mousePressEvent(QMouseEvent *e)
 {
     pressPointScene = mapToScene(e->pos());
     fMovedAfterPress = false;
+    
+    // управление выбором частиц
+    if (e->buttons().testFlag(Qt::LeftButton)) {
+        QGraphicsItem *item = itemAtPos(e->pos());
+        
+        if (item) {
+            fCursorAboveItems  = true;
+        } else {
+            // тут рамку рисуем
+            fCursorAboveItems = false;
+            selectionFrame->setVisible(true);
+            selectionFrame->setRect(
+                        pressPointScene.x(),
+                        pressPointScene.y(),
+                        0,0);
+        }
+    }
+    
+    // для правильной обработки вызова контекстного меню
+    if ( e->buttons().testFlag(Qt::RightButton)) {
+        fCursorAboveItems = true;
+    }
+    
 }
 
 void MGraphicsView::mouseReleaseEvent(QMouseEvent *)
 {
     fMovedAfterPress = false;
+
+
+    selectionFrame->setVisible(false);
 }
 
 void MGraphicsView::mouseMoveEvent(QMouseEvent *e)
 { 
-    QPoint curPoint = e->pos();
-    
+    QPoint curPoint = e->pos();   
     QPoint offset = curPoint - lastPoint;   
+    QPointF cPointSceneF = mapToScene(e->pos());
     
     if (!e->buttons().testFlag(Qt::NoButton)) {
         fMovedAfterPress = true;
@@ -102,6 +143,17 @@ void MGraphicsView::mouseMoveEvent(QMouseEvent *e)
         xScroll->setValue(xScroll->value() - offset.x());
     } else {
         setCursor(QCursor());
+    }
+
+    if (e->buttons().testFlag(Qt::LeftButton)) {   
+        // если курсор не над объектами рисуем рамку выделения
+        if (!fCursorAboveItems) {
+            selectionFrame->setRect(QRectF(
+                        pressPointScene.x(),
+                        pressPointScene.y(),
+                        cPointSceneF.x() - pressPointScene.x(),
+                        cPointSceneF.y() - pressPointScene.y()).normalized());
+        }
     }
     
     lastPoint = curPoint;
