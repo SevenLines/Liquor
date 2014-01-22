@@ -38,11 +38,7 @@ MGraphicsViewEA::MGraphicsViewEA(QWidget *parent)
     // init context menu
     contextMenu = new QMenu(this);   
     contextMenu->addAction(toggleParticleAction);
-    
-    // рамка для выделения
-    selectionFrame = gScene->addRect(0,0,0,0);
-    selectionFrame->setPen(QPen(QBrush(Qt::blue), 0, Qt::DashLine));
-    selectionFrame->setVisible(false);
+
 }
 
 MGraphicsViewEA::~MGraphicsViewEA() 
@@ -166,7 +162,7 @@ bool MGraphicsViewEA::selectedItemsIgnoreState()
     return i>selectedParticles.count()/2?true:false;
 }
 
-void MGraphicsViewEA::selectInsideFrame()
+void MGraphicsViewEA::selectParticlesInsideFrame()
 {
     foreach( QGraphicsItem *item , keyPointsRoot->childItems()) {
         QGraphicsParticleItem *p 
@@ -215,16 +211,8 @@ void MGraphicsViewEA::mouseMoveEvent(QMouseEvent *e)
     MGraphicsView::mouseMoveEvent(e); 
     if (applicationInfo.isMoveObjectButtons(e->buttons())) {   
         // если не было выбрано частиц рисуем рамку выделения
-        if (fParticleSelected == false) {
-            clearSelected();
-            selectionFrame->setRect(QRectF(
-                        pressPointScene.x(),
-                        pressPointScene.y(),
-                        cPointSceneF.x() - pressPointScene.x(),
-                        cPointSceneF.y() - pressPointScene.y()).normalized());
-        } else {
+        if (fParticleSelected ) {
             // иначе двигаем выбранные частицы
-            
             foreach(QGraphicsParticleItem *p, selectedParticles) {
                 p->move(offset);
             }
@@ -251,19 +239,8 @@ void MGraphicsViewEA::mousePressEvent(QMouseEvent *e)
                 }
             }
         } else {
-            // тут рамку рисуем
-            fParticleSelected = false;
-            selectionFrame->setVisible(true);
-            selectionFrame->setRect(
-                        pressPointScene.x(),
-                        pressPointScene.y(),
-                        0,0);
+            clearSelected();
         }
-    }
-    
-    // для правильной обработки вызова контекстного меню
-    if ( applicationInfo.isContextButtons(e->buttons()) ) {
-        fParticleSelected = true;
     }
 }
 
@@ -275,10 +252,9 @@ void MGraphicsViewEA::mouseReleaseEvent(QMouseEvent *e)
             clearSelected();
         }
     } 
-    MGraphicsView::mouseReleaseEvent(e);
-    // отключаем рамку выбора
+    
     if (selectionFrame->isVisible()) {
-        selectInsideFrame();
+        selectParticlesInsideFrame();
     }
-    selectionFrame->setVisible(false);
+    MGraphicsView::mouseReleaseEvent(e);
 }
