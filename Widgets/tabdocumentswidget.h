@@ -52,13 +52,18 @@ public:
     Mick::KeyPoints *currentKeyPoints();
     QString currentTabName();
     
+    /// если набор используется каким
+    MGraphicsViewEA *isContains(Mick::KeyPoints *keyPoints);
+    
+    MGraphicsViewEA *tabWidget(int index);
+    
 public slots:
     void setCurrentImage(QPixmap pixmap);
     /// фиксирует текущее изображение, чтобы изображение не добавлялось
     /// в стэк изображений, укажите в качестве названия QString()
     void fixCurrentImage(QString title = QString(), bool asKey = false, int pos = -1);
     
-    // set wiget keyPoints and take parenting under it
+    // set keyPoints of current tab and take parenting under it
     void setKeyPoints(KeyPoints *keyPoints, bool takeParentship = false, bool setName = false);
     void setKeyPointsWithName(KeyPoints *keyPoints);
     
@@ -67,6 +72,9 @@ public slots:
     void closeCurrentTab();
     /// растянуть изображение по виджету
     void fitToTab();
+    
+signals:
+    void unsetKeyPoints(KeyPoints*);
     
 };
 

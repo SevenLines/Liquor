@@ -24,7 +24,7 @@ public:
     void addKeyPoints(KeyPoints* keyPoints);   
 
     /// удалить набор
-    void removeSet(KeyPoints *keyPoints, bool force = false);
+    void removeSet(KeyPoints *keyPoints);
     /// проверят содержиться ли набор 
     bool isContains(KeyPoints* keyPoints);
     
@@ -51,11 +51,13 @@ signals:
     void keyPointsSetActivated(KeyPoints *keyPoints);
     /// посылает сигнал о том что виджет хочет чтобы к нему добавили точки
     void addKeyPointsToGraph();
+    /// вызывается когда, набор удаляется из списка
+    void keyPointsSetRemoved(KeyPoints *keyPoints);
     
 public slots:
     /// очистка списка наборов
     /// force - удаление из памяти прямо сейчас
-    void clearKeyPoints(bool force = false);
+    void clearKeyPoints();
     /// обновить график
     void updateGraph();
     /// установить кол-во точек на графике (шкалу)
@@ -82,6 +84,7 @@ public slots:
     
 private slots:
     void on_lstSets_activated(const QModelIndex &index);
+    
 };
 
 #endif // SEQUENCEANALYZEWIDGET_H

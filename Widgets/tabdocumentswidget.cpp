@@ -27,6 +27,10 @@ MGraphicsViewEA *TabDocumentsWidget::addGraphicsViewEA(QPixmap pixmap, QString t
         viewTab->addContextMenuAction(action);
     }
     
+    // сигнал о том что у одной из вкладок изменили набор точек
+    connect(viewTab, SIGNAL(unsetKeyPoints(KeyPoints*)),
+            SIGNAL(unsetKeyPoints(KeyPoints*)));
+    
     // еняем политику изменения размеров
     QSizePolicy sizePolicy = viewTab->sizePolicy();
     sizePolicy.setHorizontalPolicy(QSizePolicy::Preferred);
@@ -110,6 +114,27 @@ QString TabDocumentsWidget::currentTabName()
     return QString();
 }
 
+MGraphicsViewEA *TabDocumentsWidget::isContains(KeyPoints *keyPoints)
+{
+    for(int i=0;i<count();++i) {
+        MGraphicsViewEA *v = tabWidget(i);
+        if ( v && v->getKeyPoints() == keyPoints ) {
+            return v;
+        }
+    }
+    return 0;
+}
+
+MGraphicsViewEA *TabDocumentsWidget::tabWidget(int index)
+{
+    QWidget *wgt = widget(index);
+    MGraphicsViewEA * view = 0;
+    if (wgt && (view = dynamic_cast<MGraphicsViewEATab*>(wgt)) ) {
+        return view;
+    }
+    return 0;
+}
+
 void TabDocumentsWidget::setKeyPoints(Mick::KeyPoints *keyPoints, bool takeParentship, bool setName)
 {
     MGraphicsViewEATab *viewTab = __currentGraphicsView();
@@ -179,9 +204,9 @@ void TabDocumentsWidget::MGraphicsViewEATab::fixCurrentImage(QString title, bool
 void TabDocumentsWidget::MGraphicsViewEATab::setKeyPoints(Mick::KeyPoints *keyPoints, bool takeParentship)
 {
     MGraphicsViewEA::setKeyPoints(keyPoints);
-    if (takeParentship) {
+    /*if (takeParentship) {
         keyPoints->setParent(this);
-    }
+    }*/
 }
 
 Mick::KeyPoints *TabDocumentsWidget::MGraphicsViewEATab::getKeyPoints()

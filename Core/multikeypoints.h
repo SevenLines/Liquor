@@ -63,15 +63,15 @@ public slots:
     void loadDumpFromFile(QString filePath);   
     
     /// удаляет набор из списка
-    void removeSet(KeyPoints *keyPoints, bool force = false);
+    void removeSet(KeyPoints *keyPoints);
     /// удаляет набор из списка
-    void removeSet(int i, bool force = false);  
+    void removeSet(int i);  
     
     /// добавляет набор точек к объекту и становиться его родителем
     void addSet(KeyPoints *keyPoints);
     
     /// очитска списка наборов, force(true) - с удалением из памяти
-    void clearSets(bool force = false);
+    void clearSets();
     void clearGraph();
     
     void recalculateGraph();
@@ -81,6 +81,7 @@ signals:
     void powerChanged(int newValue);
     void aboutToAddSet();
     void afterAddSet();
+    void setRemoved(KeyPoints *keyPoints);
 };
 
 #endif // MULTIKEYPOINTS_H

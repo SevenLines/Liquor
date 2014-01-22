@@ -580,8 +580,10 @@
     <property name="title">
      <string>Help</string>
     </property>
-    <addaction name="actionAbout_Qt"/>
+    <addaction name="actionOpen_Log"/>
+    <addaction name="separator"/>
     <addaction name="actionAbout"/>
+    <addaction name="actionAbout_Qt"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuEdit"/>
@@ -678,6 +680,11 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+A</string>
+   </property>
+  </action>
+  <action name="actionOpen_Log">
+   <property name="text">
+    <string>Open Log</string>
    </property>
   </action>
  </widget>

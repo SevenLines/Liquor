@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>344</width>
-    <height>434</height>
+    <height>436</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -101,7 +101,7 @@
         <string>Power</string>
        </property>
        <property name="buttonSymbols">
-        <enum>QAbstractSpinBox::PlusMinus</enum>
+        <enum>QAbstractSpinBox::UpDownArrows</enum>
        </property>
        <property name="specialValueText">
         <string/>
@@ -110,7 +110,7 @@
         <string/>
        </property>
        <property name="minimum">
-        <number>0</number>
+        <number>-10</number>
        </property>
        <property name="maximum">
         <number>10</number>

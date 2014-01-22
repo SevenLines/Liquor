@@ -6,6 +6,8 @@
 #include "qgraphicsparticleitem.h"
 #include <QList>
 
+using namespace Mick;
+
 class MGraphicsViewEA : public MGraphicsView
 {
     Q_OBJECT
@@ -65,6 +67,11 @@ protected:
     void mouseMoveEvent(QMouseEvent *e);
     void mousePressEvent(QMouseEvent *e);
     void mouseReleaseEvent(QMouseEvent *);
+    
+signals:
+    /// вызывается когда устанавливается новый набор точек
+    /// для виджета, а старый набор lastKeyPoints убирается
+    void unsetKeyPoints(KeyPoints *lastKeyPoints);
 };
 
 #endif // MGRAPHICSVIEWEA_H

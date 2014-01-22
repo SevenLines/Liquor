@@ -5,6 +5,7 @@
 #include <QDebug>
 #include <qthreadex.h>
 #include <particlesseeker.h>
+#include <QMutex>
 #include <opencv/cv.h>
 #include <opencv/highgui.h>
 
@@ -34,8 +35,8 @@ public:
     
     QPixmap currentImage();
 
-
     ~MainWindow();
+    QMutex mutex;
     
 private slots:
    
@@ -123,6 +124,10 @@ private:
     
 private slots:
 
+    /// проверяет допустимо ли удаление и если да 
+    /// то удаляет набор точек
+    void removeSet(KeyPoints* keyPoints);
+    
     /// устанавливает размер изображения по окну
     void fitToView();
     
@@ -140,10 +145,13 @@ private slots:
     
     /// запускает долгий процесс, открывает прогресс диалог
     void startLongProcess(QThreadEx *process, QString title="");
+    void startQuickProcess(QThreadEx *process, QString title);
 
     void on_actionAbout_Qt_triggered();
     
     void on_actionAbout_triggered();
+    
+    void on_actionOpen_Log_triggered();
     
 signals:
     

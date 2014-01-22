@@ -14,6 +14,8 @@
 #include <QMessageBox>
 #include <aboutdialog.h>
 #include <QImageReader>
+#include <QProcess>
+#include <QDesktopServices>
 
 #include "particlesseeker.h"
 #include "areasseeker.h"
@@ -59,18 +61,26 @@ MainWindow::MainWindow(QString imagePath, QWidget *parent) :
     ui->sldKeyProp->toggleButtonVisible(false);
 
     // tab widget
+    // синхронизация интерфеса с текущем табом
     connect(ui->tabDocuments, SIGNAL(currentChanged(int)),
             SLOT(setCurrentStateAccordingActiveTab()));
-    ui->tabDocuments->addAction(ui->actionShow_particles);
+    // контроль освобождения памяти наборов, если они уже не используются
+    connect(ui->tabDocuments, SIGNAL(unsetKeyPoints(KeyPoints*)),
+            SLOT(removeSet(KeyPoints*)));
     
-//    load image is any passed as parameter to cmd
-//    loadImage(imagePath);
+    
+    ui->tabDocuments->addAction(ui->actionShow_particles);
+        
+    // load image is any passed as parameter to cmd
+    loadImage(imagePath);
       
     // load saved presets
     loadIni();
     
     connect(ui->SequenceAnalyzeWdg, SIGNAL(keyPointsSetActivated(KeyPoints*)),
             ui->tabDocuments, SLOT(setKeyPoints(KeyPoints*)));
+    connect(ui->SequenceAnalyzeWdg, SIGNAL(keyPointsSetRemoved(KeyPoints*)),
+            SLOT(removeSet(KeyPoints*)));
     
     // actions
     connect(ui->actionShow_particles, SIGNAL(toggled(bool)),
@@ -140,7 +150,13 @@ MainWindow::~MainWindow()
 
 void MainWindow::showImage(Mat image)
 {
-    showImage(OpenCVUtils::ToQPixmap(image));
+    mutex.lock();
+    try {
+        showImage(OpenCVUtils::ToQPixmap(image));
+    } catch (...) {
+        qDebug() << tr("error on MainWindow::showImage");
+    }
+    mutex.unlock();
 }
 
 void MainWindow::showImage(QPixmap pixmap)
@@ -387,6 +403,19 @@ KeyPoints *MainWindow::createNewKeyPoints()
     return keyPoints;
 }
 
+void MainWindow::removeSet(KeyPoints *keyPoints)
+{
+    if (!ui->SequenceAnalyzeWdg->isContains(keyPoints)) {
+        if (!ui->tabDocuments->isContains(keyPoints)) {
+            if (keyPoints) {
+                qDebug() << tr("set %1 is no longer used, and can be deleted")
+                            .arg(keyPoints->title());
+                keyPoints->deleteLater();
+            }
+        }
+    }
+}
+
 void MainWindow::fitToView()
 {
     ui->tabDocuments->fitToTab();
@@ -416,10 +445,12 @@ void MainWindow::setCurrentStateAccordingActiveTab()
     ui->SequenceAnalyzeWdg->setActive(keyPoints);
     
     // включаем/выключаем итемы меню
-    ui->actionFind_Areas->setEnabled(ui->tabDocuments->currentIndex()!=-1);
-    ui->actionSave_Image->setEnabled(ui->tabDocuments->currentIndex()!=-1);
-    ui->actionFind_particles->setEnabled(ui->tabDocuments->currentIndex()!=-1);
-    ui->actionClose_current_tab->setEnabled(ui->tabDocuments->currentIndex()!=-1);
+    bool isAnyActiveTab = ui->tabDocuments->currentIndex()!=-1;
+    ui->actionFind_Areas->setEnabled(isAnyActiveTab);
+    ui->actionSave_Image->setEnabled(isAnyActiveTab);
+    ui->actionFind_particles->setEnabled(isAnyActiveTab);
+    ui->actionClose_current_tab->setEnabled(isAnyActiveTab);
+    ui->actionFit_To_View->setEnabled(isAnyActiveTab);
 }
 
 void MainWindow::finishLookingForKeyPoints(EmisionAnalyzer *sender)
@@ -469,6 +500,11 @@ void MainWindow::startLongProcess(QThreadEx *process, QString title)
             process, SLOT(deleteLater()));
     
     process->start();
+}
+
+void MainWindow::startQuickProcess(QThreadEx *process, QString title)
+{
+//     TODO 
 }
 
 
@@ -700,4 +736,9 @@ void MainWindow::on_actionAbout_triggered()
 {
     AboutDialog about(0);
     about.exec();
+}
+
+void MainWindow::on_actionOpen_Log_triggered()
+{
+    QDesktopServices::openUrl(QUrl(applicationInfo.logFilePath));
 }

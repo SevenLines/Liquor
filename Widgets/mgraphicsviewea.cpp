@@ -46,6 +46,7 @@ MGraphicsViewEA::MGraphicsViewEA(QWidget *parent)
 
 MGraphicsViewEA::~MGraphicsViewEA() 
 {
+    emit unsetKeyPoints(keyPoints);
 }
 
 void MGraphicsViewEA::addContextMenuAction(QAction *action)
@@ -55,16 +56,18 @@ void MGraphicsViewEA::addContextMenuAction(QAction *action)
 
 void MGraphicsViewEA::setKeyPoints(Mick::KeyPoints *keyPoints)
 {    
+    Mick::KeyPoints *lastKeyPoints = this->keyPoints;
     // соединяем представление с данными
     if (this->keyPoints != keyPoints ) {
+
         this->keyPoints = keyPoints;
         if (keyPoints) {
             connect(keyPoints, SIGNAL(proportionChange(int)),
                     SLOT(setProportion(int)));
             connect(keyPoints, SIGNAL(cleared()), 
                     SLOT(clearParticleItems()));
-            connect(keyPoints, SIGNAL(destroyed()),
-                    SLOT(clearKeyPoints()));
+            /*connect(keyPoints, SIGNAL(destroyed()),
+                    SLOT(clearKeyPoints()));*/
         }
     }
         
@@ -86,6 +89,8 @@ void MGraphicsViewEA::setKeyPoints(Mick::KeyPoints *keyPoints)
         }
         setProportion(this->keyPoints->proportion());
     }
+    
+    emit unsetKeyPoints(lastKeyPoints);
 }
 
 Mick::KeyPoints *MGraphicsViewEA::getKeyPoints()
