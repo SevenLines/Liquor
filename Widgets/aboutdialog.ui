@@ -95,7 +95,7 @@
          <string notr="true"/>
         </property>
         <property name="text">
-         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:18pt; font-weight:600;&quot;&gt;Liqour&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Миша ^_^&lt;br/&gt;&lt;a href=&quot;mailto:mmailm@mail.ru&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#006e28;&quot;&gt;mmailm@mail.ru&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;&lt;p&gt;2013 г.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:18pt; font-weight:600;&quot;&gt;Liqour&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Misha ^_^&lt;br/&gt;&lt;a href=&quot;mailto:mmailm@mail.ru&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#006e28;&quot;&gt;mmailm@mail.ru&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;&lt;p&gt;2013 г.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
         </property>
         <property name="textFormat">
          <enum>Qt::RichText</enum>

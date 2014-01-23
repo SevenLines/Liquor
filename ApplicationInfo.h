@@ -18,6 +18,8 @@ public:
     QString translationPath;
     QString qtTranslationPath;
     
+    QString helpFilePath;
+    
     /// ссылка на главное окно, используется логером, 
     /// обнуляется при закрытии главного окна
     MainWindow *mainWindow;
@@ -27,6 +29,7 @@ public:
         logFilePath = QString("%1.log").arg(name);
         translationPath = QString("%1_%2").arg(name).arg(QLocale::system().name());
         qtTranslationPath = QString("qt_%1").arg(QLocale::system().name());
+        helpFilePath = "documentation/index.html";
         mainWindow = 0;
     }
     
