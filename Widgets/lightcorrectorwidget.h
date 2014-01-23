@@ -29,6 +29,7 @@ public slots:
     void onItemChanged(int index);
     void setCompositionModeItem(QPainter::CompositionMode mode);
     void setCorrectionEnabled(bool fEnable);
+    void setCorrectionEnabledF();
     
     void saveIni(QSettings *ini);
     void loadIni(QSettings *ini);

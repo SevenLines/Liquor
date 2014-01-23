@@ -14,6 +14,8 @@ QGraphicsItemLightCorrector::QGraphicsItemLightCorrector(QGraphicsItem *parent)
     
     rectBrush.setColor(Qt::red);    
     penBorder.setColor(Qt::red);
+    hoverBorder.setColor(Qt::black);
+    hoverBorder.setStyle(Qt::DashLine);
 
     toggleBorder(false);
     
@@ -105,7 +107,6 @@ void QGraphicsItemLightCorrector::setLightCorrector(LightCorrector *value)
 {
     mLightCorrector = value;
     if (mLightCorrector ) {
-        qDebug() << mLightCorrector->radius();
         outerHolder->setPos(mLightCorrector->radius(),0);
     }
     recalculate();

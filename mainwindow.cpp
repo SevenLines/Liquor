@@ -67,16 +67,11 @@ MainWindow::MainWindow(QString imagePath, QWidget *parent) :
     // контроль освобождения памяти наборов, если они уже не используются
     connect(ui->tabDocuments, SIGNAL(unsetKeyPoints(KeyPoints*)),
             SLOT(removeSet(KeyPoints*)));
+    connect(ui->tabDocuments, SIGNAL(applyLightCorrectorForMe()),
+            ui->lightCorrectorWidget, SIGNAL(apply()));
     
     
     ui->tabDocuments->addAction(ui->actionShow_particles);
-        
-    // load saved presets
-    loadIni();
-
-    // load image is any passed as parameter to cmd
-    loadImage(imagePath);
-      
     
     connect(ui->SequenceAnalyzeWdg, SIGNAL(keyPointsSetActivated(KeyPoints*)),
             ui->tabDocuments, SLOT(setKeyPoints(KeyPoints*)));
@@ -142,6 +137,14 @@ MainWindow::MainWindow(QString imagePath, QWidget *parent) :
             ui->tabDocuments, SLOT(toggleLightCorrector(bool)));
     connect(ui->actionLight_controller, SIGNAL(toggled(bool)),
             ui->lightCorrectorWidget, SLOT(setCorrectionEnabled(bool)));
+    connect(ui->lightCorrectorWidget, SIGNAL(toggled(bool)),
+            ui->actionLight_controller, SLOT(setChecked(bool)));
+    connect(ui->lightCorrectorWidget, SIGNAL(apply()),
+            SLOT(stackIterate()));
+    
+    
+    // load saved presets
+    loadIni();
                 
 }
 
@@ -207,8 +210,6 @@ void MainWindow::loadImage(QString path, bool setActive)
                                         QFileInfo(path).fileName());
     ui->tabDocuments->setLightCorrector(
                 ui->lightCorrectorWidget->addLightCorrector());
-    ui->tabDocuments->toggleLightCorrector(
-                ui->lightCorrectorWidget->isCorrectionEnabled());
 }
 
 void MainWindow::FindParticles()

@@ -30,12 +30,11 @@ MGraphicsViewEA *TabDocumentsWidget::addGraphicsViewEA(QPixmap pixmap, QString t
     // сигнал о том что у одной из вкладок изменили набор точек
     connect(viewTab, SIGNAL(unsetKeyPoints(KeyPoints*)),
             SIGNAL(unsetKeyPoints(KeyPoints*)));
+    connect(viewTab, SIGNAL(applyLightCorrectorForMe()),
+            SIGNAL(applyLightCorrectorForMe()));
     
     // еняем политику изменения размеров
-    QSizePolicy sizePolicy = viewTab->sizePolicy();
-    sizePolicy.setHorizontalPolicy(QSizePolicy::Preferred);
-    sizePolicy.setVerticalPolicy(QSizePolicy::Preferred);
-    viewTab->setSizePolicy(sizePolicy);
+    viewTab->setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Maximum);
     
     viewTab->setPixmap(pixmap);
     // фиксируем текущее изображение
@@ -260,11 +259,4 @@ void TabDocumentsWidget::MGraphicsViewEATab::setKeyPoints(Mick::KeyPoints *keyPo
 Mick::KeyPoints *TabDocumentsWidget::MGraphicsViewEATab::getKeyPoints()
 {
     return keyPoints;
-}
-
-
-void TabDocumentsWidget::MGraphicsViewEATab::applyLightCorrector()
-{
-    MGraphicsViewEA::applyLightCorrector();
-    fixCurrentImage(tr("light corrector"));
 }

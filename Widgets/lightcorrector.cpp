@@ -47,6 +47,11 @@ void LightCorrector::setPosition(QPointF value)
 
 void LightCorrector::apply(QImage &img)
 {
+    qDebug() << tr("apply LightCorrector, radius:%1px, pos:(%2; %3), mode:%4")
+                .arg(mRadius)
+                .arg(mPosition.x())
+                .arg(mPosition.y())
+                .arg(mCompositionMode);
     QPainter p(&img);
     
     p.translate(mPosition);

@@ -55,11 +55,13 @@ void MGraphicsView::applyLightCorrector()
     lightCorrector->apply(img);
    
     pixmapItem->setPixmap(QPixmap::fromImage(img));
+    //gScene->setSceneRect(QRectF());
 }
 
 void MGraphicsView::setLightCorrector(LightCorrector *value)
 {
     lightCorrector->setLightCorrector(value);
+       
 }
 
 bool MGraphicsView::isLightCorrectorEnabled()
@@ -80,7 +82,7 @@ MGraphicsView::MGraphicsView(QWidget *parent) :
     gScene = new QGraphicsScene(this);
     setScene(gScene);
 
-    setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
+    //setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
     
     // set pixmap
     //backgroundImageItem = gScene->addPixmap(QPixmap());
@@ -94,8 +96,10 @@ MGraphicsView::MGraphicsView(QWidget *parent) :
     setMouseTracking(true);
     
     // отключаем скроллбары чтобы избежать проблем с изменением размеров
-    setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-    setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff); 
+    setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
+    setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn); 
+    
+    setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
     
     // рамка для выделения
     selectionFrame = new QGraphicsItemFrame(0);
@@ -109,7 +113,7 @@ MGraphicsView::MGraphicsView(QWidget *parent) :
     toggleLightCorrector(false);
     
     connect(lightCorrector, SIGNAL(applyMe()),
-            SLOT(applyLightCorrector()));
+            SIGNAL(applyLightCorrectorForMe()));
 }
 
 MGraphicsView::~MGraphicsView()
@@ -119,7 +123,7 @@ MGraphicsView::~MGraphicsView()
 void MGraphicsView::setPixmap(QPixmap img)
 { 
     pixmapItem->setPixmap(img);
-    gScene->setSceneRect(gScene->itemsBoundingRect());
+    gScene->setSceneRect(pixmapItem->boundingRect());
 }
 
 QPointF MGraphicsView::centerOfScene()
@@ -206,21 +210,23 @@ void MGraphicsView::mouseMoveEvent(QMouseEvent *e)
                         pressPointScene.y(),
                         cPointSceneF.x() - pressPointScene.x(),
                         cPointSceneF.y() - pressPointScene.y()).normalized());
-        }/* else {
-            if (isLightCorrecterUnderMouse(e->pos())) {
-                lightCorrector->setPos(mapToScene(e->pos()));
-            }
-        }*/
+        }
     }
  
     lastPoint = curPoint;
 }
 
 
-void MGraphicsView::resizeEvent(QResizeEvent *)
+void MGraphicsView::resizeEvent(QResizeEvent *e)
 {   
-    /*if (fFitToScreen) 
-        fitInView(pixmapItem, Qt::KeepAspectRatio);*/
+    QGraphicsView::resizeEvent(e);
+
+    static bool dontResize = false;
+    if (dontResize) return;
+    dontResize = true;
+    if (fFitToScreen) 
+        fitInView(pixmapItem, Qt::KeepAspectRatio);
+    dontResize = false;
 }
 
 

@@ -50,17 +50,17 @@ public:
     /// кроме тех которые не отслеживают события мыши
     QGraphicsItem *itemAtPos(QPoint p);
     
-    void setLightCorrector(LightCorrector *value);
     bool isLightCorrectorEnabled();
     
 signals:
+    void applyLightCorrectorForMe();
     
 public slots:
     void fitToScreen();
     void toggleLightCorrector(bool fShow);
     void setLightCorrectorCompositionMode(QPainter::CompositionMode);
-    
-    virtual void applyLightCorrector();
+    void setLightCorrector(LightCorrector *value);
+    void applyLightCorrector();
     
     
     // QWidget interface

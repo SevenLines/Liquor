@@ -33,8 +33,6 @@ private:
         void fixCurrentImage(QString title, bool asKey = false, int pos = -1);
         void setKeyPoints(Mick::KeyPoints *keyPoints, bool takeParentship);
         Mick::KeyPoints *getKeyPoints();
-
-        void applyLightCorrector();
     };
     
     MGraphicsViewEATab *__currentGraphicsView();
@@ -85,6 +83,8 @@ public slots:
     
 signals:
     void unsetKeyPoints(KeyPoints*);
+    /// примените ко мне пожалуйсва световую коррекцию
+    void applyLightCorrectorForMe();
     
 };
 

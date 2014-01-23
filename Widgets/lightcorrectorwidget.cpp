@@ -35,6 +35,8 @@ LightCorrectorWidget::LightCorrectorWidget(QWidget *parent) :
             SIGNAL(apply()));
     connect(ui->groupBox, SIGNAL(toggled(bool)),
             SIGNAL(toggled(bool)));
+    connect(this, SIGNAL(apply()),
+            SLOT(setCorrectionEnabledF()));
             
 #undef ADDITEM
 }
@@ -69,6 +71,11 @@ void LightCorrectorWidget::setCompositionModeItem(QPainter::CompositionMode mode
 void LightCorrectorWidget::setCorrectionEnabled(bool fEnable)
 {
     ui->groupBox->setChecked(fEnable);
+}
+
+void LightCorrectorWidget::setCorrectionEnabledF()
+{
+    setCorrectionEnabled(false);
 }
 
 void LightCorrectorWidget::saveIni(QSettings *ini)

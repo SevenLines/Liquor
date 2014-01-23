@@ -18,6 +18,8 @@ private:
     QBrush rectBrush;
     
     QPen penBorder;
+    QPen hoverBorder;
+    QPen lastBorder;
     
     QPointF pressPosition;
     QPointF pressObjectPosition;
