@@ -59,6 +59,7 @@ public slots:
     void fitToScreen();
     void toggleLightCorrector(bool fShow);
     void setLightCorrectorCompositionMode(QPainter::CompositionMode);
+    void setLightCorrectorIntensity(int value);
     void setLightCorrector(LightCorrector *value);
     void applyLightCorrector();
     

@@ -14,6 +14,7 @@ private:
     
     QGraphicsEllipseItem *circleArea;
     QGraphicsItemHolder *outerHolder;
+    QGraphicsItemHolder *focalHolder;
     
     QBrush rectBrush;
     
@@ -39,6 +40,7 @@ signals:
 public slots:
     void recalculate();
     void recalculateRadius();
+    void recalculateFocalPoint();
     
     void hideBorder();
     void showBorder();
@@ -46,6 +48,7 @@ public slots:
     void setLightCorrector(LightCorrector *value);
     void apply(QImage &img);
     void setRadius(float value);
+    void setIntensity(int value);
     void setCompositionMode(QPainter::CompositionMode value);
 
     // QGraphicsItem interface

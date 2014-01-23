@@ -41,6 +41,7 @@ signals:
     void modeChanged(QPainter::CompositionMode);
     void apply();
     void toggled(bool fShow);
+    void intensityChanged(int value);
 };
 
 #endif // LIGHTCORRECTORWIDGET_H

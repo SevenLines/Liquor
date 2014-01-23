@@ -162,11 +162,15 @@ void QGraphicsParticleItem::toggleIgnore(bool fIgnore)
 
 void QGraphicsParticleItem::hoverEnterEvent(QGraphicsSceneHoverEvent *event)
 {
-    brushPrevious = brush();
+    //brushPrevious = brush();
     setBrush(brushSelected);;
 }
 
 void QGraphicsParticleItem::hoverLeaveEvent(QGraphicsSceneHoverEvent *event)
 { 
-    setBrush(brushPrevious);
+    if (keyPoint && keyPoint->isIgnore()) {
+        setBrush(brushIgnore);
+    } else {
+        setBrush(brushDefault);
+    }
 }

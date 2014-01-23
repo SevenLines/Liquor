@@ -26,12 +26,15 @@ public:
     float radius();
     QPainter::CompositionMode compositionMode();
     QRadialGradient gradient();
+    int intensity();
     
 public slots:
     void setRadius(float value);
     void setPosition(QPointF value);
     void apply(QImage &img);
     void setCompositionMode(QPainter::CompositionMode value);
+    void setFocalPoint(QPointF p);
+    void setIntensity(unsigned char value);
 };
 
 #endif // LIGHTCORRECTOR_H

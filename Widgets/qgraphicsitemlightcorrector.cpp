@@ -11,6 +11,9 @@ QGraphicsItemLightCorrector::QGraphicsItemLightCorrector(QGraphicsItem *parent)
     mLightCorrector = 0;
     
     outerHolder = new QGraphicsItemHolder(this);
+    focalHolder = new QGraphicsItemHolder(this);
+    
+    focalHolder->hide();
     
     rectBrush.setColor(Qt::red);    
     penBorder.setColor(Qt::red);
@@ -27,6 +30,8 @@ QGraphicsItemLightCorrector::QGraphicsItemLightCorrector(QGraphicsItem *parent)
             SLOT(showBorder()));
     connect(outerHolder, SIGNAL(leave()),
             SLOT(hideBorder()));
+    
+    connect(focalHolder, SIGNAL(hasMoved()), SLOT(recalculateFocalPoint()));
 }
 
 float QGraphicsItemLightCorrector::getRadius()
@@ -44,6 +49,13 @@ void QGraphicsItemLightCorrector::setRadius(float value)
 {
     if (!mLightCorrector) return;
     mLightCorrector->setRadius(value);
+    recalculate();
+}
+
+void QGraphicsItemLightCorrector::setIntensity(int value)
+{
+    if (!mLightCorrector) return;
+    mLightCorrector->setIntensity(value);
     recalculate();
 }
 
@@ -81,6 +93,12 @@ void QGraphicsItemLightCorrector::recalculate()
 void QGraphicsItemLightCorrector::recalculateRadius()
 {
     mLightCorrector->setRadius(getRadius());
+    recalculate();
+}
+
+void QGraphicsItemLightCorrector::recalculateFocalPoint()
+{
+    mLightCorrector->setFocalPoint(focalHolder->pos());
     recalculate();
 }
 

@@ -79,6 +79,7 @@ public slots:
     
     void setLightCorrectorMode(QPainter::CompositionMode value);
     void setLightCorrector(LightCorrector *lightCorrector);
+    void setLightCorrectorIntensity(int value);
     void applyLightCorrector();
     
 signals:

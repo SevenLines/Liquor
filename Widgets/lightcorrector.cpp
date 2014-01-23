@@ -7,7 +7,7 @@
 LightCorrector::LightCorrector(QObject *parent) :
     	QObject(parent)
 {
-    correctorGradient.setColorAt(0, QColor(255,255,255,255));
+    setIntensity(255);
     correctorGradient.setColorAt(1, QColor(255,255,255,0));
 
     mRadius = 0;
@@ -32,6 +32,12 @@ QPainter::CompositionMode LightCorrector::compositionMode()
 QRadialGradient LightCorrector::gradient()
 {
     return correctorGradient;
+}
+
+int LightCorrector::intensity()
+{
+    // интенсивность это альфа канал первого стопа градиента
+    return correctorGradient.stops().first().second.alpha();
 }
 
 void LightCorrector::setRadius(float value)
@@ -68,4 +74,14 @@ void LightCorrector::apply(QImage &img)
 void LightCorrector::setCompositionMode(QPainter::CompositionMode value)
 {
     mCompositionMode = value;
+}
+
+void LightCorrector::setFocalPoint(QPointF p)
+{
+    correctorGradient.setFocalPoint(p);
+}
+
+void LightCorrector::setIntensity(unsigned char value)
+{
+    correctorGradient.setColorAt(0, QColor(255,255,255,value));
 }

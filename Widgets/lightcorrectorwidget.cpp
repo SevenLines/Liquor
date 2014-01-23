@@ -11,7 +11,7 @@ LightCorrectorWidget::LightCorrectorWidget(QWidget *parent) :
 {
     ui->setupUi(this);
 
-    lastLightCorrector = 0;
+    lastLightCorrector = &firstLightCorrector;
     
 #define ADDITEM(title) \
     ui->cmbModes->addItem(tr(#title), QPainter::CompositionMode_##title);
@@ -37,7 +37,9 @@ LightCorrectorWidget::LightCorrectorWidget(QWidget *parent) :
             SIGNAL(toggled(bool)));
     connect(this, SIGNAL(apply()),
             SLOT(setCorrectionEnabledF()));
-            
+    
+    connect(ui->sldIntensity, SIGNAL(valueChanged(int)),
+            SIGNAL(intensityChanged(int)));
 #undef ADDITEM
 }
 
@@ -86,6 +88,7 @@ void LightCorrectorWidget::saveIni(QSettings *ini)
         ini->setValue("Position", lastLightCorrector->position());
         ini->setValue("CompositionMode", 
                       lastLightCorrector->compositionMode());
+        ini->setValue("Intensity", lastLightCorrector->intensity());
     }
     ini->setValue("CorrectionEnabled", isCorrectionEnabled());
     ini->endGroup();
@@ -94,16 +97,23 @@ void LightCorrectorWidget::saveIni(QSettings *ini)
 void LightCorrectorWidget::loadIni(QSettings *ini)
 {
     ini->beginGroup("LightCorrectorWidget");
-    firstLightCorrector.setRadius(ini->value("RadiusX", 0).toInt());
-    firstLightCorrector.setPosition(
-                ini->value("Position", QPoint()).toPointF());
     
     QPainter::CompositionMode mode = (QPainter::CompositionMode)ini->value("CompositionMode",
                           QPainter::CompositionMode_SoftLight).toInt();
+    
+    firstLightCorrector.setRadius(ini->value("RadiusX", 0).toInt());
+    firstLightCorrector.setPosition(
+                ini->value("Position", QPoint()).toPointF());
+    firstLightCorrector.setIntensity(
+                ini->value("Intensity", 255).toInt());
     firstLightCorrector.setCompositionMode(mode);
+    
+    
     setCompositionModeItem(mode);
     setCorrectionEnabled(ini->value("CorrectionEnabled", false).toBool());
+    ui->sldIntensity->setValue(firstLightCorrector.intensity());
     ini->endGroup();
+
 }
 
 LightCorrector *LightCorrectorWidget::addLightCorrector()
@@ -113,9 +123,7 @@ LightCorrector *LightCorrectorWidget::addLightCorrector()
         corrector->setRadius(lastLightCorrector->radius());
         corrector->setPosition(lastLightCorrector->position());
         corrector->setCompositionMode(lastLightCorrector->compositionMode());;
-    } else {
-        corrector->setRadius(firstLightCorrector.radius());
-        corrector->setPosition(firstLightCorrector.position());
+        corrector->setIntensity(lastLightCorrector->intensity());
     }
     corrector->setCompositionMode((QPainter::CompositionMode)
                               ui->cmbModes->itemData(
@@ -129,5 +137,6 @@ void LightCorrectorWidget::setLightCorrector(LightCorrector *lightCorrector)
     lastLightCorrector = lightCorrector;
     if (lastLightCorrector) {
         setCompositionModeItem(lastLightCorrector->compositionMode());
+        ui->sldIntensity->setValue(lightCorrector->intensity());
     }
 }

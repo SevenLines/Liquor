@@ -49,6 +49,11 @@ void MGraphicsView::setLightCorrectorCompositionMode(QPainter::CompositionMode v
     lightCorrector->update();
 }
 
+void MGraphicsView::setLightCorrectorIntensity(int value)
+{
+    lightCorrector->setIntensity(value);
+}
+
 void MGraphicsView::applyLightCorrector()
 {
     QImage img = pixmap().toImage();//.convertToFormat(QImage::Format_ARGB32);

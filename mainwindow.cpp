@@ -141,6 +141,8 @@ MainWindow::MainWindow(QString imagePath, QWidget *parent) :
             ui->actionLight_controller, SLOT(setChecked(bool)));
     connect(ui->lightCorrectorWidget, SIGNAL(apply()),
             SLOT(stackIterate()));
+    connect(ui->lightCorrectorWidget, SIGNAL(intensityChanged(int)),
+            ui->tabDocuments, SLOT(setLightCorrectorIntensity(int)));
     
     
     // load saved presets
@@ -469,7 +471,10 @@ void MainWindow::setCurrentStateAccordingActiveTab()
     ui->actionFit_To_View->setEnabled(isAnyActiveTab);
     
     // устанавливаем LightCorrectorWidget
-    ui->lightCorrectorWidget->setLightCorrector(ui->tabDocuments->currentLightCorrector());
+    if (ui->tabDocuments->currentLightCorrector()) {
+        ui->lightCorrectorWidget->setLightCorrector(
+                    ui->tabDocuments->currentLightCorrector());
+    }
     ui->lightCorrectorWidget->setCorrectionEnabled(
                 ui->tabDocuments->isCorrectionEnabled());
 }

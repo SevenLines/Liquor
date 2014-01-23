@@ -223,6 +223,14 @@ void TabDocumentsWidget::setLightCorrector(LightCorrector *lightCorrector)
     }
 }
 
+void TabDocumentsWidget::setLightCorrectorIntensity(int value)
+{
+    MGraphicsViewEATab *view = __currentGraphicsView();
+    if (view) {
+        view->setLightCorrectorIntensity(value);
+    }
+}
+
 void TabDocumentsWidget::applyLightCorrector()
 {
     MGraphicsViewEATab *view = __currentGraphicsView();

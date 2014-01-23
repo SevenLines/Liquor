@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>266</width>
-    <height>69</height>
+    <width>232</width>
+    <height>93</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -63,6 +63,30 @@
           </property>
           <property name="text">
            <string>X</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+      <item row="1" column="0">
+       <layout class="QHBoxLayout" name="horizontalLayout_2">
+        <item>
+         <widget class="QLabel" name="label_2">
+          <property name="text">
+           <string>Intensity</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QSlider" name="sldIntensity">
+          <property name="minimum">
+           <number>1</number>
+          </property>
+          <property name="maximum">
+           <number>255</number>
+          </property>
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
           </property>
          </widget>
         </item>
