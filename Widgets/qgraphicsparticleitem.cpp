@@ -47,7 +47,7 @@ QGraphicsParticleItem::QGraphicsParticleItem(QGraphicsItem *parent) :
    
     brushDefault = QBrush(QColor::fromRgb(0,255,0,128));
     brushIgnore = QBrush(QColor::fromRgb(255,0,0,64));
-    brushSelected = QBrush(QColor::fromRgb(0,0,255,164));
+    brushSelected = QBrush(QColor::fromRgb(255,0,255,164));
     
     penDefault.setColor(Qt::black);
     penSelected.setColor(Qt::blue);
@@ -160,13 +160,13 @@ void QGraphicsParticleItem::toggleIgnore(bool fIgnore)
     }
 }
 
-
 void QGraphicsParticleItem::hoverEnterEvent(QGraphicsSceneHoverEvent *event)
 {
-    //setBrush(QBrush(QColor::fromRgb(255,0,255,128)));;
+    brushPrevious = brush();
+    setBrush(brushSelected);;
 }
 
 void QGraphicsParticleItem::hoverLeaveEvent(QGraphicsSceneHoverEvent *event)
 { 
-    //setBrush(QBrush(QColor::fromRgb(255,255,0,128)));
+    setBrush(brushPrevious);
 }

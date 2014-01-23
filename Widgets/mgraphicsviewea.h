@@ -60,6 +60,7 @@ public slots:
     
     // выделеяет все частицы внутри рамки
     void selectParticlesInsideFrame();
+
     
     // QWidget interface
 protected:

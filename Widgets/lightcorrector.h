@@ -1,36 +1,37 @@
 #ifndef LIGHTCORRECTOR_H
 #define LIGHTCORRECTOR_H
 
-#include <QGraphicsEllipseItem>
-#include <QPixmap>
+#include <QImage>
 #include <QRadialGradient>
+#include <QPainter>
 
-class LightCorrector : public QObject, public QGraphicsItemGroup
+class QGraphicsItemLightCorrector;
+
+class LightCorrector : public QObject
 {
     Q_OBJECT
-private:
-    int mRadius;
+    friend class QGraphicsItemLightCorrector;
+protected:
     
-    QGraphicsEllipseItem *circleArea;
-    QGraphicsRectItem *outerHolder;
+    int mRadius;
+    QPointF mPosition;
     
     QRadialGradient correctorGradient;
-    
+    QPainter::CompositionMode mCompositionMode;
+
 public:
-    explicit LightCorrector(QGraphicsItem *parent = 0);
+    explicit LightCorrector(QObject *parent = 0);
     
-    
-signals:
+    QPointF position();
+    float radius();
+    QPainter::CompositionMode compositionMode();
+    QRadialGradient gradient();
     
 public slots:
     void setRadius(float value);
-    void apply(QPixmap img);
-    void recalculate();
-    
-    
-    // QGraphicsItem interface
-protected:
-    void mouseMoveEvent(QGraphicsSceneMouseEvent *event);
+    void setPosition(QPointF value);
+    void apply(QImage &img);
+    void setCompositionMode(QPainter::CompositionMode value);
 };
 
 #endif // LIGHTCORRECTOR_H

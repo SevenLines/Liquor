@@ -175,6 +175,7 @@ void MGraphicsViewEA::selectParticlesInsideFrame()
     } 
 }
 
+
 void MGraphicsViewEA::contextMenuEvent(QContextMenuEvent *e)
 {
     if ( e->reason() == QContextMenuEvent::Mouse) {

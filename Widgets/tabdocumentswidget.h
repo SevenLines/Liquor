@@ -33,6 +33,8 @@ private:
         void fixCurrentImage(QString title, bool asKey = false, int pos = -1);
         void setKeyPoints(Mick::KeyPoints *keyPoints, bool takeParentship);
         Mick::KeyPoints *getKeyPoints();
+
+        void applyLightCorrector();
     };
     
     MGraphicsViewEATab *__currentGraphicsView();
@@ -51,6 +53,8 @@ public:
     ImageStack *currentImageStack();
     Mick::KeyPoints *currentKeyPoints();
     QString currentTabName();
+    LightCorrector * currentLightCorrector();
+    bool isCorrectionEnabled();
     
     /// если набор используется каким
     MGraphicsViewEA *isContains(Mick::KeyPoints *keyPoints);
@@ -72,6 +76,12 @@ public slots:
     void closeCurrentTab();
     /// растянуть изображение по виджету
     void fitToTab();
+    
+    void toggleLightCorrector(bool fShow);
+    
+    void setLightCorrectorMode(QPainter::CompositionMode value);
+    void setLightCorrector(LightCorrector *lightCorrector);
+    void applyLightCorrector();
     
 signals:
     void unsetKeyPoints(KeyPoints*);

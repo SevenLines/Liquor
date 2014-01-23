@@ -44,7 +44,11 @@ SOURCES  += main.cpp\
     Core/particlesseeker.cpp \
     Core/areasseeker.cpp \
     Core/emisionanalyzerthread.cpp \
-    Widgets/lightcorrector.cpp
+    Widgets/lightcorrector.cpp \
+    Widgets/lightcorrectorwidget.cpp \
+    Widgets/qgraphicsitemholder.cpp \
+    Widgets/qgraphicsitemframe.cpp \
+    Widgets/qgraphicsitemlightcorrector.cpp
 
 HEADERS  += mainwindow.h \
     Core/imagestack.h \
@@ -76,7 +80,11 @@ HEADERS  += mainwindow.h \
     Core/areasseeker.h \
     Core/emisionanalyzerthread.h \
     Utils/opencvutils_tempates.h \
-    Widgets/lightcorrector.h
+    Widgets/lightcorrector.h \
+    Widgets/lightcorrectorwidget.h \
+    Widgets/qgraphicsitemholder.h \
+    Widgets/qgraphicsitemframe.h \
+    Widgets/qgraphicsitemlightcorrector.h
 
 FORMS    += mainwindow.ui \
     Widgets/horizontalsliderex.ui \
@@ -85,7 +93,8 @@ FORMS    += mainwindow.ui \
     Settings/formsettings.ui \
     Settings/formsettingsgeneral.ui \
     Widgets/progressdialog.ui \
-    Widgets/aboutdialog.ui
+    Widgets/aboutdialog.ui \
+    Widgets/lightcorrectorwidget.ui
 
 
 

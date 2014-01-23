@@ -16,9 +16,9 @@ QGraphicsScene *MGraphicsView::scene() const
 
 bool MGraphicsView::isLightCorrecterUnderMouse(QPoint p)
 {
-    QGraphicsItem *item = itemAt(p);
-    if (item  && item->parentItem() ) {
-        return dynamic_cast<LightCorrector*>(item->parentItem())!=0;
+    QGraphicsItem *item = itemAtPos(p);
+    if (item  ) {
+        return dynamic_cast<LightCorrector*>(item)!=0;
     }
     return false;
 }
@@ -43,6 +43,35 @@ void MGraphicsView::toggleLightCorrector(bool fShow)
     lightCorrector->setVisible(fShow);
 }
 
+void MGraphicsView::setLightCorrectorCompositionMode(QPainter::CompositionMode value)
+{
+    lightCorrector->setCompositionMode(value);
+    lightCorrector->update();
+}
+
+void MGraphicsView::applyLightCorrector()
+{
+    QImage img = pixmap().toImage();//.convertToFormat(QImage::Format_ARGB32);
+    lightCorrector->apply(img);
+   
+    pixmapItem->setPixmap(QPixmap::fromImage(img));
+}
+
+void MGraphicsView::setLightCorrector(LightCorrector *value)
+{
+    lightCorrector->setLightCorrector(value);
+}
+
+bool MGraphicsView::isLightCorrectorEnabled()
+{
+    return lightCorrector->isVisible();
+}
+
+
+//void MGraphicsView::applyLightCorrectorSlot()
+//{
+//    applyLightCorrector();
+//}
 
 MGraphicsView::MGraphicsView(QWidget *parent) :
     QGraphicsView(parent)
@@ -51,6 +80,7 @@ MGraphicsView::MGraphicsView(QWidget *parent) :
     gScene = new QGraphicsScene(this);
     setScene(gScene);
 
+    setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
     
     // set pixmap
     //backgroundImageItem = gScene->addPixmap(QPixmap());
@@ -68,19 +98,18 @@ MGraphicsView::MGraphicsView(QWidget *parent) :
     setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff); 
     
     // рамка для выделения
-    selectionFrame = gScene->addRect(0,0,0,0);
-    selectionFrame->setPen(QPen(QBrush(Qt::blue), 0, Qt::DashLine));
-    selectionFrame->setVisible(false);
-/*
-    bgPixmap = QPixmap(":/images/logo2_back.svg");
-    backgroundImageItem->setPixmap(bgPixmap);
-    backgroundImageItem->setFlags( QGraphicsItem::ItemIgnoresTransformations);*/
+    selectionFrame = new QGraphicsItemFrame(0);
+    scene()->addItem(selectionFrame);
 
     fFitToScreen = false;
     
     // set light corrector;
-    lightCorrector = new LightCorrector(0);
+    lightCorrector = new QGraphicsItemLightCorrector(0);
     gScene->addItem(lightCorrector);
+    toggleLightCorrector(false);
+    
+    connect(lightCorrector, SIGNAL(applyMe()),
+            SLOT(applyLightCorrector()));
 }
 
 MGraphicsView::~MGraphicsView()
@@ -109,13 +138,14 @@ QPixmap MGraphicsView::pixmap()
 
 void MGraphicsView::mousePressEvent(QMouseEvent *e)
 {
+    QGraphicsView::mousePressEvent(e);
     pressPointScene = mapToScene(e->pos());
     fMovedAfterPress = false;
     
     // управление выбором частиц
-    if (e->buttons().testFlag(Qt::LeftButton)) {
-        QGraphicsItem *item = itemAtPos(e->pos());
+    if (applicationInfo.isMoveObjectButtons(e->buttons())) {
         
+        QGraphicsItem *item = itemAtPos(e->pos());    
         if (item) {
             fCursorAboveItems  = true;
         } else {
@@ -130,22 +160,24 @@ void MGraphicsView::mousePressEvent(QMouseEvent *e)
     }
     
     // для правильной обработки вызова контекстного меню
-    if ( e->buttons().testFlag(Qt::RightButton)) {
+    if ( applicationInfo.isContextButtons(e->buttons())) {
         fCursorAboveItems = true;
     }
     
 }
 
-void MGraphicsView::mouseReleaseEvent(QMouseEvent *)
+void MGraphicsView::mouseReleaseEvent(QMouseEvent *e)
 {
+    QGraphicsView::mouseReleaseEvent(e);
     fMovedAfterPress = false;
-
+    fCursorAboveItems = false;
 
     selectionFrame->setVisible(false);
 }
 
 void MGraphicsView::mouseMoveEvent(QMouseEvent *e)
 { 
+    QGraphicsView::mouseMoveEvent(e);
     QPoint curPoint = e->pos();   
     QPoint offset = curPoint - lastPoint;   
     QPointF cPointSceneF = mapToScene(e->pos());
@@ -166,7 +198,7 @@ void MGraphicsView::mouseMoveEvent(QMouseEvent *e)
         setCursor(QCursor());
     }
 
-    if (e->buttons().testFlag(Qt::LeftButton)) {   
+    if (applicationInfo.isMoveObjectButtons(Qt::LeftButton)) {   
         // если курсор не над объектами рисуем рамку выделения
         if (!fCursorAboveItems) {
             selectionFrame->setRect(QRectF(
@@ -174,14 +206,12 @@ void MGraphicsView::mouseMoveEvent(QMouseEvent *e)
                         pressPointScene.y(),
                         cPointSceneF.x() - pressPointScene.x(),
                         cPointSceneF.y() - pressPointScene.y()).normalized());
-        }
+        }/* else {
+            if (isLightCorrecterUnderMouse(e->pos())) {
+                lightCorrector->setPos(mapToScene(e->pos()));
+            }
+        }*/
     }
-    
-    if (applicationInfo.isMoveObjectButtons(e->buttons()) ){
-        if (isLightCorrecterUnderMouse(e->pos())) {
-            //lightCorrector->acceptedMouseButtons() setPos(mapToScene(e->pos()));
-        }
-    } 
  
     lastPoint = curPoint;
 }
@@ -189,8 +219,8 @@ void MGraphicsView::mouseMoveEvent(QMouseEvent *e)
 
 void MGraphicsView::resizeEvent(QResizeEvent *)
 {   
-    if (fFitToScreen) 
-        fitInView(pixmapItem, Qt::KeepAspectRatio);
+    /*if (fFitToScreen) 
+        fitInView(pixmapItem, Qt::KeepAspectRatio);*/
 }
 
 

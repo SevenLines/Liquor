@@ -71,11 +71,12 @@ MainWindow::MainWindow(QString imagePath, QWidget *parent) :
     
     ui->tabDocuments->addAction(ui->actionShow_particles);
         
+    // load saved presets
+    loadIni();
+
     // load image is any passed as parameter to cmd
     loadImage(imagePath);
       
-    // load saved presets
-    loadIni();
     
     connect(ui->SequenceAnalyzeWdg, SIGNAL(keyPointsSetActivated(KeyPoints*)),
             ui->tabDocuments, SLOT(setKeyPoints(KeyPoints*)));
@@ -131,6 +132,17 @@ MainWindow::MainWindow(QString imagePath, QWidget *parent) :
     
     connect(ui->actionClose_current_tab, SIGNAL(triggered()),
             ui->tabDocuments, SLOT(closeCurrentTab()));
+    
+    // LightCorrectorWidget
+    connect(ui->lightCorrectorWidget, SIGNAL(modeChanged(QPainter::CompositionMode)),
+            ui->tabDocuments, SLOT(setLightCorrectorMode(QPainter::CompositionMode)));
+    connect(ui->lightCorrectorWidget, SIGNAL(apply()),
+            ui->tabDocuments, SLOT(applyLightCorrector()));
+    connect(ui->lightCorrectorWidget, SIGNAL(toggled(bool)),
+            ui->tabDocuments, SLOT(toggleLightCorrector(bool)));
+    connect(ui->actionLight_controller, SIGNAL(toggled(bool)),
+            ui->lightCorrectorWidget, SLOT(setCorrectionEnabled(bool)));
+                
 }
 
 
@@ -193,7 +205,10 @@ void MainWindow::loadImage(QString path, bool setActive)
     // добавляем
     ui->tabDocuments->addGraphicsViewEA(QPixmap::fromImage(temp),
                                         QFileInfo(path).fileName());
-    ui->actionShow_particles->setChecked(false);
+    ui->tabDocuments->setLightCorrector(
+                ui->lightCorrectorWidget->addLightCorrector());
+    ui->tabDocuments->toggleLightCorrector(
+                ui->lightCorrectorWidget->isCorrectionEnabled());
 }
 
 void MainWindow::FindParticles()
@@ -451,6 +466,11 @@ void MainWindow::setCurrentStateAccordingActiveTab()
     ui->actionFind_particles->setEnabled(isAnyActiveTab);
     ui->actionClose_current_tab->setEnabled(isAnyActiveTab);
     ui->actionFit_To_View->setEnabled(isAnyActiveTab);
+    
+    // устанавливаем LightCorrectorWidget
+    ui->lightCorrectorWidget->setLightCorrector(ui->tabDocuments->currentLightCorrector());
+    ui->lightCorrectorWidget->setCorrectionEnabled(
+                ui->tabDocuments->isCorrectionEnabled());
 }
 
 void MainWindow::finishLookingForKeyPoints(EmisionAnalyzer *sender)
@@ -513,7 +533,7 @@ void MainWindow::loadIni()
     QSettings settings( "Liqour.cfg", QSettings::IniFormat);
     // restore main form state
     restoreGeometry(settings.value("Geometry", QByteArray()).toByteArray());
-    loadImage(settings.value("LastImagePath", QString()).toString());
+
     
     // restore image processing presets
     // TODO
@@ -553,6 +573,9 @@ void MainWindow::loadIni()
     settings.endGroup();
     
     ui->SequenceAnalyzeWdg->loadIni(&settings);
+    ui->lightCorrectorWidget->loadIni(&settings);
+    
+    loadImage(settings.value("LastImagePath", QString()).toString());    
 }
 
 void MainWindow::saveIni()
@@ -590,6 +613,8 @@ void MainWindow::saveIni()
     settings.endGroup();
     
     ui->SequenceAnalyzeWdg->saveIni(&settings);
+    ui->lightCorrectorWidget->saveIni(&settings);
+
 }
 
 void MainWindow::on_actionExit_triggered()

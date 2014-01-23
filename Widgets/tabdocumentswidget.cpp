@@ -114,6 +114,22 @@ QString TabDocumentsWidget::currentTabName()
     return QString();
 }
 
+LightCorrector *TabDocumentsWidget::currentLightCorrector()
+{
+    MGraphicsViewEATab *viewTab = __currentGraphicsView();
+    if (viewTab)
+        return viewTab->lightCorrector->lightCorrector();
+    return 0; 
+}
+
+bool TabDocumentsWidget::isCorrectionEnabled()
+{
+    MGraphicsViewEATab *viewTab = __currentGraphicsView();
+    if (viewTab)
+        return viewTab->isLightCorrectorEnabled();
+    return false; 
+}
+
 MGraphicsViewEA *TabDocumentsWidget::isContains(KeyPoints *keyPoints)
 {
     for(int i=0;i<count();++i) {
@@ -184,6 +200,38 @@ void TabDocumentsWidget::fitToTab()
     }
 }
 
+void TabDocumentsWidget::toggleLightCorrector(bool fShow)
+{
+    MGraphicsView *view = currentGraphicsView();
+    if (view) {
+        view->toggleLightCorrector(fShow);
+    }   
+}
+
+void TabDocumentsWidget::setLightCorrectorMode(QPainter::CompositionMode value)
+{
+    MGraphicsView *view = currentGraphicsView();
+    if (view) {
+        view->setLightCorrectorCompositionMode(value);
+    }
+}
+
+void TabDocumentsWidget::setLightCorrector(LightCorrector *lightCorrector)
+{
+    MGraphicsViewEATab *view = __currentGraphicsView();
+    if (view) {
+        view->setLightCorrector(lightCorrector);
+    }
+}
+
+void TabDocumentsWidget::applyLightCorrector()
+{
+    MGraphicsViewEATab *view = __currentGraphicsView();
+    if (view) {
+        view->applyLightCorrector();
+    }
+}
+
 // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=- //
 
 /// конструктор для класса расширения под таб
@@ -212,4 +260,11 @@ void TabDocumentsWidget::MGraphicsViewEATab::setKeyPoints(Mick::KeyPoints *keyPo
 Mick::KeyPoints *TabDocumentsWidget::MGraphicsViewEATab::getKeyPoints()
 {
     return keyPoints;
+}
+
+
+void TabDocumentsWidget::MGraphicsViewEATab::applyLightCorrector()
+{
+    MGraphicsViewEA::applyLightCorrector();
+    fixCurrentImage(tr("light corrector"));
 }
