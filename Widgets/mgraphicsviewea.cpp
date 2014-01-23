@@ -5,6 +5,7 @@
 #include <QContextMenuEvent>
 #include <QDebug>
 #include <QMenu>
+#include "MainInclude.h"
 
 QGraphicsParticleItem *MGraphicsViewEA::getParticleAtPos(QPoint pos)
 {
@@ -37,15 +38,12 @@ MGraphicsViewEA::MGraphicsViewEA(QWidget *parent)
     // init context menu
     contextMenu = new QMenu(this);   
     contextMenu->addAction(toggleParticleAction);
-    
-    // рамка для выделения
-    selectionFrame = gScene->addRect(0,0,0,0);
-    selectionFrame->setPen(QPen(QBrush(Qt::blue), 0, Qt::DashLine));
-    selectionFrame->setVisible(false);
+
 }
 
 MGraphicsViewEA::~MGraphicsViewEA() 
 {
+    emit unsetKeyPoints(keyPoints);
 }
 
 void MGraphicsViewEA::addContextMenuAction(QAction *action)
@@ -55,16 +53,18 @@ void MGraphicsViewEA::addContextMenuAction(QAction *action)
 
 void MGraphicsViewEA::setKeyPoints(Mick::KeyPoints *keyPoints)
 {    
+    Mick::KeyPoints *lastKeyPoints = this->keyPoints;
     // соединяем представление с данными
     if (this->keyPoints != keyPoints ) {
+
         this->keyPoints = keyPoints;
         if (keyPoints) {
             connect(keyPoints, SIGNAL(proportionChange(int)),
                     SLOT(setProportion(int)));
             connect(keyPoints, SIGNAL(cleared()), 
                     SLOT(clearParticleItems()));
-            connect(keyPoints, SIGNAL(destroyed()),
-                    SLOT(clearKeyPoints()));
+            /*connect(keyPoints, SIGNAL(destroyed()),
+                    SLOT(clearKeyPoints()));*/
         }
     }
         
@@ -86,6 +86,8 @@ void MGraphicsViewEA::setKeyPoints(Mick::KeyPoints *keyPoints)
         }
         setProportion(this->keyPoints->proportion());
     }
+    
+    emit unsetKeyPoints(lastKeyPoints);
 }
 
 Mick::KeyPoints *MGraphicsViewEA::getKeyPoints()
@@ -160,7 +162,7 @@ bool MGraphicsViewEA::selectedItemsIgnoreState()
     return i>selectedParticles.count()/2?true:false;
 }
 
-void MGraphicsViewEA::selectInsideFrame()
+void MGraphicsViewEA::selectParticlesInsideFrame()
 {
     foreach( QGraphicsItem *item , keyPointsRoot->childItems()) {
         QGraphicsParticleItem *p 
@@ -172,6 +174,7 @@ void MGraphicsViewEA::selectInsideFrame()
         }
     } 
 }
+
 
 void MGraphicsViewEA::contextMenuEvent(QContextMenuEvent *e)
 {
@@ -207,23 +210,14 @@ void MGraphicsViewEA::mouseMoveEvent(QMouseEvent *e)
     QPointF offset = cPointSceneF - lPointSceneF;
     
     MGraphicsView::mouseMoveEvent(e); 
-    if (e->buttons().testFlag(Qt::LeftButton)) {   
+    if (applicationInfo.isMoveObjectButtons(e->buttons())) {   
         // если не было выбрано частиц рисуем рамку выделения
-        if (fParticleSelected == false) {
-            clearSelected();
-            selectionFrame->setRect(QRectF(
-                        pressPointScene.x(),
-                        pressPointScene.y(),
-                        cPointSceneF.x() - pressPointScene.x(),
-                        cPointSceneF.y() - pressPointScene.y()).normalized());
-        } else {
+        if (fParticleSelected ) {
             // иначе двигаем выбранные частицы
-            
             foreach(QGraphicsParticleItem *p, selectedParticles) {
                 p->move(offset);
             }
         }
-    } else {
     }
 }
 
@@ -232,7 +226,7 @@ void MGraphicsViewEA::mousePressEvent(QMouseEvent *e)
 {
     MGraphicsView::mousePressEvent(e);
     // управление выбором частиц
-    if (e->buttons().testFlag(Qt::LeftButton)) {
+    if (applicationInfo.isMoveObjectButtons(e->buttons())) {
         QGraphicsParticleItem *particle = getParticleAtPos(e->pos());
         
         if (particle) {
@@ -246,19 +240,8 @@ void MGraphicsViewEA::mousePressEvent(QMouseEvent *e)
                 }
             }
         } else {
-            // тут рамку рисуем
-            fParticleSelected = false;
-            selectionFrame->setVisible(true);
-            selectionFrame->setRect(
-                        pressPointScene.x(),
-                        pressPointScene.y(),
-                        0,0);
+            clearSelected();
         }
-    }
-    
-    // для правильной обработки вызова контекстного меню
-    if ( e->buttons().testFlag(Qt::RightButton)) {
-        fParticleSelected = true;
     }
 }
 
@@ -270,10 +253,9 @@ void MGraphicsViewEA::mouseReleaseEvent(QMouseEvent *e)
             clearSelected();
         }
     } 
-    MGraphicsView::mouseReleaseEvent(e);
-    // отключаем рамку выбора
+    
     if (selectionFrame->isVisible()) {
-        selectInsideFrame();
+        selectParticlesInsideFrame();
     }
-    selectionFrame->setVisible(false);
+    MGraphicsView::mouseReleaseEvent(e);
 }

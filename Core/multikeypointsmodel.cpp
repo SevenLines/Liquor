@@ -72,6 +72,8 @@ QVariant MultiKeyPointsModel::data(const QModelIndex &index, int role) const
             return kp->title();
         }
         break;
+    case Qt::ToolTipRole:
+        return kp->title();
     case Qt::CheckStateRole:
         return kp->isEnabled();
     }

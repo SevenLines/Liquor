@@ -5,6 +5,7 @@
 #include <QDebug>
 #include <qthreadex.h>
 #include <particlesseeker.h>
+#include <QMutex>
 #include <opencv/cv.h>
 #include <opencv/highgui.h>
 
@@ -34,8 +35,8 @@ public:
     
     QPixmap currentImage();
 
-
     ~MainWindow();
+    QMutex mutex;
     
 private slots:
    
@@ -90,6 +91,12 @@ private slots:
     
     void on_actionFind_Areas_triggered();
     
+    void on_actionAbout_Qt_triggered();
+    
+    void on_actionAbout_triggered();
+    
+    void on_actionOpen_Log_triggered();
+    
 public slots:   
     void log(QString message, QtMsgType type = QtDebugMsg);    
     
@@ -100,9 +107,11 @@ public slots:
     
     // добавляет точки к графику по требования SequenceAnalyzerWidget
     void addKeyPointsToGraph();
-    // очищает точки графику
+    
+    // очищает точки графика
     void clearKeyPoints();
     
+    // вкл / выкл отображение частиц
     void toggleCurrentParticles(bool fShow);
     
 private:
@@ -123,6 +132,10 @@ private:
     
 private slots:
 
+    /// проверяет допустимо ли удаление и если да 
+    /// то удаляет набор точек
+    void removeSet(KeyPoints* keyPoints);
+    
     /// устанавливает размер изображения по окну
     void fitToView();
     
@@ -136,14 +149,15 @@ private slots:
     /// вызывается когда приложение окончило поиск частиц
     void finishLookingForKeyPoints(EmisionAnalyzer *sender);
     
+    /// подключает сигналы 
+    /// для правильного взимодействия потока с приложением
     void prepareEmisionAnalyzerThread(EmisionAnalyzerThread *thread);
     
     /// запускает долгий процесс, открывает прогресс диалог
     void startLongProcess(QThreadEx *process, QString title="");
+    /// запускает короткий процесс
+    void startQuickProcess(QThreadEx *process, QString title);
 
-    void on_actionAbout_Qt_triggered();
-    
-    void on_actionAbout_triggered();
     
 signals:
     

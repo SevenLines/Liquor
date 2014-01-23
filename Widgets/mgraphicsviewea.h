@@ -6,6 +6,8 @@
 #include "qgraphicsparticleitem.h"
 #include <QList>
 
+using namespace Mick;
+
 class MGraphicsViewEA : public MGraphicsView
 {
     Q_OBJECT
@@ -14,7 +16,7 @@ protected:
     Mick::KeyPoints *keyPoints;
     
     QGraphicsItemGroup *keyPointsRoot;
-    QGraphicsRectItem *selectionFrame;
+
     
     QAction *toggleParticleAction;
     QAction *toggleShowParticlesAction;
@@ -55,8 +57,10 @@ public slots:
     void toggleIgnoreSeletItems(bool fIgnore);
     
     bool selectedItemsIgnoreState();
-    // выделеяет все объекты внутри рамки
-    void selectInsideFrame();
+    
+    // выделеяет все частицы внутри рамки
+    void selectParticlesInsideFrame();
+
     
     // QWidget interface
 protected:
@@ -65,6 +69,11 @@ protected:
     void mouseMoveEvent(QMouseEvent *e);
     void mousePressEvent(QMouseEvent *e);
     void mouseReleaseEvent(QMouseEvent *);
+    
+signals:
+    /// вызывается когда устанавливается новый набор точек
+    /// для виджета, а старый набор lastKeyPoints убирается
+    void unsetKeyPoints(KeyPoints *lastKeyPoints);
 };
 
 #endif // MGRAPHICSVIEWEA_H

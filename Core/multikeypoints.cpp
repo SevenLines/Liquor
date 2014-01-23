@@ -19,22 +19,20 @@ bool MultiKeyPoints::isContains(KeyPoints *keyPoints)
     return keyPointsSets.contains(keyPoints);
 }
 
-void MultiKeyPoints::removeSet(KeyPoints *keyPoints, bool force)
+void MultiKeyPoints::removeSet(KeyPoints *keyPoints)
 {
     if (keyPointsSets.contains(keyPoints)) {
         keyPoints->disconnect(this);
         keyPointsSets.removeOne(keyPoints);
-        if (force) {
-            delete keyPoints;
-        }
     }
     
     recalculateGraph();
+    emit setRemoved(keyPoints);
 }
 
-void MultiKeyPoints::removeSet(int i, bool force)
+void MultiKeyPoints::removeSet(int i)
 {
-    removeSet(keyPointsSets.at(i), force);
+    removeSet(keyPointsSets.at(i));
 }
 
 void MultiKeyPoints::addSet(KeyPoints *keyPoints)
@@ -47,8 +45,8 @@ void MultiKeyPoints::addSet(KeyPoints *keyPoints)
         
         // добавлем в список
         keyPointsSets.append(keyPoints);
-        // меняем родителя на текущий объект
-        keyPoints->setParent(this);
+        /*// меняем родителя на текущий объект
+        keyPoints->setParent(this);*/
         
         connect(keyPoints, SIGNAL(enabledChange(bool)),
                 SLOT(recalculateGraph()));
@@ -57,16 +55,13 @@ void MultiKeyPoints::addSet(KeyPoints *keyPoints)
     emit afterAddSet();
 }
 
-void MultiKeyPoints::clearSets(bool force)
-{
-    if (force)
-        qDeleteAll(keyPointsSets);
+void MultiKeyPoints::clearSets()
+{  
     
-    foreach(KeyPoints *set, keyPointsSets) {
-        set->disconnect(this);
+    while(keyPointsSets.count()) {
+        removeSet(0);
     }
-
-    keyPointsSets.clear();
+    
     recalculateGraph();
 }
 
@@ -110,7 +105,8 @@ void MultiKeyPoints::recalculateGraph()
                 // точное положение по x
                 iValue = (float)index * step;
                 
-                float multiplier = value * qPow(value, mPower);
+                // множетель графика, учитывается степень значения ключа
+                float multiplier = value==0?0:value * qPow(value, mPower);
                 
                 leftValue = (value - iValue) * multiplier;
                 rightValue = (iValue + step - value) * multiplier;
@@ -118,7 +114,6 @@ void MultiKeyPoints::recalculateGraph()
                 QPointF &pLeft = graph[index];
                 pLeft.setY(pLeft.y() + leftValue);
                 
-                // множетель графика, учитывается степень значения ключа
                 
                 if (index < mScale - 1 ) {
                     QPointF &pRight = graph[index + 1];

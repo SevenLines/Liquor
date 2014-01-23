@@ -51,6 +51,13 @@ public:
     ImageStack *currentImageStack();
     Mick::KeyPoints *currentKeyPoints();
     QString currentTabName();
+    LightCorrector * currentLightCorrector();
+    bool isCorrectionEnabled();
+    
+    /// если набор используется каким
+    MGraphicsViewEA *isContains(Mick::KeyPoints *keyPoints);
+    
+    MGraphicsViewEA *tabWidget(int index);
     
 public slots:
     void setCurrentImage(QPixmap pixmap);
@@ -58,7 +65,7 @@ public slots:
     /// в стэк изображений, укажите в качестве названия QString()
     void fixCurrentImage(QString title = QString(), bool asKey = false, int pos = -1);
     
-    // set wiget keyPoints and take parenting under it
+    // set keyPoints of current tab and take parenting under it
     void setKeyPoints(KeyPoints *keyPoints, bool takeParentship = false, bool setName = false);
     void setKeyPointsWithName(KeyPoints *keyPoints);
     
@@ -67,6 +74,18 @@ public slots:
     void closeCurrentTab();
     /// растянуть изображение по виджету
     void fitToTab();
+    
+    void toggleLightCorrector(bool fShow);
+    
+    void setLightCorrectorMode(QPainter::CompositionMode value);
+    void setLightCorrector(LightCorrector *lightCorrector);
+    void setLightCorrectorIntensity(int value);
+    void applyLightCorrector();
+    
+signals:
+    void unsetKeyPoints(KeyPoints*);
+    /// примените ко мне пожалуйсва световую коррекцию
+    void applyLightCorrectorForMe();
     
 };
 

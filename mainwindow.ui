@@ -88,6 +88,9 @@
              <string>Image Processing</string>
             </attribute>
             <layout class="QGridLayout" name="gridLayout_5">
+             <item row="8" column="0" colspan="4">
+              <widget class="LightCorrectorWidget" name="lightCorrectorWidget" native="true"/>
+             </item>
              <item row="0" column="3">
               <widget class="QPushButton" name="btnEqHist">
                <property name="text">
@@ -97,19 +100,6 @@
              </item>
              <item row="2" column="2">
               <widget class="QComboBox" name="cmbChannels"/>
-             </item>
-             <item row="8" column="0" colspan="2">
-              <spacer name="verticalSpacer_2">
-               <property name="orientation">
-                <enum>Qt::Vertical</enum>
-               </property>
-               <property name="sizeHint" stdset="0">
-                <size>
-                 <width>20</width>
-                 <height>40</height>
-                </size>
-               </property>
-              </spacer>
              </item>
              <item row="1" column="0" colspan="4">
               <widget class="Line" name="line">
@@ -132,17 +122,17 @@
                </property>
               </widget>
              </item>
-             <item row="2" column="0" colspan="2">
-              <widget class="QLabel" name="label_5">
-               <property name="text">
-                <string>Channels</string>
-               </property>
-              </widget>
-             </item>
              <item row="0" column="2">
               <widget class="QPushButton" name="btnInvert">
                <property name="text">
                 <string>Invert</string>
+               </property>
+              </widget>
+             </item>
+             <item row="2" column="0" colspan="2">
+              <widget class="QLabel" name="label_5">
+               <property name="text">
+                <string>Channels</string>
                </property>
               </widget>
              </item>
@@ -208,6 +198,19 @@
                 <enum>Qt::Horizontal</enum>
                </property>
               </widget>
+             </item>
+             <item row="9" column="0" colspan="4">
+              <spacer name="verticalSpacer">
+               <property name="orientation">
+                <enum>Qt::Vertical</enum>
+               </property>
+               <property name="sizeHint" stdset="0">
+                <size>
+                 <width>20</width>
+                 <height>40</height>
+                </size>
+               </property>
+              </spacer>
              </item>
             </layout>
            </widget>
@@ -552,6 +555,7 @@
     </property>
     <addaction name="actionFit_To_View"/>
     <addaction name="actionClose_current_tab"/>
+    <addaction name="actionLight_controller"/>
    </widget>
    <widget class="QMenu" name="menuFile">
     <property name="title">
@@ -580,8 +584,10 @@
     <property name="title">
      <string>Help</string>
     </property>
-    <addaction name="actionAbout_Qt"/>
+    <addaction name="actionOpen_Log"/>
+    <addaction name="separator"/>
     <addaction name="actionAbout"/>
+    <addaction name="actionAbout_Qt"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuEdit"/>
@@ -680,6 +686,22 @@
     <string>Ctrl+A</string>
    </property>
   </action>
+  <action name="actionOpen_Log">
+   <property name="text">
+    <string>Open Log</string>
+   </property>
+  </action>
+  <action name="actionLight_controller">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Light controller</string>
+   </property>
+   <property name="shortcut">
+    <string>L</string>
+   </property>
+  </action>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <customwidgets>
@@ -705,6 +727,12 @@
    <class>TabDocumentsWidget</class>
    <extends>QTabWidget</extends>
    <header>tabdocumentswidget.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>LightCorrectorWidget</class>
+   <extends>QWidget</extends>
+   <header>lightcorrectorwidget.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

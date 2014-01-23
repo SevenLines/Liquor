@@ -22,9 +22,10 @@ SequenceAnalyzeWidget::SequenceAnalyzeWidget(QWidget *parent) :
             SIGNAL(graphUpdated()));
     connect(ui->spnPower, SIGNAL(valueChanged(int)),
             &multiKeyPoints, SLOT(setPower(int)));
-    
     connect(&multiKeyPoints, SIGNAL(powerChanged(int)),
             ui->spnPower, SLOT(setValue(int)));
+    connect(&multiKeyPoints, SIGNAL(setRemoved(KeyPoints*)),
+            SIGNAL(keyPointsSetRemoved(KeyPoints*)));
     
     // setup multiKeyPoints model
     multiKeyPointsModel.setData(&multiKeyPoints);
@@ -93,14 +94,14 @@ void SequenceAnalyzeWidget::addKeyPoints(KeyPoints *keyPoints)
     multiKeyPoints.addSet(keyPoints);
 }
 
-void SequenceAnalyzeWidget::clearKeyPoints(bool force)
+void SequenceAnalyzeWidget::clearKeyPoints()
 {
-    multiKeyPoints.clearSets(force);
+    multiKeyPoints.clearSets();
 }
 
-void SequenceAnalyzeWidget::removeSet(KeyPoints *keyPoints, bool force)
+void SequenceAnalyzeWidget::removeSet(KeyPoints *keyPoints)
 {
-    multiKeyPoints.removeSet(keyPoints, force);
+    multiKeyPoints.removeSet(keyPoints);
 }
 
 bool SequenceAnalyzeWidget::isContains(KeyPoints *keyPoints)

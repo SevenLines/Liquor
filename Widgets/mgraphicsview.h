@@ -5,21 +5,33 @@
 #include <QGraphicsScene>
 #include <QGraphicsPixmapItem>
 #include <QPixmap>
+#include "qgraphicsitemframe.h"
+#include "lightcorrector.h"
+#include "qgraphicsitemlightcorrector.h"
 
 class MGraphicsView : public QGraphicsView
 {
     Q_OBJECT
+  /*  
+private slots:
+    /// сигнал костыль для виртуального метода applyLightCorrector
+    void applyLightCorrectorSlot();*/
     
 protected:
     QGraphicsScene *gScene;
     
     QPixmap bgPixmap;
     QBrush backgroundBrush2;
+    QGraphicsItemFrame *selectionFrame;
 
     QGraphicsPixmapItem *pixmapItem;
     QGraphicsPixmapItem *backgroundImageItem;
+    QGraphicsItemLightCorrector *lightCorrector;
+    
+    
     bool fFitToScreen;
     bool fMovedAfterPress;
+    bool fCursorAboveItems;
     QPointF pressPointScene;
     QPoint lastPoint;
     
@@ -31,16 +43,31 @@ public:
     QPixmap pixmap();
     
     QGraphicsScene *scene() const;
+
+    bool isLightCorrecterUnderMouse(QPoint p);
+
+    /// возвращает объект под курсором, 
+    /// кроме тех которые не отслеживают события мыши
+    QGraphicsItem *itemAtPos(QPoint p);
+    
+    bool isLightCorrectorEnabled();
     
 signals:
+    void applyLightCorrectorForMe();
     
 public slots:
     void fitToScreen();
+    void toggleLightCorrector(bool fShow);
+    void setLightCorrectorCompositionMode(QPainter::CompositionMode);
+    void setLightCorrectorIntensity(int value);
+    void setLightCorrector(LightCorrector *value);
+    void applyLightCorrector();
+    
     
     // QWidget interface
 protected:
     void mousePressEvent(QMouseEvent *);
-    void mouseReleaseEvent(QMouseEvent *);
+    void mouseReleaseEvent(QMouseEvent *e);
     void mouseMoveEvent(QMouseEvent *);
     void resizeEvent(QResizeEvent *);
     void wheelEvent(QWheelEvent *);

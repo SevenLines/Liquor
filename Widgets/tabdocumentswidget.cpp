@@ -27,11 +27,14 @@ MGraphicsViewEA *TabDocumentsWidget::addGraphicsViewEA(QPixmap pixmap, QString t
         viewTab->addContextMenuAction(action);
     }
     
+    // сигнал о том что у одной из вкладок изменили набор точек
+    connect(viewTab, SIGNAL(unsetKeyPoints(KeyPoints*)),
+            SIGNAL(unsetKeyPoints(KeyPoints*)));
+    connect(viewTab, SIGNAL(applyLightCorrectorForMe()),
+            SIGNAL(applyLightCorrectorForMe()));
+    
     // еняем политику изменения размеров
-    QSizePolicy sizePolicy = viewTab->sizePolicy();
-    sizePolicy.setHorizontalPolicy(QSizePolicy::Preferred);
-    sizePolicy.setVerticalPolicy(QSizePolicy::Preferred);
-    viewTab->setSizePolicy(sizePolicy);
+    viewTab->setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Maximum);
     
     viewTab->setPixmap(pixmap);
     // фиксируем текущее изображение
@@ -110,6 +113,43 @@ QString TabDocumentsWidget::currentTabName()
     return QString();
 }
 
+LightCorrector *TabDocumentsWidget::currentLightCorrector()
+{
+    MGraphicsViewEATab *viewTab = __currentGraphicsView();
+    if (viewTab)
+        return viewTab->lightCorrector->lightCorrector();
+    return 0; 
+}
+
+bool TabDocumentsWidget::isCorrectionEnabled()
+{
+    MGraphicsViewEATab *viewTab = __currentGraphicsView();
+    if (viewTab)
+        return viewTab->isLightCorrectorEnabled();
+    return false; 
+}
+
+MGraphicsViewEA *TabDocumentsWidget::isContains(KeyPoints *keyPoints)
+{
+    for(int i=0;i<count();++i) {
+        MGraphicsViewEA *v = tabWidget(i);
+        if ( v && v->getKeyPoints() == keyPoints ) {
+            return v;
+        }
+    }
+    return 0;
+}
+
+MGraphicsViewEA *TabDocumentsWidget::tabWidget(int index)
+{
+    QWidget *wgt = widget(index);
+    MGraphicsViewEA * view = 0;
+    if (wgt && (view = dynamic_cast<MGraphicsViewEATab*>(wgt)) ) {
+        return view;
+    }
+    return 0;
+}
+
 void TabDocumentsWidget::setKeyPoints(Mick::KeyPoints *keyPoints, bool takeParentship, bool setName)
 {
     MGraphicsViewEATab *viewTab = __currentGraphicsView();
@@ -159,6 +199,46 @@ void TabDocumentsWidget::fitToTab()
     }
 }
 
+void TabDocumentsWidget::toggleLightCorrector(bool fShow)
+{
+    MGraphicsView *view = currentGraphicsView();
+    if (view) {
+        view->toggleLightCorrector(fShow);
+    }   
+}
+
+void TabDocumentsWidget::setLightCorrectorMode(QPainter::CompositionMode value)
+{
+    MGraphicsView *view = currentGraphicsView();
+    if (view) {
+        view->setLightCorrectorCompositionMode(value);
+    }
+}
+
+void TabDocumentsWidget::setLightCorrector(LightCorrector *lightCorrector)
+{
+    MGraphicsViewEATab *view = __currentGraphicsView();
+    if (view) {
+        view->setLightCorrector(lightCorrector);
+    }
+}
+
+void TabDocumentsWidget::setLightCorrectorIntensity(int value)
+{
+    MGraphicsViewEATab *view = __currentGraphicsView();
+    if (view) {
+        view->setLightCorrectorIntensity(value);
+    }
+}
+
+void TabDocumentsWidget::applyLightCorrector()
+{
+    MGraphicsViewEATab *view = __currentGraphicsView();
+    if (view) {
+        view->applyLightCorrector();
+    }
+}
+
 // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=- //
 
 /// конструктор для класса расширения под таб
@@ -179,9 +259,9 @@ void TabDocumentsWidget::MGraphicsViewEATab::fixCurrentImage(QString title, bool
 void TabDocumentsWidget::MGraphicsViewEATab::setKeyPoints(Mick::KeyPoints *keyPoints, bool takeParentship)
 {
     MGraphicsViewEA::setKeyPoints(keyPoints);
-    if (takeParentship) {
+    /*if (takeParentship) {
         keyPoints->setParent(this);
-    }
+    }*/
 }
 
 Mick::KeyPoints *TabDocumentsWidget::MGraphicsViewEATab::getKeyPoints()

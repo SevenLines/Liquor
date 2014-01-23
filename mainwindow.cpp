@@ -14,6 +14,8 @@
 #include <QMessageBox>
 #include <aboutdialog.h>
 #include <QImageReader>
+#include <QProcess>
+#include <QDesktopServices>
 
 #include "particlesseeker.h"
 #include "areasseeker.h"
@@ -59,18 +61,22 @@ MainWindow::MainWindow(QString imagePath, QWidget *parent) :
     ui->sldKeyProp->toggleButtonVisible(false);
 
     // tab widget
+    // синхронизация интерфеса с текущем табом
     connect(ui->tabDocuments, SIGNAL(currentChanged(int)),
             SLOT(setCurrentStateAccordingActiveTab()));
-    ui->tabDocuments->addAction(ui->actionShow_particles);
+    // контроль освобождения памяти наборов, если они уже не используются
+    connect(ui->tabDocuments, SIGNAL(unsetKeyPoints(KeyPoints*)),
+            SLOT(removeSet(KeyPoints*)));
+    connect(ui->tabDocuments, SIGNAL(applyLightCorrectorForMe()),
+            ui->lightCorrectorWidget, SIGNAL(apply()));
     
-//    load image is any passed as parameter to cmd
-//    loadImage(imagePath);
-      
-    // load saved presets
-    loadIni();
+    
+    ui->tabDocuments->addAction(ui->actionShow_particles);
     
     connect(ui->SequenceAnalyzeWdg, SIGNAL(keyPointsSetActivated(KeyPoints*)),
             ui->tabDocuments, SLOT(setKeyPoints(KeyPoints*)));
+    connect(ui->SequenceAnalyzeWdg, SIGNAL(keyPointsSetRemoved(KeyPoints*)),
+            SLOT(removeSet(KeyPoints*)));
     
     // actions
     connect(ui->actionShow_particles, SIGNAL(toggled(bool)),
@@ -121,6 +127,27 @@ MainWindow::MainWindow(QString imagePath, QWidget *parent) :
     
     connect(ui->actionClose_current_tab, SIGNAL(triggered()),
             ui->tabDocuments, SLOT(closeCurrentTab()));
+    
+    // LightCorrectorWidget
+    connect(ui->lightCorrectorWidget, SIGNAL(modeChanged(QPainter::CompositionMode)),
+            ui->tabDocuments, SLOT(setLightCorrectorMode(QPainter::CompositionMode)));
+    connect(ui->lightCorrectorWidget, SIGNAL(apply()),
+            ui->tabDocuments, SLOT(applyLightCorrector()));
+    connect(ui->lightCorrectorWidget, SIGNAL(toggled(bool)),
+            ui->tabDocuments, SLOT(toggleLightCorrector(bool)));
+    connect(ui->actionLight_controller, SIGNAL(toggled(bool)),
+            ui->lightCorrectorWidget, SLOT(setCorrectionEnabled(bool)));
+    connect(ui->lightCorrectorWidget, SIGNAL(toggled(bool)),
+            ui->actionLight_controller, SLOT(setChecked(bool)));
+    connect(ui->lightCorrectorWidget, SIGNAL(apply()),
+            SLOT(stackIterate()));
+    connect(ui->lightCorrectorWidget, SIGNAL(intensityChanged(int)),
+            ui->tabDocuments, SLOT(setLightCorrectorIntensity(int)));
+    
+    
+    // load saved presets
+    loadIni();
+                
 }
 
 
@@ -140,7 +167,13 @@ MainWindow::~MainWindow()
 
 void MainWindow::showImage(Mat image)
 {
-    showImage(OpenCVUtils::ToQPixmap(image));
+    mutex.lock();
+    try {
+        showImage(OpenCVUtils::ToQPixmap(image));
+    } catch (...) {
+        qDebug() << tr("error on MainWindow::showImage");
+    }
+    mutex.unlock();
 }
 
 void MainWindow::showImage(QPixmap pixmap)
@@ -177,7 +210,8 @@ void MainWindow::loadImage(QString path, bool setActive)
     // добавляем
     ui->tabDocuments->addGraphicsViewEA(QPixmap::fromImage(temp),
                                         QFileInfo(path).fileName());
-    ui->actionShow_particles->setChecked(false);
+    ui->tabDocuments->setLightCorrector(
+                ui->lightCorrectorWidget->addLightCorrector());
 }
 
 void MainWindow::FindParticles()
@@ -387,6 +421,19 @@ KeyPoints *MainWindow::createNewKeyPoints()
     return keyPoints;
 }
 
+void MainWindow::removeSet(KeyPoints *keyPoints)
+{
+    if (!ui->SequenceAnalyzeWdg->isContains(keyPoints)) {
+        if (!ui->tabDocuments->isContains(keyPoints)) {
+            if (keyPoints) {
+                qDebug() << tr("set %1 is no longer used, and can be deleted")
+                            .arg(keyPoints->title());
+                keyPoints->deleteLater();
+            }
+        }
+    }
+}
+
 void MainWindow::fitToView()
 {
     ui->tabDocuments->fitToTab();
@@ -416,10 +463,20 @@ void MainWindow::setCurrentStateAccordingActiveTab()
     ui->SequenceAnalyzeWdg->setActive(keyPoints);
     
     // включаем/выключаем итемы меню
-    ui->actionFind_Areas->setEnabled(ui->tabDocuments->currentIndex()!=-1);
-    ui->actionSave_Image->setEnabled(ui->tabDocuments->currentIndex()!=-1);
-    ui->actionFind_particles->setEnabled(ui->tabDocuments->currentIndex()!=-1);
-    ui->actionClose_current_tab->setEnabled(ui->tabDocuments->currentIndex()!=-1);
+    bool isAnyActiveTab = ui->tabDocuments->currentIndex()!=-1;
+    ui->actionFind_Areas->setEnabled(isAnyActiveTab);
+    ui->actionSave_Image->setEnabled(isAnyActiveTab);
+    ui->actionFind_particles->setEnabled(isAnyActiveTab);
+    ui->actionClose_current_tab->setEnabled(isAnyActiveTab);
+    ui->actionFit_To_View->setEnabled(isAnyActiveTab);
+    
+    // устанавливаем LightCorrectorWidget
+    if (ui->tabDocuments->currentLightCorrector()) {
+        ui->lightCorrectorWidget->setLightCorrector(
+                    ui->tabDocuments->currentLightCorrector());
+    }
+    ui->lightCorrectorWidget->setCorrectionEnabled(
+                ui->tabDocuments->isCorrectionEnabled());
 }
 
 void MainWindow::finishLookingForKeyPoints(EmisionAnalyzer *sender)
@@ -471,13 +528,18 @@ void MainWindow::startLongProcess(QThreadEx *process, QString title)
     process->start();
 }
 
+void MainWindow::startQuickProcess(QThreadEx *process, QString title)
+{
+//     TODO 
+}
+
 
 void MainWindow::loadIni()
 {
     QSettings settings( "Liqour.cfg", QSettings::IniFormat);
     // restore main form state
     restoreGeometry(settings.value("Geometry", QByteArray()).toByteArray());
-    loadImage(settings.value("LastImagePath", QString()).toString());
+
     
     // restore image processing presets
     // TODO
@@ -517,6 +579,9 @@ void MainWindow::loadIni()
     settings.endGroup();
     
     ui->SequenceAnalyzeWdg->loadIni(&settings);
+    ui->lightCorrectorWidget->loadIni(&settings);
+    
+    loadImage(settings.value("LastImagePath", QString()).toString());    
 }
 
 void MainWindow::saveIni()
@@ -554,6 +619,8 @@ void MainWindow::saveIni()
     settings.endGroup();
     
     ui->SequenceAnalyzeWdg->saveIni(&settings);
+    ui->lightCorrectorWidget->saveIni(&settings);
+
 }
 
 void MainWindow::on_actionExit_triggered()
@@ -700,4 +767,9 @@ void MainWindow::on_actionAbout_triggered()
 {
     AboutDialog about(0);
     about.exec();
+}
+
+void MainWindow::on_actionOpen_Log_triggered()
+{
+    QDesktopServices::openUrl(QUrl(applicationInfo.logFilePath));
 }
