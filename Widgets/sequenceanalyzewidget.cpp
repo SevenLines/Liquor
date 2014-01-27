@@ -82,6 +82,10 @@ SequenceAnalyzeWidget::SequenceAnalyzeWidget(QWidget *parent) :
     
     // lstSet context actions menu
     ui->lstSets->addAction(ui->actionRemove_item);
+    
+    // chkUseComma
+    connect(ui->chkUseComma, SIGNAL(toggled(bool)),
+            SLOT(setUseCommaForDumpSave(bool)));
 }
 
 SequenceAnalyzeWidget::~SequenceAnalyzeWidget()
@@ -159,7 +163,7 @@ void SequenceAnalyzeWidget::savePoints()
                                 lastPath,
                                 tr("Text files (*.txt)"));
     if (!savePath.isNull()) {
-        multiKeyPoints.saveDumpToFile(savePath);
+        multiKeyPoints.saveDumpToFile(savePath, fUseCommaForDumpSave);
         lastPath = savePath;
     }
 }
@@ -195,6 +199,7 @@ void SequenceAnalyzeWidget::saveIni(QSettings *ini)
     
     ini->beginGroup("Graph");
     ini->setValue("Power", multiKeyPoints.power());
+    ini->setValue("fUseCommaForDumpSave", fUseCommaForDumpSave);
     ini->endGroup();
     
     ini->endGroup();
@@ -214,6 +219,7 @@ void SequenceAnalyzeWidget::loadIni(QSettings *ini)
     
     ini->beginGroup("Graph");
     multiKeyPoints.setPower(ini->value("Power", 0).toInt());
+    ui->chkUseComma->setChecked(ini->value("fUseCommaForDumpSave", true).toBool());
     ini->endGroup();
     
     ini->endGroup();
@@ -227,6 +233,16 @@ void SequenceAnalyzeWidget::setAddParticlesButtonText(QString text)
 void SequenceAnalyzeWidget::toggleAddParticleButtonEnbaled(bool fEnabled)
 {
     ui->btnAddParticleSet->setEnabled(fEnabled);
+}
+
+void SequenceAnalyzeWidget::setUseCommaForDumpSave(bool value)
+{
+    fUseCommaForDumpSave = value;
+}
+
+bool SequenceAnalyzeWidget::useCommaForDumpSave()
+{
+    return fUseCommaForDumpSave;
 }
 
 void SequenceAnalyzeWidget::remove(int index)
