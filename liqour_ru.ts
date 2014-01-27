@@ -763,17 +763,27 @@ pos:(%2; %3)</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="Widgets/sequenceanalyzewidget.ui" line="274"/>
+        <location filename="Widgets/sequenceanalyzewidget.ui" line="248"/>
+        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;If checked, then comma is used as separator of fractional part&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Если галка стоит, то запятая используется в качестве разделителя дробной части&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+    </message>
+    <message>
+        <location filename="Widgets/sequenceanalyzewidget.ui" line="251"/>
+        <source>. -&gt; ,</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location filename="Widgets/sequenceanalyzewidget.ui" line="284"/>
         <source>Add particle set</source>
         <translation>Добавить набор</translation>
     </message>
     <message>
-        <location filename="Widgets/sequenceanalyzewidget.ui" line="281"/>
+        <location filename="Widgets/sequenceanalyzewidget.ui" line="291"/>
         <source>Clear</source>
         <translation>Отчистить</translation>
     </message>
     <message>
-        <location filename="Widgets/sequenceanalyzewidget.ui" line="303"/>
+        <location filename="Widgets/sequenceanalyzewidget.ui" line="313"/>
         <source>Remove item</source>
         <translation>Удалить</translation>
     </message>
@@ -795,7 +805,7 @@ pos:(%2; %3)</source>
     </message>
     <message>
         <location filename="Widgets/sequenceanalyzewidget.cpp" line="54"/>
-        <location filename="Widgets/sequenceanalyzewidget.cpp" line="125"/>
+        <location filename="Widgets/sequenceanalyzewidget.cpp" line="129"/>
         <source>count</source>
         <translation>количество</translation>
     </message>
@@ -805,39 +815,39 @@ pos:(%2; %3)</source>
         <translation>размер (в px)</translation>
     </message>
     <message>
-        <location filename="Widgets/sequenceanalyzewidget.cpp" line="115"/>
+        <location filename="Widgets/sequenceanalyzewidget.cpp" line="119"/>
         <source>count: %1</source>
         <translation>количество: %1</translation>
     </message>
     <message>
-        <location filename="Widgets/sequenceanalyzewidget.cpp" line="126"/>
+        <location filename="Widgets/sequenceanalyzewidget.cpp" line="130"/>
         <source>radius, px</source>
         <translation>радиус, px</translation>
     </message>
     <message>
-        <location filename="Widgets/sequenceanalyzewidget.cpp" line="127"/>
+        <location filename="Widgets/sequenceanalyzewidget.cpp" line="131"/>
         <source>area, px2</source>
         <translation>площадь, px2</translation>
     </message>
     <message>
-        <location filename="Widgets/sequenceanalyzewidget.cpp" line="128"/>
+        <location filename="Widgets/sequenceanalyzewidget.cpp" line="132"/>
         <source>volume, px3</source>
         <translation>объем, px3</translation>
     </message>
     <message>
-        <location filename="Widgets/sequenceanalyzewidget.cpp" line="130"/>
+        <location filename="Widgets/sequenceanalyzewidget.cpp" line="134"/>
         <source>px%1</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="Widgets/sequenceanalyzewidget.cpp" line="158"/>
-        <location filename="Widgets/sequenceanalyzewidget.cpp" line="170"/>
+        <location filename="Widgets/sequenceanalyzewidget.cpp" line="162"/>
+        <location filename="Widgets/sequenceanalyzewidget.cpp" line="174"/>
         <source>select dump file</source>
         <translation>выберете файл с дампом точек</translation>
     </message>
     <message>
-        <location filename="Widgets/sequenceanalyzewidget.cpp" line="160"/>
-        <location filename="Widgets/sequenceanalyzewidget.cpp" line="172"/>
+        <location filename="Widgets/sequenceanalyzewidget.cpp" line="164"/>
+        <location filename="Widgets/sequenceanalyzewidget.cpp" line="176"/>
         <source>Text files (*.txt)</source>
         <translation>Текстовые файлы (*.txt)</translation>
     </message>

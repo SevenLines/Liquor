@@ -31,6 +31,7 @@ public:
     
 private:
     Ui::SequenceAnalyzeWidget *ui;
+    bool fUseCommaForDumpSave;
 
     MultiKeyPoints multiKeyPoints;
     MultiKeyPointsModel multiKeyPointsModel;
@@ -76,6 +77,9 @@ public slots:
     
     void setAddParticlesButtonText(QString text);
     void toggleAddParticleButtonEnbaled(bool fEnabled);
+    
+    void setUseCommaForDumpSave(bool value);
+    bool useCommaForDumpSave();
     
     // удаляет набор под номером index
     void remove(int index);

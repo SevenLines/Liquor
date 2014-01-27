@@ -32,6 +32,8 @@ MGraphicsViewEA *TabDocumentsWidget::addGraphicsViewEA(QPixmap pixmap, QString t
             SIGNAL(unsetKeyPoints(KeyPoints*)));
     connect(viewTab, SIGNAL(applyLightCorrectorForMe()),
             SIGNAL(applyLightCorrectorForMe()));
+    connect(this, SIGNAL(currentChanged(int)),
+            SIGNAL(invalidated()));
     
     // еняем политику изменения размеров
     viewTab->setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Maximum);
@@ -158,6 +160,7 @@ void TabDocumentsWidget::setKeyPoints(Mick::KeyPoints *keyPoints, bool takeParen
             keyPoints->setTitle(tabText(currentIndex()));
         }
         viewTab->setKeyPoints(keyPoints, takeParentship);
+        emit invalidated();
     }
 }
 

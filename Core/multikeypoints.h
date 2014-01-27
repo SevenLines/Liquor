@@ -59,7 +59,7 @@ public slots:
     void setPower(int power);
     void setScale(int scale);
     
-    void saveDumpToFile(QString filePath);
+    void saveDumpToFile(QString filePath, bool fUseComma);
     void loadDumpFromFile(QString filePath);   
     
     /// удаляет набор из списка

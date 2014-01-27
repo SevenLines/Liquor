@@ -198,7 +198,7 @@ KeyPoints *MultiKeyPoints::at(int index)
     return keyPointsSets[index];
 }
 
-void MultiKeyPoints::saveDumpToFile(QString filePath)
+void MultiKeyPoints::saveDumpToFile(QString filePath, bool fUseComma)
 {
     QFile data(filePath);
     if (data.open(QFile::WriteOnly | QFile::Truncate | QFile::Text)) {
@@ -216,10 +216,24 @@ void MultiKeyPoints::saveDumpToFile(QString filePath)
             for(int i=0;i<set->count();++i) {
                 Mick::KeyPoint &p = (*set)[i];
                 if (!p.isIgnore()) {
+                    QString strValue = QString::number(set->keyValue(i));
+                    QString strPosX = QString::number(p.pos().x());
+                    QString strPosY = QString::number(p.pos().y());
+                    
+                    // replace dot char with comma
+                    if (fUseComma) {
+                        strValue = strValue.replace('.',',');
+                        strPosX = strPosX.replace('.',',');
+                        strPosY = strPosY.replace('.',',');
+                    } else {
+                        strValue = strValue.replace(',','.');
+                        strPosX = strPosX.replace(',','.');
+                        strPosY = strPosY.replace(',','.'); 
+                    }
                     out << (counter++) 
-                           << '\t' << p.calcValue()
-                              << '\t' << p.pos().x()
-                                 << '\t' << p.pos().y()
+                           << '\t' << strValue
+                              << '\t' << strPosX
+                                 << '\t' << strPosY
                                     << endl;
                 }
             }
@@ -230,6 +244,9 @@ void MultiKeyPoints::saveDumpToFile(QString filePath)
 void MultiKeyPoints::loadDumpFromFile(QString filePath)
 {
     KeyPoints *newSet = new KeyPoints();
+    newSet->setTitle(QFile(filePath).fileName());
+    // TODO check for type
+    newSet->setType(KeyPoints::Particles);
     
     QFile data(filePath);
     if (data.open(QFile::ReadOnly | QFile::Text)) {
@@ -245,8 +262,8 @@ void MultiKeyPoints::loadDumpFromFile(QString filePath)
             QStringList values = line.split("\t",  QString::SkipEmptyParts);
             if (values.count() == 4) {
                 Mick::KeyPoint k;
-                k.setValue(values[1].toFloat());
-                k.setPos(QPointF(values[2].toFloat(), values[3].toFloat()));
+                k.setValue(values[1].replace(',','.').toFloat());
+                k.setPos(QPointF(values[2].replace(',','.').toFloat(), values[3].replace(',','.').toFloat()));
                 newSet->addKey(k);
             }
         }

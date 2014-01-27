@@ -208,7 +208,7 @@
           </property>
           <property name="maximumSize">
            <size>
-            <width>40</width>
+            <width>50</width>
             <height>40</height>
            </size>
           </property>
@@ -220,7 +220,7 @@
         <item>
          <widget class="QPushButton" name="btnLoad">
           <property name="sizePolicy">
-           <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+           <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
             <horstretch>0</horstretch>
             <verstretch>0</verstretch>
            </sizepolicy>
@@ -233,12 +233,22 @@
           </property>
           <property name="maximumSize">
            <size>
-            <width>40</width>
+            <width>50</width>
             <height>40</height>
            </size>
           </property>
           <property name="text">
            <string>LOAD</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="chkUseComma">
+          <property name="toolTip">
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;If checked, then comma is used as separator of fractional part&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          </property>
+          <property name="text">
+           <string>. -&gt; ,</string>
           </property>
          </widget>
         </item>
