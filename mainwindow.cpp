@@ -61,14 +61,15 @@ MainWindow::MainWindow(QString imagePath, QWidget *parent) :
     ui->sldKeyProp->toggleButtonVisible(false);
 
     // tab widget
-    // синхронизация интерфеса с текущем табом
-    connect(ui->tabDocuments, SIGNAL(currentChanged(int)),
+    // синхронизация интерфеса с текущем табом 
+    connect(ui->tabDocuments, SIGNAL(invalidated()),
             SLOT(setCurrentStateAccordingActiveTab()));
     // контроль освобождения памяти наборов, если они уже не используются
     connect(ui->tabDocuments, SIGNAL(unsetKeyPoints(KeyPoints*)),
             SLOT(removeSet(KeyPoints*)));
     connect(ui->tabDocuments, SIGNAL(applyLightCorrectorForMe()),
             ui->lightCorrectorWidget, SIGNAL(apply()));
+            
     
     
     ui->tabDocuments->addAction(ui->actionShow_particles);

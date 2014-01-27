@@ -86,6 +86,8 @@ signals:
     void unsetKeyPoints(KeyPoints*);
     /// примените ко мне пожалуйсва световую коррекцию
     void applyLightCorrectorForMe();
+    /// вызывается когда меняется состояние виджета
+    void invalidated();
     
 };
 
