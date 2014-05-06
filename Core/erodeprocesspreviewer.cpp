@@ -25,7 +25,7 @@ void ErodeProcessPreviewer::regenImages()
     
     Mat baseScaledImage;// baseImage.rows*k, baseImage.cols*k, baseImage.type());
     
-    resize(baseImage, baseScaledImage, Size(), k, k);
+    resize(baseImage, baseScaledImage, Size(), k, k, INTER_LANCZOS4);
     
     for (int i=6;i<18;i+=1) {
         Mat img;
@@ -41,5 +41,5 @@ void ErodeProcessPreviewer::regenImages()
 
 QString ErodeProcessPreviewer::title()
 {
-    return tr("Erode. Select the most suitable variant.");
+    return tr("Erode. Select the most suitable variant. For the perfomance sake real result can be a bit differ from present one.");
 }

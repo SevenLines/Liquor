@@ -1,6 +1,7 @@
 #include "thresholdprocesspreviewer.h"
 #include "imageprocessing.h"
 #include "opencvutils.h"
+#include <QDebug>
 
 const QString ThresholdProcessPreviewer::PARAM_BORDER = "threshold";
 
@@ -33,12 +34,16 @@ void ThresholdProcessPreviewer::regenImages()
         baseScaledImage = baseImage;
     }
     
-    int c = 10;
-    for (int i=40;i<250;i+=c) {
+    int c = 4;
+    for (int i=20;i<200;i+=(2*c + 1)) {
         Mat img;
+        if (i%2 != 1)
+            i += 1;
         ImageProcessing::threshold(baseScaledImage, img, i);
+//        ImageProcessing::adaptiveThreshold(baseScaledImage, img, 255, i, ADAPTIVE_THRESH_MEAN_C);
         ProcessInfo info;
         info.image = OpenCVUtils::ToQImage(img);
+//        info.params[ThresholdProcessPreviewer::PARAM_BORDER] = (int)(i/k) % 2 == 0?i/k+1:i/k;
         info.params[ThresholdProcessPreviewer::PARAM_BORDER] = i;
         images.append(info);
     }

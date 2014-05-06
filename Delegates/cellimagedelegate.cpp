@@ -55,4 +55,5 @@ QSize CellImageDelegate::sizeHint(const QStyleOptionViewItem &option,
     
     ProcessInfo p = qvariant_cast<ProcessInfo>(index.data());
     return QSize(p.image.width(), p.image.height());
+//    return QSize(300, 300);
 }

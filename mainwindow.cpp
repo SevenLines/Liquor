@@ -218,7 +218,6 @@ void MainWindow::loadImage(QString path, bool setActive)
 
 void MainWindow::FindParticles()
 {
-    log(tr("looking for particles"));
     
     ImageProcessingDialog dialog;
     ImageProcessPreviewer *pr = new ErodeProcessPreviewer(
@@ -227,32 +226,41 @@ void MainWindow::FindParticles()
     dialog.setPreviewer(pr);
     dialog.setWindowState(Qt::WindowMaximized);
     
+    // erode variants selection
     if (dialog.exec() != QDialog::Accepted)
         return;
     
     ProcessInfo pErode = dialog.selectedImage();
+    erode(pErode.params[ErodeProcessPreviewer::PARAM_RADIUS]);
+    stackIterate();
     
     pr = new ThresholdProcessPreviewer(
-                OpenCVUtils::FromQImage(dialog.selectedImage().image),
+                OpenCVUtils::FromQPixmap(currentImage()),
                 &dialog);
     dialog.setPreviewer(pr);
     dialog.setWindowState(Qt::WindowMaximized);    
     if (dialog.exec() != QDialog::Accepted)
         return;
     
+    // threshold variants selection
     ProcessInfo pThreshold = dialog.selectedImage();
-    
-    erode(pErode.params[ErodeProcessPreviewer::PARAM_RADIUS]);
-    stackIterate();
     threshold(pThreshold.params[ThresholdProcessPreviewer::PARAM_BORDER]);
     stackIterate();
+    
+    // fill holes
+    Mat kernel = getStructuringElement(MORPH_ELLIPSE, Size(5,5));
+    Mat temp = OpenCVUtils::FromQPixmap(currentImage());    
+    morphologyEx(temp, temp, MORPH_OPEN, kernel);
+    showImage(temp);
+    stackIterate();
+    
+    log(tr("looking for particles"));
 
     ParticlesSeeker *particlesSeeker = new ParticlesSeeker(0);
     particlesSeeker->setMaxRadius(100);
     particlesSeeker->setMinRadius(5);
     
     prepareEmisionAnalyzerThread(particlesSeeker);
-
     startLongProcess(particlesSeeker, tr("Looking for particles..."));
 }
 
@@ -291,6 +299,7 @@ void MainWindow::threshold(int value)
     ImageProcessing::threshold(temp, temp, value);
     showImage(temp);               
 }
+
                 
 void MainWindow::erode(int value)
 {
