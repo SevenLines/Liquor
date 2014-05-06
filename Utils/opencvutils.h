@@ -1,4 +1,4 @@
-#ifndef OPENCVUTILS_H
+ #ifndef OPENCVUTILS_H
 #define OPENCVUTILS_H
 
 #include <opencv/cv.h>

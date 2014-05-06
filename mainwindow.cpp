@@ -16,16 +16,17 @@
 #include <QImageReader>
 #include <QProcess>
 #include <QDesktopServices>
+#include <thresholdprocesspreviewer.h>
 
 #include "particlesseeker.h"
 #include "areasseeker.h"
 
 #include "Utils/imageprocessing.h"
+#include "Widgets/imageprocessingdialog.h"
+#include "Core/erodeprocesspreviewer.h"
 
 #include "opencv2/features2d/features2d.hpp"
-#include "opencv2/nonfree/features2d.hpp"
 #include "opencv2/highgui/highgui.hpp"
-#include "opencv2/nonfree/nonfree.hpp"
 
 using namespace cv;
 using namespace OpenCVUtils;
@@ -218,6 +219,33 @@ void MainWindow::loadImage(QString path, bool setActive)
 void MainWindow::FindParticles()
 {
     log(tr("looking for particles"));
+    
+    ImageProcessingDialog dialog;
+    ImageProcessPreviewer *pr = new ErodeProcessPreviewer(
+                OpenCVUtils::FromQPixmap(currentImage()),
+                &dialog);
+    dialog.setPreviewer(pr);
+    dialog.setWindowState(Qt::WindowMaximized);
+    
+    if (dialog.exec() != QDialog::Accepted)
+        return;
+    
+    ProcessInfo pErode = dialog.selectedImage();
+    
+    pr = new ThresholdProcessPreviewer(
+                OpenCVUtils::FromQImage(dialog.selectedImage().image),
+                &dialog);
+    dialog.setPreviewer(pr);
+    dialog.setWindowState(Qt::WindowMaximized);    
+    if (dialog.exec() != QDialog::Accepted)
+        return;
+    
+    ProcessInfo pThreshold = dialog.selectedImage();
+    
+    erode(pErode.params[ErodeProcessPreviewer::PARAM_RADIUS]);
+    stackIterate();
+    threshold(pThreshold.params[ThresholdProcessPreviewer::PARAM_BORDER]);
+    stackIterate();
 
     ParticlesSeeker *particlesSeeker = new ParticlesSeeker(0);
     particlesSeeker->setMaxRadius(100);
@@ -494,6 +522,7 @@ void MainWindow::finishLookingForKeyPoints(EmisionAnalyzer *sender)
 void MainWindow::prepareEmisionAnalyzerThread(EmisionAnalyzerThread *thread)
 {
     Mat temp =  OpenCVUtils::FromQPixmap(currentImage());
+//    imwrite("preview.png", temp);
 
     // создаем новый набор под ключевые точки
     KeyPoints *points = createNewKeyPoints();

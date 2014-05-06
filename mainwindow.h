@@ -157,8 +157,6 @@ private slots:
     void startLongProcess(QThreadEx *process, QString title="");
     /// запускает короткий процесс
     void startQuickProcess(QThreadEx *process, QString title);
-
-    
 signals:
     
 protected:
