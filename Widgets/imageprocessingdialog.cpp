@@ -10,8 +10,13 @@ ImageProcessingDialog::ImageProcessingDialog(QWidget *parent) :
     ui->setupUi(this);
     ui->lstVariants->setItemDelegate(new CellImageDelegate(this));
     ui->lstVariants->setModel(&model);
+#if QT_VERSION < QT_VERSION_CHECK(5, 0, 0) 
     ui->lstVariants->horizontalHeader()->setResizeMode(QHeaderView::ResizeToContents);
     ui->lstVariants->verticalHeader()->setResizeMode(QHeaderView::ResizeToContents);
+#else
+    ui->lstVariants->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
+    ui->lstVariants->verticalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
+#endif
     connect(ui->lstVariants, SIGNAL(doubleClicked(QModelIndex)),
             SLOT(accept()));
 }

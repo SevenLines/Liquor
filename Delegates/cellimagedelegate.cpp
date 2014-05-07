@@ -24,25 +24,32 @@ void CellImageDelegate::paint(QPainter *painter,
     painter->drawImage(rect, p.image);
     
     QString text;
-    auto i = p.params.constBegin();
+    QMap<QString, int>::const_iterator i = p.params.constBegin();
     for(;i != p.params.constEnd();++i) {
         text += QString(tr("%1 = %2\n")).arg(i.key()).arg(i.value());
     }
+
+    int lineHeight = 20;
     QFont font = painter->font();
     font.setBold(true);
-    font.setStyleStrategy(QFont::ForceOutline);
-    
+    font.setPixelSize(lineHeight*0.8);
     painter->setFont(font);
-    painter->setPen(Qt::white);
+    
     QRect textRect = rect;
-    textRect.moveTop(rect.top() + 2);
+    textRect.setBottom(textRect.top() + lineHeight * p.params.count());
+    painter->setPen(Qt::NoPen);
+    painter->setBrush(QColor(255,255,255,220));
+    painter->drawRect(textRect);
+    
+    painter->setPen(Qt::black);
     painter->drawText(textRect, Qt::AlignHCenter, text);
     
-    
     if (option.state & QStyle::State_Selected) {
-        rect.setSize(QSize(rect.width() - 1, rect.height() - 1));
-        rect.moveTopLeft(QPoint(1,1));
-        painter->setPen(QPen(option.palette.highlight(),4, Qt::DashLine));   
+        int penWidth = 4;
+        rect.setSize(QSize(rect.width() - penWidth/2, rect.height() - penWidth/2));
+        rect.moveTopLeft(QPoint(penWidth/2,penWidth/2));
+        painter->setBrush(Qt::NoBrush);
+        painter->setPen(QPen(option.palette.highlight(), penWidth, Qt::DashLine));   
         painter->drawRect(option.rect);
     }
 }
