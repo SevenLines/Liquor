@@ -19,7 +19,9 @@ int main(int argc, char *argv[])
     QCoreApplication::addLibraryPath("qt");
     
     // установка логера
+#if QT_VERSION < QT_VERSION_CHECK(5, 0, 0) 
     qInstallMsgHandler(logMsgHandler);
+#endif
     qDebug() << app.tr("begin session");
     
     // установка языка приложения

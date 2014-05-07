@@ -16,16 +16,17 @@
 #include <QImageReader>
 #include <QProcess>
 #include <QDesktopServices>
+#include <thresholdprocesspreviewer.h>
 
 #include "particlesseeker.h"
 #include "areasseeker.h"
 
 #include "Utils/imageprocessing.h"
+#include "Widgets/imageprocessingdialog.h"
+#include "Core/erodeprocesspreviewer.h"
 
 #include "opencv2/features2d/features2d.hpp"
-#include "opencv2/nonfree/features2d.hpp"
 #include "opencv2/highgui/highgui.hpp"
-#include "opencv2/nonfree/nonfree.hpp"
 
 using namespace cv;
 using namespace OpenCVUtils;
@@ -217,6 +218,42 @@ void MainWindow::loadImage(QString path, bool setActive)
 
 void MainWindow::FindParticles()
 {
+    
+    ImageProcessingDialog dialog;
+    ImageProcessPreviewer *pr = new ErodeProcessPreviewer(
+                OpenCVUtils::FromQPixmap(currentImage()),
+                &dialog);
+    dialog.setPreviewer(pr);
+    dialog.setWindowState(Qt::WindowMaximized);
+    
+    // erode variants selection
+    if (dialog.exec() != QDialog::Accepted)
+        return;
+    
+    ProcessInfo pErode = dialog.selectedImage();
+    erode(pErode.params[ErodeProcessPreviewer::PARAM_RADIUS]);
+    stackIterate();
+    
+    pr = new ThresholdProcessPreviewer(
+                OpenCVUtils::FromQPixmap(currentImage()),
+                &dialog);
+    dialog.setPreviewer(pr);
+    dialog.setWindowState(Qt::WindowMaximized);    
+    if (dialog.exec() != QDialog::Accepted)
+        return;
+    
+    // threshold variants selection
+    ProcessInfo pThreshold = dialog.selectedImage();
+    threshold(pThreshold.params[ThresholdProcessPreviewer::PARAM_BORDER]);
+    stackIterate();
+    
+    // fill holes
+    Mat kernel = getStructuringElement(MORPH_ELLIPSE, Size(5,5));
+    Mat temp = OpenCVUtils::FromQPixmap(currentImage());    
+    morphologyEx(temp, temp, MORPH_OPEN, kernel);
+    showImage(temp);
+    stackIterate();
+    
     log(tr("looking for particles"));
 
     ParticlesSeeker *particlesSeeker = new ParticlesSeeker(0);
@@ -224,7 +261,6 @@ void MainWindow::FindParticles()
     particlesSeeker->setMinRadius(5);
     
     prepareEmisionAnalyzerThread(particlesSeeker);
-
     startLongProcess(particlesSeeker, tr("Looking for particles..."));
 }
 
@@ -263,6 +299,7 @@ void MainWindow::threshold(int value)
     ImageProcessing::threshold(temp, temp, value);
     showImage(temp);               
 }
+
                 
 void MainWindow::erode(int value)
 {
@@ -494,6 +531,7 @@ void MainWindow::finishLookingForKeyPoints(EmisionAnalyzer *sender)
 void MainWindow::prepareEmisionAnalyzerThread(EmisionAnalyzerThread *thread)
 {
     Mat temp =  OpenCVUtils::FromQPixmap(currentImage());
+//    imwrite("preview.png", temp);
 
     // создаем новый набор под ключевые точки
     KeyPoints *points = createNewKeyPoints();
