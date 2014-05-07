@@ -53,6 +53,13 @@ void ImageProcessing::threshold(Mat &image, Mat &result, int value)
     cvtColor(result, result, CV_GRAY2RGB);
 }
 
+void ImageProcessing::adaptiveThreshold(Mat &image, Mat &result, int maxValue, int oddBlockSize, int method)
+{
+    cvtColor(image, result, CV_RGB2GRAY);   
+    cv::adaptiveThreshold(result, result, maxValue, method, THRESH_BINARY, oddBlockSize, 0);
+    cvtColor(result, result, CV_GRAY2RGB);   
+}
+
 void ImageProcessing::dilate(Mat &image, Mat &result, int dilationSize)
 {
     

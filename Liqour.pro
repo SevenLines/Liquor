@@ -8,10 +8,13 @@
 QT       += core gui
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
+greaterThan(QT_MAJOR_VERSION, 4): QT += printsupport
 
 TARGET = Liqour
 TEMPLATE = app
 CONFIG -= console
+
+#QMAKE_CXXFLAGS += -std=c++11
 
 TRANSLATIONS += liqour_ru.ts
 
@@ -48,7 +51,13 @@ SOURCES  += main.cpp\
     Widgets/lightcorrectorwidget.cpp \
     Widgets/qgraphicsitemholder.cpp \
     Widgets/qgraphicsitemframe.cpp \
-    Widgets/qgraphicsitemlightcorrector.cpp
+    Widgets/qgraphicsitemlightcorrector.cpp \
+    Widgets/imageprocessingdialog.cpp \
+    Core/imageprocesspreviewer.cpp \
+    Core/erodeprocesspreviewer.cpp \
+    Models/imageprocesspreviewermodel.cpp \
+    Delegates/cellimagedelegate.cpp \
+    Core/thresholdprocesspreviewer.cpp
 
 HEADERS  += mainwindow.h \
     Core/imagestack.h \
@@ -84,7 +93,13 @@ HEADERS  += mainwindow.h \
     Widgets/lightcorrectorwidget.h \
     Widgets/qgraphicsitemholder.h \
     Widgets/qgraphicsitemframe.h \
-    Widgets/qgraphicsitemlightcorrector.h
+    Widgets/qgraphicsitemlightcorrector.h \
+    Widgets/imageprocessingdialog.h \
+    Core/imageprocesspreviewer.h \
+    Core/erodeprocesspreviewer.h \
+    Models/imageprocesspreviewermodel.h \
+    Delegates/cellimagedelegate.h \
+    Core/thresholdprocesspreviewer.h
 
 FORMS    += mainwindow.ui \
     Widgets/horizontalsliderex.ui \
@@ -94,7 +109,8 @@ FORMS    += mainwindow.ui \
     Settings/formsettingsgeneral.ui \
     Widgets/progressdialog.ui \
     Widgets/aboutdialog.ui \
-    Widgets/lightcorrectorwidget.ui
+    Widgets/lightcorrectorwidget.ui \
+    Widgets/imageprocessingdialog.ui
 
 
 
