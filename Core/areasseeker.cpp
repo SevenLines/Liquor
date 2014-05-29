@@ -10,5 +10,5 @@ AreasSeeker::AreasSeeker(QObject *parent) :
 
 void AreasSeeker::runAnalyze()
 {
-    ea.findBlackAreas();
+//    ea.findBlackAreas();
 }

@@ -520,9 +520,9 @@ void MainWindow::setCurrentStateAccordingActiveTab()
 void MainWindow::finishLookingForKeyPoints(EmisionAnalyzer *sender)
 {
     qDebug() << QString(tr("find %1 particle(s)"))
-                .arg(sender->getKeyPoints()->count());
+                .arg(sender->keyPoints()->count());
     
-    ui->tabDocuments->setKeyPoints(sender->getKeyPoints(), true);
+    ui->tabDocuments->setKeyPoints(sender->keyPoints(), true);
     ui->actionShow_particles->setChecked(true);
     
     setCurrentStateAccordingActiveTab();
