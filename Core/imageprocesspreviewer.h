@@ -17,7 +17,7 @@ struct ProcessInfo {
 Q_DECLARE_METATYPE(ProcessInfo);
 
 /**
-/**  * @brief abstract class, at least one method (regenImages) should be overrided
+/** @brief abstract class, at least one method (regenImages) should be overrided
 /** */
 class ImageProcessPreviewer : public QObject
 {

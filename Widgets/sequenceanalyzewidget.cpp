@@ -161,7 +161,7 @@ void SequenceAnalyzeWidget::savePoints()
     QString savePath = QFileDialog::getSaveFileName(this, 
                                 tr("select dump file"), 
                                 lastPath,
-                                tr("Text files (*.txt)"));
+                                tr("csv files (*.csv);;All Files (*.*)"));
     if (!savePath.isNull()) {
         multiKeyPoints.saveDumpToFile(savePath, fUseCommaForDumpSave);
         lastPath = savePath;
@@ -173,7 +173,7 @@ void SequenceAnalyzeWidget::loadPoints()
     QString loadPath = QFileDialog::getOpenFileName(this, 
                                 tr("select dump file"), 
                                 lastPath,
-                                tr("Text files (*.txt)"));
+                                tr("csv files (*.csv);;All Files (*.*)"));
     if (!loadPath.isNull()) {
         multiKeyPoints.loadDumpFromFile(loadPath);
         lastPath = loadPath;

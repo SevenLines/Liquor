@@ -216,9 +216,9 @@ void MultiKeyPoints::saveDumpToFile(QString filePath, bool fUseComma)
             for(int i=0;i<set->count();++i) {
                 Mick::KeyPoint &p = (*set)[i];
                 if (!p.isIgnore()) {
-                    QString strValue = QString::number(set->keyValue(i));
-                    QString strPosX = QString::number(p.pos().x());
-                    QString strPosY = QString::number(p.pos().y());
+                    QString strValue = QString::number((int)set->keyValue(i));
+                    QString strPosX = QString::number((int)p.pos().x());
+                    QString strPosY = QString::number((int)p.pos().y());
                     
                     // replace dot char with comma
                     if (fUseComma) {
@@ -231,9 +231,9 @@ void MultiKeyPoints::saveDumpToFile(QString filePath, bool fUseComma)
                         strPosY = strPosY.replace(',','.'); 
                     }
                     out << (counter++) 
-                           << '\t' << strValue
-                              << '\t' << strPosX
-                                 << '\t' << strPosY
+                           << ',' << strValue
+                              << ',' << strPosX
+                                 << ',' << strPosY
                                     << endl;
                 }
             }
@@ -259,7 +259,7 @@ void MultiKeyPoints::loadDumpFromFile(QString filePath)
             if (line[0] == '#')
                 continue;
             
-            QStringList values = line.split("\t",  QString::SkipEmptyParts);
+            QStringList values = line.split(",",  QString::SkipEmptyParts);
             if (values.count() == 4) {
                 Mick::KeyPoint k;
                 k.setValue(values[1].replace(',','.').toFloat());

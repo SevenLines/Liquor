@@ -27,11 +27,15 @@ void ErodeProcessPreviewer::regenImages()
     
     resize(baseImage, baseScaledImage, Size(), k, k, INTER_LANCZOS4);
     
+    Mat img = baseScaledImage;
+    ProcessInfo info;
+    info.image = OpenCVUtils::ToQImage(img);
+    info.params[ErodeProcessPreviewer::PARAM_RADIUS] = 0;
+    images.append(info);
+    
     for (int i=6;i<18;i+=1) {
-        Mat img;
         lastk = (k*kfScaler)*i;
         ImageProcessing::erode(baseScaledImage, img, lastk);
-        ProcessInfo info;
         info.image = OpenCVUtils::ToQImage(img);
         info.params[ErodeProcessPreviewer::PARAM_RADIUS] = i;
         images.append(info);

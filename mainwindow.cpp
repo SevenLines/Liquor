@@ -220,29 +220,27 @@ void MainWindow::FindParticles()
 {
     
     ImageProcessingDialog dialog;
+    
+    // erode variants selection
     ImageProcessPreviewer *pr = new ErodeProcessPreviewer(
                 OpenCVUtils::FromQPixmap(currentImage()),
                 &dialog);
     dialog.setPreviewer(pr);
-    dialog.setWindowState(Qt::WindowMaximized);
-    
-    // erode variants selection
+    dialog.setWindowState(Qt::WindowMaximized);  
     if (dialog.exec() != QDialog::Accepted)
-        return;
-    
+        return;      
     ProcessInfo pErode = dialog.selectedImage();
     erode(pErode.params[ErodeProcessPreviewer::PARAM_RADIUS]);
     stackIterate();
-    
+        
+    // threshold variants selection
     pr = new ThresholdProcessPreviewer(
                 OpenCVUtils::FromQPixmap(currentImage()),
                 &dialog);
     dialog.setPreviewer(pr);
     dialog.setWindowState(Qt::WindowMaximized);    
     if (dialog.exec() != QDialog::Accepted)
-        return;
-    
-    // threshold variants selection
+        return;    
     ProcessInfo pThreshold = dialog.selectedImage();
     threshold(pThreshold.params[ThresholdProcessPreviewer::PARAM_BORDER]);
     stackIterate();
