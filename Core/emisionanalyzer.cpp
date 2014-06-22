@@ -113,6 +113,7 @@ Mick::KeyPoint  EmisionAnalyzer::fromContour(vector<Point> &contour)
     
     Point ps;
     for (vector<Point>::iterator i=contour.begin();i!=contour.end();++i) {
+//        key.border.push_back(*i);
         ps.x += i->x;
         ps.y += i->y;
     }
@@ -190,7 +191,7 @@ void EmisionAnalyzer::find()
     
     emit progressChanged(0,progressMax, QString("looking for countours"));
     vector<vector<Point> > borders;
-    vector<vector<Point> > single_objects; // объекты представляющие собой одну частицу
+    vector<vector<Point> > single_objects, tuples, complex;
     findContours(borders);
     
     emit progressChanged(++progress,progressMax, QString("split objects by complexity"));
@@ -245,9 +246,11 @@ void EmisionAnalyzer::find()
             }
         }
         
-        // сюда закидываем подозрительные объекты, для которых позже необходимо провети более тщательный анализ
-        if (count_of_edges <= 1 || count_of_edges > 2) {
+        // заполняем массив простых объектов
+        if (count_of_edges <= 1) {
             single_objects.push_back(brd);
+        } else if (count_of_edges >= 2 && count_of_edges <= 3) {
+            tuples.push_back(brd);
         }
     }
     
@@ -269,6 +272,12 @@ void EmisionAnalyzer::find()
             mKeyPoints->addKey(key);
         }
     }
+    
+    brd = tuples.begin();
+    for (;brd!=tuples.end();++brd) {
+        
+    }
+    
     mKeyPoints->setType(KeyPoints::Particles);
     
     
@@ -279,13 +288,3 @@ void EmisionAnalyzer::cancel()
 {
     fCancel = true;
 }
-
-//void EmisionAnalyzer::findBlackAreas(QList<QList<Point> > &areas)
-//{
-//    if ( mImage.empty() ) {
-//        qWarning() << "image is not set!";
-//        return;
-//    }    
-    
-//    OpenCVUtils::getKeyAreas<Mat1b>(areas, EA_BLACK, mImage1b);
-//}

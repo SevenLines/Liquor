@@ -123,7 +123,7 @@ win32 {
     # widows resource
     RC_FILE = Assets/windows_resource.rc
 
-    OPENCV_PATH = d:/_OpenCV/build/x86/mingw4.4/
+    OPENCV_PATH = d:/_OpenCV/build/x86/mingw48.2/
     OPENCV_PATH ~= s,/,\\,g
     OPENCV_LIBS = libopencv_core246.dll \ 
 	    libopencv_highgui246.dll \

@@ -17,9 +17,10 @@ void ImageProcessPreviewerModel::setPreviewer(ImageProcessPreviewer *preview)
 int ImageProcessPreviewerModel::rowCount(const QModelIndex &) const
 {
     if (!this->previewer) return 0;
-    int value = this->previewer->count() % itemsPerRow;
+    int count = this->previewer->count();
+    int value = count % itemsPerRow;
     if (value) value = 1;
-    return this->previewer->count() / itemsPerRow + 1 * value;
+    return count / itemsPerRow + 1 * value;
 }
 
 int ImageProcessPreviewerModel::columnCount(const QModelIndex &) const
@@ -31,7 +32,8 @@ int ImageProcessPreviewerModel::columnCount(const QModelIndex &) const
 QVariant ImageProcessPreviewerModel::data(const QModelIndex &index, int role) const
 {
     int num = index.row() * itemsPerRow + index.column();
-    if (num >= this->previewer->count())
+    int count = this->previewer->count();
+    if (num >= count)
         return QVariant();
     
     if (role == Qt::DisplayRole) {

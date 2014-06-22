@@ -34,7 +34,8 @@ SequenceAnalyzeWidget::SequenceAnalyzeWidget(QWidget *parent) :
     // отмечаем актывный набор в списке
     connect(this, SIGNAL(keyPointsSetActivated(KeyPoints*)),
             &multiKeyPointsModel, SLOT(setActive(KeyPoints*)));
-    
+
+
     // setup graph style
     graph = ui->plotGraph->addGraph();
     graph->setPen(QPen( QColor(0, 0, 0)));
@@ -44,6 +45,7 @@ SequenceAnalyzeWidget::SequenceAnalyzeWidget(QWidget *parent) :
     
     // add header title
     title = new QCPPlotTitle(ui->plotGraph, "");
+    info = new QCPItemText(ui->plotGraph);
     
     // setup plot
     ui->plotGraph->plotLayout()->insertRow(0);
@@ -52,11 +54,17 @@ SequenceAnalyzeWidget::SequenceAnalyzeWidget(QWidget *parent) :
                 QCP::iRangeDrag | QCP::iRangeZoom );
     
     ui->plotGraph->yAxis->setLabel(tr("count"));
-    ui->plotGraph->xAxis->setLabel(tr("size (px.)"));
+    ui->plotGraph->xAxis->setLabel(tr("size (μm)"));
     ui->plotGraph->yAxis->setRange(0,1);
     
     ui->plotGraph->xAxis->setPadding(5);
     ui->plotGraph->yAxis->setPadding(5);
+
+    // info label for grpah
+    ui->plotGraph->addItem(info);
+    info->setPositionAlignment(Qt::AlignTop|Qt::AlignRight);
+    info->position->setType(QCPItemPosition::ptAxisRectRatio);
+    info->position->setCoords(1,0);
     
     // rescale event
     connect(ui->btnFitToScreen, SIGNAL(clicked(bool)),
@@ -116,7 +124,12 @@ bool SequenceAnalyzeWidget::isContains(KeyPoints *keyPoints)
 void SequenceAnalyzeWidget::updateGraph()
 {
     graph->setData(multiKeyPoints.keys(), multiKeyPoints.values());
-    title->setText(QString(tr("count: %1")).arg(multiKeyPoints.countOfParticles()));
+    title->setText(tr("count: %1").arg(multiKeyPoints.countOfParticles()));
+
+    info->setText(tr("μ:%1\nσ:%2")
+                  .arg(multiKeyPoints.expected(), 0, 'f', 2)
+                  .arg(multiKeyPoints.deviation(), 0, 'f', 2));
+
     
     if (ui->btnFitToScreen->isChecked()) {
         rescaleGraphAxis(true);
@@ -127,9 +140,9 @@ void SequenceAnalyzeWidget::updateGraph()
     int pwr = multiKeyPoints.power();
     switch (pwr) {
     case 0: lbl = tr("count"); break;
-    case 1: lbl = tr("radius, px"); break;
-    case 2: lbl = tr("area, px2"); break;
-    case 3: lbl = tr("volume, px3"); break;
+    case 1: lbl = tr("radius, μm"); break;
+    case 2: lbl = tr("area, μm2"); break;
+    case 3: lbl = tr("volume, μm3"); break;
     default:
         lbl = tr("px%1").arg(pwr);
     }

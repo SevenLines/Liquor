@@ -38,6 +38,14 @@ public:
     int scale();
     int countOfParticles();
     int count();
+
+    /// Математическое ожидание
+    /// power -- степень в которую возводится случайная велечина
+    float expected(int power=1);
+    /// дисперсия
+    float dispersion();
+    /// среднее квадратичное отклонение
+    float deviation();
     
     float minKey();
     float maxKey();

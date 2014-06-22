@@ -2,6 +2,7 @@
 #include <QDebug>
 #include <QFile>
 #include <qmath.h>
+#include <limits>
 
 using namespace Mick;
 
@@ -75,7 +76,7 @@ void MultiKeyPoints::recalculateGraph()
     //  находим границы
     getMinMax(mMin, mMax);
 
-    float step = (float)( mMax - mMin ) / (mScale - 1);
+    float step = (float)( mMax ) / (mScale - 1);
     
     // временный массив под график
     QVector<QPointF> graph(mScale);// = new QPointF[mScale];
@@ -89,7 +90,6 @@ void MultiKeyPoints::recalculateGraph()
     // расчитываем график
     int countOfPoints = 0;
     int index;
-    float leftValue, rightValue, iValue;
     foreach(KeyPoints *set, keyPointsSets) {
         if (!set->isEnabled()) 
             continue;
@@ -97,31 +97,9 @@ void MultiKeyPoints::recalculateGraph()
             if (!(*set)[i].isIgnore()) {
                 ++countOfPoints;
                 
-                // значения ключа с учетом минимума, то есть от нуля и более
-                float value = (set->keyValue(i) - mMin);//(*set)[i].calcValue();
-
-                // индекс
+                float value = (set->keyValue(i));
                 index = (int)(value / step);
-                // точное положение по x
-                iValue = (float)index * step;
-                
-                // множетель графика, учитывается степень значения ключа
-                float multiplier = value==0?0:value * qPow(value, mPower);
-                
-                leftValue = (value - iValue) * multiplier;
-                rightValue = (iValue + step - value) * multiplier;
-                
-                QPointF &pLeft = graph[index];
-                pLeft.setY(pLeft.y() + leftValue);
-                
-                
-                if (index < mScale - 1 ) {
-                    QPointF &pRight = graph[index + 1];
-                    pRight.setY(pRight.y() + rightValue);
-                } else {
-                    pLeft.setY(pLeft.y() + rightValue); 
-                }
-                
+                graph[index].setY(graph[index].y()+pow(value, mPower));
             }
         }
     }
@@ -129,30 +107,13 @@ void MultiKeyPoints::recalculateGraph()
     
     //bool ffirst = true;
     mMinValue = mMaxValue = -1;
-    if (countOfPoints!=0) {   
-        // перерассчитываем долю
-        /*for (int i=0;i<mScale;++i) {
-            float value = (float) graph[i].y() / countOfPoints;
-            // пересчитывем минимальное и максимальное значение
-            if (ffirst) {
-                mMinValue = value;
-                mMaxValue = value;
-                ffirst = false;
-            } else {
-                if (value < mMinValue) mMinValue = value;
-                if (value > mMaxValue) mMaxValue = value;
-            }
-            graph[i].setX(step * (i+1));
-            graph[i].setY( value );
-        }*/
-        
+    if (countOfPoints!=0) {           
         // передаем данные в список под график
         for (int i=0;i<mScale;++i) {
             // чтобы не добавлять в график пустые
-            //if (graph[i].y() != 0) {
-                mKeys.append(graph[i].x());
-                mValues.append(graph[i].y());
-            //}
+//            if (graph[i].y() == 0) continue;
+            mKeys.append(graph[i].x());
+            mValues.append(graph[i].y());
         }
         
     }
@@ -301,6 +262,45 @@ int MultiKeyPoints::countOfParticles()
 int MultiKeyPoints::count()
 {
     return keyPointsSets.count();
+}
+
+float MultiKeyPoints::expected(int power)
+{
+    float out = 0;
+    int count = 0;
+    float value;
+    foreach(KeyPoints *set, keyPointsSets) {
+        if (!set->isEnabled())
+            continue;
+
+        for(int i=0;i<set->count();++i) {
+            Mick::KeyPoint &p = (*set)[i];
+            if (p.isIgnore())
+                continue;
+
+            count++;
+            value = set->keyValue(i);
+            out += power!=1?pow(value, power):value;
+        }
+    }
+
+    if(count == 0) {
+        return std::numeric_limits<float>::quiet_NaN();
+    }
+    out /= count;
+    return out;
+}
+
+float MultiKeyPoints::dispersion()
+{
+    float expct = expected(); // мат. ожидание
+    float expct_2 = expected(2); // мат. ожидание квадрата велечины
+    return expct_2 - expct*expct;
+}
+
+float MultiKeyPoints::deviation()
+{
+    return sqrt(dispersion());
 }
 
 float MultiKeyPoints::minKey()

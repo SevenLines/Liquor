@@ -81,6 +81,7 @@ KeyPoints::KeyPoints(QObject *parent) :
 {
         mProportion = 1;
         mEnabled = true;
+        mMultiplier = 0.087;
         mType = KeyPoints::Undefined;
 }
 
@@ -131,7 +132,7 @@ KeyPoint &KeyPoints::operator[](int index)
 
 float KeyPoints::keyValue(int index)
 {
-    return mPoints[index].calcValue() * mProportion;
+    return mPoints[index].calcValue() * mProportion * mMultiplier;
 }
 
 void KeyPoints::addKey(Mick::KeyPoint key)
