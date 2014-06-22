@@ -6,6 +6,7 @@
 #include <qthreadex.h>
 #include <particlesseeker.h>
 #include <QMutex>
+#include <imageprocesspreviewer.h>
 #include <opencv/cv.h>
 #include <opencv/highgui.h>
 
@@ -38,6 +39,7 @@ public:
     ~MainWindow();
     QMutex mutex;
     
+   
 private slots:
    
     /// изменение изображение текущего таба
@@ -49,11 +51,13 @@ private slots:
     void pushCurrentImage(QString title, bool asKey=false, int index = -1);
     
     void FindParticles();
+    bool ImageProcessing(ImageProcessPreviewer *pr);
     void FindParticleAreas();
     
     void setCurrentImage(QPixmap pixmap);
     
     void threshold(int value);
+    void dilate(int value);
     void erode(int value);
     void median(int value);
     void hsv(int channel);

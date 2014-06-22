@@ -41,6 +41,7 @@ private:
     QCPGraph *graph;
     QCPPlotTitle *title;
     QCPItemText *label;
+    QCPItemText *info;
     
     QString lastPath;
     

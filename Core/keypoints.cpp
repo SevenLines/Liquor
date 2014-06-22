@@ -43,6 +43,16 @@ const QPointF &KeyPoint::pos()
     return mPos;
 }
 
+void KeyPoint::setMarker(int marker)
+{
+    mMarker = marker;
+}
+
+int KeyPoint::marker()
+{
+    return mMarker;
+}
+
 void KeyPoint::setValue(int value)
 {
     mValue = value;
@@ -81,6 +91,7 @@ KeyPoints::KeyPoints(QObject *parent) :
 {
         mProportion = 1;
         mEnabled = true;
+        mMultiplier = 0.087;
         mType = KeyPoints::Undefined;
 }
 
@@ -131,7 +142,7 @@ KeyPoint &KeyPoints::operator[](int index)
 
 float KeyPoints::keyValue(int index)
 {
-    return mPoints[index].calcValue() * mProportion;
+    return mPoints[index].calcValue() * mProportion * mMultiplier;
 }
 
 void KeyPoints::addKey(Mick::KeyPoint key)

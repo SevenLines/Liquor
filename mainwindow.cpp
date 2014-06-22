@@ -16,6 +16,7 @@
 #include <QImageReader>
 #include <QProcess>
 #include <QDesktopServices>
+#include <qmath.h>
 #include <thresholdprocesspreviewer.h>
 
 #include "particlesseeker.h"
@@ -152,8 +153,6 @@ MainWindow::MainWindow(QString imagePath, QWidget *parent) :
                 
 }
 
-
-
 QPixmap MainWindow::currentImage()
 {
     return ui->tabDocuments->currentFixedImage();
@@ -218,48 +217,62 @@ void MainWindow::loadImage(QString path, bool setActive)
 
 void MainWindow::FindParticles()
 {
+    QObject obj; // blank object for memory mangement of ImageProcessPreviewer
     
-    ImageProcessingDialog dialog;
-    
-    // erode variants selection
-    ImageProcessPreviewer *pr = new ErodeProcessPreviewer(
-                OpenCVUtils::FromQPixmap(currentImage()),
-                &dialog);
-    dialog.setPreviewer(pr);
-    dialog.setWindowState(Qt::WindowMaximized);  
-    if (dialog.exec() != QDialog::Accepted)
-        return;      
-    ProcessInfo pErode = dialog.selectedImage();
-    erode(pErode.params[ErodeProcessPreviewer::PARAM_RADIUS]);
-    stackIterate();
-        
-    // threshold variants selection
-    pr = new ThresholdProcessPreviewer(
-                OpenCVUtils::FromQPixmap(currentImage()),
-                &dialog);
-    dialog.setPreviewer(pr);
-    dialog.setWindowState(Qt::WindowMaximized);    
-    if (dialog.exec() != QDialog::Accepted)
-        return;    
-    ProcessInfo pThreshold = dialog.selectedImage();
-    threshold(pThreshold.params[ThresholdProcessPreviewer::PARAM_BORDER]);
-    stackIterate();
+    if (!ImageProcessing(new ErodeProcessPreviewer(
+                             OpenCVUtils::FromQPixmap(currentImage()),
+                             &obj)))
+        return;
+    if (!ImageProcessing(new ThresholdProcessPreviewer(
+                             OpenCVUtils::FromQPixmap(currentImage()),
+                             &obj)))
+        return;
     
     // fill holes
-    Mat kernel = getStructuringElement(MORPH_ELLIPSE, Size(5,5));
-    Mat temp = OpenCVUtils::FromQPixmap(currentImage());    
-    morphologyEx(temp, temp, MORPH_OPEN, kernel);
-    showImage(temp);
-    stackIterate();
+//    Mat kernel = getStructuringElement(MORPH_ELLIPSE, Size(5,5));
+//    Mat temp = OpenCVUtils::FromQPixmap(currentImage());    
+//    morphologyEx(temp, temp, MORPH_OPEN, kernel);
+//    showImage(temp);
+//    stackIterate();
     
     log(tr("looking for particles"));
 
     ParticlesSeeker *particlesSeeker = new ParticlesSeeker(0);
     particlesSeeker->setMaxRadius(100);
     particlesSeeker->setMinRadius(5);
+    particlesSeeker->setMinTupleRadius(20);
     
     prepareEmisionAnalyzerThread(particlesSeeker);
     startLongProcess(particlesSeeker, tr("Looking for particles..."));
+}
+
+bool MainWindow::ImageProcessing(ImageProcessPreviewer *pr)
+{
+    ImageProcessingDialog dialog;
+//    ImageProcessPreviewer *pr = new ErodeProcessPreviewer(
+//                OpenCVUtils::FromQPixmap(currentImage()),
+//                &dialog);
+    dialog.setPreviewer(pr);
+    dialog.setWindowState(Qt::WindowMaximized);
+    
+    // erode variants selection
+    if (dialog.exec() != QDialog::Accepted)
+        return false;
+    
+    if (typeid(*pr) == typeid(ErodeProcessPreviewer)) {
+        ProcessInfo pErode = dialog.selectedImage();
+        erode(pErode.params[ErodeProcessPreviewer::PARAM_RADIUS]);
+        stackIterate();
+        dilate(qMin((double)pErode.params[ErodeProcessPreviewer::PARAM_RADIUS],
+               0.75*pErode.params[ErodeProcessPreviewer::PARAM_RADIUS]+1)
+                );
+    }
+    if (typeid(*pr) == typeid(ThresholdProcessPreviewer)) {
+        ProcessInfo pThreshold = dialog.selectedImage();
+        threshold(pThreshold.params[ThresholdProcessPreviewer::PARAM_BORDER]);
+    }
+    stackIterate();
+    return true;
 }
 
 
@@ -305,6 +318,16 @@ void MainWindow::erode(int value)
     
     Mat temp = OpenCVUtils::FromQPixmap(currentImage());
     ImageProcessing::erode(temp, temp, value);
+    showImage(temp);      
+}
+
+
+void MainWindow::dilate(int value)
+{
+    qDebug() << tr("dilate: %1").arg(value);
+    
+    Mat temp = OpenCVUtils::FromQPixmap(currentImage());
+    ImageProcessing::dilate(temp, temp, value);
     showImage(temp);      
 }
 
@@ -518,9 +541,9 @@ void MainWindow::setCurrentStateAccordingActiveTab()
 void MainWindow::finishLookingForKeyPoints(EmisionAnalyzer *sender)
 {
     qDebug() << QString(tr("find %1 particle(s)"))
-                .arg(sender->getKeyPoints()->count());
+                .arg(sender->keyPoints()->count());
     
-    ui->tabDocuments->setKeyPoints(sender->getKeyPoints(), true);
+    ui->tabDocuments->setKeyPoints(sender->keyPoints(), true);
     ui->actionShow_particles->setChecked(true);
     
     setCurrentStateAccordingActiveTab();
@@ -741,16 +764,15 @@ void MainWindow::closeEvent(QCloseEvent *)
 
 void MainWindow::on_actionOpen_Image_triggered()
 {
-    QString fileName 
-            = QFileDialog::getOpenFileName(this,
+    QStringList fileNames
+            = QFileDialog::getOpenFileNames(this,
                                      tr("Open File"),
                                      lastImagePath,
                                      tr("Images (*.png *.jpeg *.jpg *.xpm)")
                                  );
-    if (fileName.isNull())
-        return;
-    
-    loadImage(fileName);
+    foreach(QString fileName, fileNames) {
+        loadImage(fileName);
+    }
 }
 
 void MainWindow::on_actionFit_To_View_triggered()

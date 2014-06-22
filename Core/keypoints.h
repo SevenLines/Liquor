@@ -5,7 +5,7 @@
 #include <QVector>
 #include <QPoint>
 #include <QPainter>
-
+#include <vector>
 namespace Mick {
 
     class KeyPoint {
@@ -16,9 +16,11 @@ namespace Mick {
         bool mIgnore; // set to true if u want to ignore this particle
         QPointF mPos; // position of particle on pixmap
         int mValue; // real value of particle
-
+        int mMarker; // просто число которое особым образом зхарактеризует данную частицк
         
     public:
+        // граница объекта
+        std::vector<QPoint> border;
         
         KeyPoint();
         
@@ -31,12 +33,13 @@ namespace Mick {
         
         void setPos(QPointF pos);
         QPointF const &pos();
+
+        void setMarker(int marker);
+        int marker();
         
         /// value in pixels
         void setValue(int value);
         int value();
-
-
           
         /// returns overcalculated value, with proportion
         float calcValue();
@@ -63,6 +66,8 @@ namespace Mick {
     private:
         QVector<KeyPoint> mPoints; 
         float mProportion;
+        /// множитель используется дле перевода пикселей в микрометры
+        float mMultiplier;
         bool mEnabled;
         QString mTitle;
         KeyPoints::Type mType;
