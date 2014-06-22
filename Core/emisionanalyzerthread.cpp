@@ -24,6 +24,11 @@ void EmisionAnalyzerThread::setMinRadius(int value)
     ea.setMinRadius(value);
 }
 
+void EmisionAnalyzerThread::setMinTupleRadius(int value)
+{
+    ea.setMinTupleRadius(value);
+}
+
 void EmisionAnalyzerThread::setImage(Mat &image)
 {
     ea.setImage(image);

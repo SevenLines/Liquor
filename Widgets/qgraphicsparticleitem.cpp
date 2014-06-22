@@ -14,6 +14,7 @@ void QGraphicsParticleItem::recalculate()
     if (!keyPoint)
         return;
     float k, r;
+    QString desc = "";
     switch(mType) {
     case Mick::KeyPoints::Undefined:
         r = 25;
@@ -23,10 +24,25 @@ void QGraphicsParticleItem::recalculate()
         k = (float)percentsProp / 100;
         r = keyPoint->calcValue() * k;
         setRect(keyPoint->pos().x() - r, keyPoint->pos().y() - r, r * 2, r *2);
-        setToolTip( QObject::tr("rad: %1 px\npos:(%2; %3)")
+
+        switch(keyPoint->marker()) {
+        case 2:
+            desc=QObject::tr("<b>bin</b><br>");
+            brushDefault = QBrush(QColor::fromRgb(0,255,255,128));
+            break;
+        case 3:
+            desc = QObject::tr("<b>complex</b><br>");
+            brushDefault = QBrush(QColor::fromRgb(0,0,255,128));
+            break;
+        default:
+            brushDefault = QBrush(QColor::fromRgb(0,255,0,128));
+        }
+        setBrush(brushDefault);
+        setToolTip( QObject::tr("%4rad: %1 px<br>pos:(%2; %3)")
                     .arg(r)
                     .arg(keyPoint->pos().x())
-                    .arg(keyPoint->pos().y()) );
+                    .arg(keyPoint->pos().y())
+                    .arg(desc));
         break;
     case Mick::KeyPoints::Area:
         r = sqrt(keyPoint->calcValue() * M_1_PI);
@@ -61,6 +77,7 @@ QGraphicsParticleItem::QGraphicsParticleItem(QGraphicsItem *parent) :
 void QGraphicsParticleItem::setKeyPoint(Mick::KeyPoint *keyPoint)
 {
     this->keyPoint = keyPoint;
+
     if (keyPoint) {
         toggleIgnore(keyPoint->isIgnore());
     }

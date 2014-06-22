@@ -94,13 +94,15 @@ void MultiKeyPoints::recalculateGraph()
         if (!set->isEnabled()) 
             continue;
         for(int i=0;i<set->count();++i) {
-            if (!(*set)[i].isIgnore()) {
-                ++countOfPoints;
-                
-                float value = (set->keyValue(i));
-                index = (int)(value / step);
-                graph[index].setY(graph[index].y()+pow(value, mPower));
-            }
+            KeyPoint &p = (*set)[i];
+            if (!checkParticle(p))
+                continue;
+
+            ++countOfPoints;
+
+            float value = (set->keyValue(i));
+            index = (int)(value / step);
+            graph[index].setY(graph[index].y()+pow(value, mPower));
         }
     }
 
@@ -131,22 +133,29 @@ void MultiKeyPoints::getMinMax(float &min, float &max)
             continue;
         
         for(int i=0;i<set->count();++i) {
-            if (!(*set)[i].isIgnore()) {
-                float value = (*set).keyValue(i);
-                if (ffirst) {
-                    ffirst = false;
-                    min = max = value;
-                } else {
-                    if (value > max) {
-                        max = value;
-                    }
-                    if (value < min) {
-                        min = value;
-                    }
+            KeyPoint &p = (*set)[i];
+            if (!checkParticle(p))
+                continue;
+
+            float value = (*set).keyValue(i);
+            if (ffirst) {
+                ffirst = false;
+                min = max = value;
+            } else {
+                if (value > max) {
+                    max = value;
+                }
+                if (value < min) {
+                    min = value;
                 }
             }
         }
     }
+}
+
+bool MultiKeyPoints::checkParticle(KeyPoint &p)
+{
+    return p.marker() == 1 && !p.isIgnore(); // если частица не является составной
 }
 
 KeyPoints *MultiKeyPoints::operator[](int index)
@@ -176,27 +185,27 @@ void MultiKeyPoints::saveDumpToFile(QString filePath, bool fUseComma)
             
             for(int i=0;i<set->count();++i) {
                 Mick::KeyPoint &p = (*set)[i];
-                if (!p.isIgnore()) {
-                    QString strValue = QString::number(set->keyValue(i));
-                    QString strPosX = QString::number(p.pos().x());
-                    QString strPosY = QString::number(p.pos().y());
-                    
-                    // replace dot char with comma
-                    if (fUseComma) {
-                        strValue = strValue.replace('.',',');
-                        strPosX = strPosX.replace('.',',');
-                        strPosY = strPosY.replace('.',',');
-                    } else {
-                        strValue = strValue.replace(',','.');
-                        strPosX = strPosX.replace(',','.');
-                        strPosY = strPosY.replace(',','.'); 
-                    }
-                    out << (counter++) 
-                           << '\t' << strValue
-                              << '\t' << strPosX
-                                 << '\t' << strPosY
-                                    << endl;
+                if (!checkParticle(p))
+                    continue;
+                QString strValue = QString::number(set->keyValue(i));
+                QString strPosX = QString::number(p.pos().x());
+                QString strPosY = QString::number(p.pos().y());
+
+                // replace dot char with comma
+                if (fUseComma) {
+                    strValue = strValue.replace('.',',');
+                    strPosX = strPosX.replace('.',',');
+                    strPosY = strPosY.replace('.',',');
+                } else {
+                    strValue = strValue.replace(',','.');
+                    strPosX = strPosX.replace(',','.');
+                    strPosY = strPosY.replace(',','.');
                 }
+                out << (counter++)
+                       << '\t' << strValue
+                          << '\t' << strPosX
+                             << '\t' << strPosY
+                                << endl;
             }
         }
     }
@@ -275,7 +284,7 @@ float MultiKeyPoints::expected(int power)
 
         for(int i=0;i<set->count();++i) {
             Mick::KeyPoint &p = (*set)[i];
-            if (p.isIgnore())
+            if (!checkParticle(p))
                 continue;
 
             count++;

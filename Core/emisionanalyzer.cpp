@@ -17,6 +17,7 @@ EmisionAnalyzer::EmisionAnalyzer(QObject *parent)
     
     mMaxRadius = 500;
     mMinRadius = 1;
+    mMinTupleRadius = 1;
 }
 
 bool checkSize(vector<Point> vec)
@@ -77,6 +78,7 @@ Mat EmisionAnalyzer::image()
 void EmisionAnalyzer::setMinRadius(int value)
 {
     mMinRadius = value;
+    mMinTupleRadius = qMax(mMinTupleRadius, mMinRadius);
 }
 
 int EmisionAnalyzer::minRadius()
@@ -92,6 +94,16 @@ void EmisionAnalyzer::setMaxRadius(int value)
 int EmisionAnalyzer::maxRadius()
 {
     return mMaxRadius;
+}
+
+void EmisionAnalyzer::setMinTupleRadius(int value)
+{
+    mMinTupleRadius = value;
+}
+
+int EmisionAnalyzer::minTupleRadius()
+{
+    return mMinTupleRadius;
 }
 
 void EmisionAnalyzer::setKeyPoints(KeyPoints *keyPoints)
@@ -251,6 +263,8 @@ void EmisionAnalyzer::find()
             single_objects.push_back(brd);
         } else if (count_of_edges >= 2 && count_of_edges <= 3) {
             tuples.push_back(brd);
+        } else {
+            complex.push_back(brd);
         }
     }
     
@@ -264,9 +278,10 @@ void EmisionAnalyzer::find()
         Mick::KeyPoint key = fromContour(*brd);
         
         QPointF pos = key.pos();
-        pos.setX(pos.x() + boundRoi.x);
-        pos.setY(pos.y() + boundRoi.y);
+        pos.setX(pos.x() + boundRoi.x); // учет сдвига если изображение было обрезано
+        pos.setY(pos.y() + boundRoi.y); // учет сдвига если изображение было обрезано
         key.setPos(pos);
+        key.setMarker(1);
         // проверяем размеры частицы на допустимость
         if (key.value() >= mMinRadius && key.value() <= mMaxRadius) {
             mKeyPoints->addKey(key);
@@ -275,7 +290,39 @@ void EmisionAnalyzer::find()
     
     brd = tuples.begin();
     for (;brd!=tuples.end();++brd) {
-        
+        Mick::KeyPoint key = fromContour(*brd);
+
+        QPointF pos = key.pos();
+        pos.setX(pos.x() + boundRoi.x); // учет сдвига если изображение было обрезано
+        pos.setY(pos.y() + boundRoi.y); // учет сдвига если изображение было обрезано
+        key.setPos(pos);
+
+        // проверяем размеры частицы на допустимость
+        if (key.value() >= mMinRadius && key.value() <= mMaxRadius) {
+            if (key.value() >= mMinTupleRadius)
+                key.setMarker(2);
+            else
+                key.setMarker(1);
+            mKeyPoints->addKey(key);
+        }
+    }
+
+    brd = complex.begin();
+    for (;brd!=complex.end();++brd) {
+        Mick::KeyPoint key = fromContour(*brd);
+
+        QPointF pos = key.pos();
+        pos.setX(pos.x() + boundRoi.x); // учет сдвига если изображение было обрезано
+        pos.setY(pos.y() + boundRoi.y); // учет сдвига если изображение было обрезано
+        key.setPos(pos);
+        // проверяем размеры частицы на допустимость
+        if (key.value() >= mMinRadius && key.value() <= mMaxRadius) {
+            if (key.value() >= mMinTupleRadius)
+                key.setMarker(3);
+            else
+                key.setMarker(1);
+            mKeyPoints->addKey(key);
+        }
     }
     
     mKeyPoints->setType(KeyPoints::Particles);

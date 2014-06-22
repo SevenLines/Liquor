@@ -25,6 +25,8 @@ private:
     float mMaxValue;
     
     void getMinMax(float &min, float &max);
+    // проверяет частицу на возможность добавления в гграфик
+    bool checkParticle(Mick::KeyPoint &p);
     //void recountParticlesCount();
     
 private slots:

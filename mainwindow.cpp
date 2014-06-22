@@ -153,8 +153,6 @@ MainWindow::MainWindow(QString imagePath, QWidget *parent) :
                 
 }
 
-
-
 QPixmap MainWindow::currentImage()
 {
     return ui->tabDocuments->currentFixedImage();
@@ -241,7 +239,8 @@ void MainWindow::FindParticles()
 
     ParticlesSeeker *particlesSeeker = new ParticlesSeeker(0);
     particlesSeeker->setMaxRadius(100);
-    particlesSeeker->setMinRadius(2);
+    particlesSeeker->setMinRadius(5);
+    particlesSeeker->setMinTupleRadius(20);
     
     prepareEmisionAnalyzerThread(particlesSeeker);
     startLongProcess(particlesSeeker, tr("Looking for particles..."));
@@ -264,7 +263,7 @@ bool MainWindow::ImageProcessing(ImageProcessPreviewer *pr)
         ProcessInfo pErode = dialog.selectedImage();
         erode(pErode.params[ErodeProcessPreviewer::PARAM_RADIUS]);
         stackIterate();
-        dilate(qMax((double)pErode.params[ErodeProcessPreviewer::PARAM_RADIUS],
+        dilate(qMin((double)pErode.params[ErodeProcessPreviewer::PARAM_RADIUS],
                0.75*pErode.params[ErodeProcessPreviewer::PARAM_RADIUS]+1)
                 );
     }

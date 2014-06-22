@@ -17,6 +17,7 @@ private:
 
     int mMinRadius;
     int mMaxRadius;
+    int mMinTupleRadius;
     
     Rect boundRoi;
     uchar mFillColor;
@@ -55,6 +56,9 @@ public:
     
     void setMaxRadius(int value);
     int maxRadius();
+
+    void setMinTupleRadius(int value);
+    int minTupleRadius();
     
     void setKeyPoints(KeyPoints *mKeyPoints);
     KeyPoints *keyPoints();

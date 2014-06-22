@@ -33,6 +33,9 @@ namespace Mick {
         
         void setPos(QPointF pos);
         QPointF const &pos();
+
+        void setMarker(int marker);
+        int marker();
         
         /// value in pixels
         void setValue(int value);

@@ -43,6 +43,16 @@ const QPointF &KeyPoint::pos()
     return mPos;
 }
 
+void KeyPoint::setMarker(int marker)
+{
+    mMarker = marker;
+}
+
+int KeyPoint::marker()
+{
+    return mMarker;
+}
+
 void KeyPoint::setValue(int value)
 {
     mValue = value;
