@@ -118,12 +118,12 @@ win32 {
     INCLUDEPATH += d:/_OpenCV/include/opencv
     INCLUDEPATH += d:/_OpenCV/include/
     INCLUDEPATH += d:/_DISTR/_QT/
-    INCLUDEPATH += d:/Boost/boost_1_54_0/ 
+    #INCLUDEPATH += d:/Boost/boost_1_54_0/
     
     # widows resource
     RC_FILE = Assets/windows_resource.rc
 
-    OPENCV_PATH = d:/_OpenCV/build/x86/mingw4.4/
+    OPENCV_PATH = d:/_OpenCV/build/x86/mingw48.2/
     OPENCV_PATH ~= s,/,\\,g
     OPENCV_LIBS = libopencv_core246.dll \ 
 	    libopencv_highgui246.dll \

@@ -17,6 +17,9 @@ public:
     
     void setMaxRadius(int value);
     void setMinRadius(int value);
+    /// минимальный радиус при котором частица будет распознана как двойная
+    void setMinTupleRadius(int value);
+
     void setImage(Mat &image);
     void setKeyPoints(KeyPoints *keyPoints);
     

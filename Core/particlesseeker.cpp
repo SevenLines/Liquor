@@ -9,5 +9,5 @@ ParticlesSeeker::ParticlesSeeker(QObject *parent)
 
 void ParticlesSeeker::runAnalyze()
 {
-    ea.findCircles();
+    ea.find();
 }

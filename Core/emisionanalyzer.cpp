@@ -1,19 +1,57 @@
 #include <QDebug>
 #include "emisionanalyzer.h"
+#include <numeric>
 #include "Utils/opencvutils.h"
 #include "Utils/opencvutils_tempates.h"
-#include <boost/tuple/tuple.hpp>
 
 using namespace cv;
 using namespace std;
-using namespace boost::tuples;
-using namespace boost;
 
 EmisionAnalyzer::EmisionAnalyzer(QObject *parent)
     : QObject(parent)
 {
-    keyPoints = 0;
+    mKeyPoints = 0;
     fCancel = 0;
+    mFillColor = 0;
+    mEmptyColor = 255;
+    
+    mMaxRadius = 500;
+    mMinRadius = 1;
+    mMinTupleRadius = 1;
+}
+
+bool checkSize(vector<Point> vec)
+{
+    return vec.size() < 5;
+}
+
+/**
+ * @brief returns list of contours for image
+ * @param borders will be filled with contours data
+ */
+void EmisionAnalyzer::findContours(vector<vector<Point> > &borders)
+{
+    // поиск контуров
+    Mat canny_out;
+    Canny(mImageRoi, canny_out, mFillColor, mEmptyColor);
+    boundRoi = Rect();
+    
+    // ищем контуры
+    cv::findContours(canny_out, borders, cv::RETR_EXTERNAL, CV_CHAIN_APPROX_NONE);
+    
+    // если всего 1 контур, скорее всего это рмка вокруг изображения
+    if (borders.size()==1) {
+        // кропем по рмке
+        boundRoi = boundingRect(borders[0]);
+        canny_out = canny_out(boundRoi);
+        borders.clear();
+        // повторяем процедуру поиска частиц
+        cv::findContours(canny_out, borders, CV_RETR_EXTERNAL, CV_CHAIN_APPROX_NONE);
+    }
+    
+    // удаляем объекты у которых количество точек меньше заданного значения = 5
+    borders.erase(remove_if(borders.begin(), borders.end(), checkSize),
+                  borders.end());
 }
 
 void EmisionAnalyzer::setImage(Mat &image)
@@ -25,158 +63,88 @@ void EmisionAnalyzer::setImage(Mat &image)
     }
     
     // создаем пустое изображение
-    gImage = Mat::zeros(gImage.rows, gImage.cols, CV_8U);
-    cvtColor(image, gImage, CV_RGB2GRAY);
+    mImage = Mat::zeros(mImage.rows, mImage.cols, CV_8U);
+    cvtColor(image, mImage, CV_RGB2GRAY);
+    cropImage();
     // 
-    gImageRef = gImage;
-
+//    mImageRoi = mImage;
 }
 
-Mat &EmisionAnalyzer::image()
+Mat EmisionAnalyzer::image()
 {
-    return gImage;
+    return mImage;
 }
-
 
 void EmisionAnalyzer::setMinRadius(int value)
 {
-    gMinRadius = value;
+    mMinRadius = value;
+    mMinTupleRadius = qMax(mMinTupleRadius, mMinRadius);
 }
 
 int EmisionAnalyzer::minRadius()
 {
-    return gMinRadius;
+    return mMinRadius;
 }
 
 void EmisionAnalyzer::setMaxRadius(int value)
 {
-    gMaxRadius = value;
+    mMaxRadius = value;
 }
 
 int EmisionAnalyzer::maxRadius()
 {
-    return gMaxRadius;
+    return mMaxRadius;
+}
+
+void EmisionAnalyzer::setMinTupleRadius(int value)
+{
+    mMinTupleRadius = value;
+}
+
+int EmisionAnalyzer::minTupleRadius()
+{
+    return mMinTupleRadius;
 }
 
 void EmisionAnalyzer::setKeyPoints(KeyPoints *keyPoints)
 {
-    this->keyPoints = keyPoints;
+    this->mKeyPoints = keyPoints;
 }
 
-KeyPoints *EmisionAnalyzer::getKeyPoints()
+KeyPoints *EmisionAnalyzer::keyPoints()
 {
-    return this->keyPoints;
+    return this->mKeyPoints;
 }
 
-void EmisionAnalyzer::getMinMax(QList<Point> area,
-                                Mat1i image,
-                                int &min, int &max)
+Mick::KeyPoint  EmisionAnalyzer::fromContour(vector<Point> &contour)
 {
-    min = image(area.at(0));
-    max = image(area.at(0));
-    foreach (Point p, area) {
-        if (image(p) < min) min = image(p);
-        if (image(p) > max) max = image(p);
+    Mick::KeyPoint key;
+    
+    if (contour.size() == 0)
+        return key;
+    
+    Point ps;
+    for (vector<Point>::iterator i=contour.begin();i!=contour.end();++i) {
+//        key.border.push_back(*i);
+        ps.x += i->x;
+        ps.y += i->y;
     }
+    ps.x /= contour.size();
+    ps.y /= contour.size();
+    Point v(ps.x - contour[0].x, ps.y - contour[0].y);
+    float value = sqrt(v.x*v.x + v.y*v.y);
+    
+    key.setPos(QPointF(ps.x, ps.y));
+    key.setValue(value);
+    key.setProportion(100);
+
+    return key;
 }
 
-bool EmisionAnalyzer::isOnEdge(Point point)
-{
-    for(int i=1;i<=8;++i) {
-        Point neigh = OpenCVUtils::getNeighboor(point, i);
-        if (gImageRef(neigh) == EA_EMPTY) {
-            return true;
-        }
-    }
-    return false;
-}
-
-// return radius of the most available circle
-int EmisionAnalyzer::getSymmetryValue(Point pos, int i)
-{  
-    if ( gImageRef(pos) != EA_BLACK ) return 0;
-    
-    int offset = 1;
-    int maxOffset = -1;
-    int newX, newY;
-    
-    // определяем максимально допустимое значение, на основе ранее расчитанных пикселей
-    // больше которого искать смысла нет
-    
-    // кол-во направлений по которым перестала расширяться область
-    i = qMin(i, 8);
-    int stopItems = 0;
-    do {
-        // прохожу по сем восьми направлениям
-        for (int j=0;j<8;++j) {
-            switch(j) {
-            case 0: // bottom
-                newY = pos.y + offset;
-                newX = pos.x;
-                break;
-            case 1: // right
-                newY = pos.y;
-                newX = pos.x + offset;
-                break;
-            case 2: // top
-                newY = pos.y - offset;
-                newX = pos.x;
-                break;
-            case 3: // left
-                newY = pos.y;
-                newX = pos.x - offset;
-                break;
-            case 4: 
-                newY = pos.y + offset;
-                newX = pos.x + offset;
-                break;
-            case 5:
-                newY = pos.y - offset;
-                newX = pos.x + offset;
-                break;
-            case 6:
-                newY = pos.y + offset;
-                newX = pos.x - offset;
-                break;
-            case 7:
-                newY = pos.y - offset;
-                newX = pos.x - offset;
-                break;
-            }
-            
-            if ( newY >= gImageRef.rows || newY < 0 || newX <0 || newX >= gImageRef.cols ) {
-                stopItems++;
-            } else {
-                if ( gImageRef(newY, newX) != EA_BLACK ) {
-                    stopItems++;
-                } else { // расчет максимально допустимого отклонения на основе предыдущих рассчетов
-                    if ( maxOffset == -1 ) {
-                        if ( int value = getInfoValue(newY, newX) != 0 ) {
-                            maxOffset = value;
-                        }
-                    }
-                }
-            }
-        }
-        
-        if (stopItems >= i) {
-            break;
-        }
-        offset ++;  
-        
-        if (maxOffset!=-1 && offset==maxOffset) {
-            break;
-        }
-    }while(true);
-    
-    setInfoValue(offset, pos);
-    
-    return offset;
-}
 
 int EmisionAnalyzer::getInfoValue(Point pos, int channel)
 {
-    return gSymmetryInfo.at<Vec3i>(pos)[channel];
+    return mSymmetryInfo.at<Vec3i>(pos)[channel];
 }
 
 int EmisionAnalyzer::getInfoValue(int y, int x, int channel)
@@ -186,217 +154,179 @@ int EmisionAnalyzer::getInfoValue(int y, int x, int channel)
 
 void EmisionAnalyzer::setInfoValue(int value, Point pos, int channel)
 {
-    gSymmetryInfo.at<Vec3i>(pos)[channel] = value ;
+    mSymmetryInfo.at<Vec3i>(pos)[channel] = value ;
 }
 
-
-Point EmisionAnalyzer::findMaxPoint(Mat &in, Point p, int minValue)
+void EmisionAnalyzer::cropImage()
 {
-    Mat_<Vec3b> inref = in;
-
-    int newValue, curValue = inref(p)[0];
-    
-    inref(p)[1] |= EA_VISITED;
-    
-    if (inref(p)[0] == 0) {
-        return Point(-1,-1);
-    }
-    
-    Point outPos = p;
-    Point pTemp;
-    
-    for (int i=1;i <= 8; ++i ) {
-        // iterrate over all neighboors of point
-        cv::Point neighP = OpenCVUtils::getNeighboor(p, i);
-        newValue = inref(neighP)[0];
-        if (curValue < newValue && newValue >= minValue ) {
-            if (! (inref(neighP)[1] & EA_VISITED) ) { // check s point visited
-                
-                //outPos = neighP; // find point with value greater then ours
-                pTemp = findMaxPoint(in, neighP, minValue); 
-                
-                // check is new value is better then the last one
-                if (pTemp.x != -1) {
-                    if ( outPos.x == -1 || 
-                         ( inref(outPos )[0] < inref(pTemp)[0]) ) {
-                        outPos = pTemp; // then assign it to new resutl;
-                    }
-                }
-            }
-        }
-    }
-    
-    return outPos;
+//    std::vector<cv::Point> points;
+//    cv::Mat_<uchar>::iterator it = mImage.begin<uchar>();
+//    cv::Mat_<uchar>::iterator end = mImage.end<uchar>();
+//    for (; it != end; ++it)
+//    {
+//        if (*it) points.push_back(it.pos());
+//    }
+//    cv::RotatedRect box = minAreaRect(cv::Mat(points));
+//    cv::Rect roi;
+//    roi.x = box.center.x - (box.size.width / 2);
+//    roi.y = box.center.y - (box.size.height / 2);
+//    roi.width = box.size.width;
+//    roi.height = box.size.height;
+    mImageRoi = mImage;
 }
 
-QPoint EmisionAnalyzer::massCenterPoint(QList<Point> &points)
-{
-    QPoint center(0,0);
-    foreach(cv::Point p, points) {
-        center.setX(center.x() + p.x);
-        center.setY(center.y() + p.y);
-    }
-    return QPoint(center.x() / points.count(), 
-                  center.y() / points.count());
-}
-
-template<class MatXX>
-void __getAreaPoints(cv::Point const &point, MatXX &,
-                     tuple< int *,cv::Point *, cv::Mat1b*> &info)
-{
-    int *count = get<0>(info);
-    (*count)++;
-    
-    cv::Point *p = get<1>(info);
-    p->x += point.x;
-    p->y += point.y;
-    
-    cv::Mat1b* flagImage = get<2>(info);
-    (*flagImage)(point) |= EmisionAnalyzer::EA_VISITED;
-}
 
 /**
  * @brief EmisionAnalyzer::findCircles
  * @param in, CV_8UC3 Mat image
  * @return image representaion of findin pixels
  */
-void EmisionAnalyzer::findCircles()
+void EmisionAnalyzer::find()
 {
     fCancel = false;
-    
-    
-    int progressMax = 5;
+     
+    int progressMax = 4;
     int progress = 0;
+    int l = 8; // step
+    int app = 2; // approximation value
     
-    if ( gImage.empty() ) {
+    if ( mImage.empty() ) {
         qWarning() << "image is not set!";
         return;
     }    
-    if (keyPoints == 0) {
+    if (mKeyPoints == 0) {
         qWarning() << "keypoints is not set";
         return;
     }
     
-    emit progressChanged(0,progressMax, QString());
+    mKeyPoints->clear();
     
-    // using for storing specific info about each pixel
-    gSymmetryInfo = Mat::zeros(gImage.rows, gImage.cols, CV_32SC3);
+    emit progressChanged(0,progressMax, QString("looking for countours"));
+    vector<vector<Point> > borders;
+    vector<vector<Point> > single_objects, tuples, complex;
+    findContours(borders);
     
-    // изображение для хранения значений пикселей
-    Mat valueImageOrigin = Mat::zeros(gImage.rows, gImage.cols, CV_16SC1);
-    Mat1i valueImage = valueImageOrigin;
-    
-    QVector<Point> extremPoints; // локальные экстремумы
-
-    // заполненые области    
-    QList< QList<cv::Point> > blackAreas;
-    // нахожу заполненые области
-    
-    emit progressChanged(progress++,progressMax,
-                         tr("Looking for black areas"));
-    
-    OpenCVUtils::getKeyAreas<cv::Mat1b>(blackAreas, EA_BLACK, gImageRef);
-    
-    emit progressChanged(progress++,progressMax,
-                         tr("Caclulate symmetry indicies"));
-    
-    int symmValue = 0;
-    foreach(QList<cv::Point> area, blackAreas) {
-        foreach(cv::Point p, area) {
-            if (fCancel) return;
-            symmValue = getSymmetryValue(p, 1);
-            valueImage(p) = symmValue;
+    emit progressChanged(++progress,progressMax, QString("split objects by complexity"));
+    // для каждого контура
+    for(int i=0;i<borders.size();++i) {
+        vector<Point> &brd = borders[i];
+        
+        // объект слишком маленький и его можно пропустить
+        if (brd.size() < 3 * l) continue;
+        
+        // тупая апроксимация, рекомедуемое значение app = 2
+        vector<Point> nbrd;
+        for (int j=0;j<brd.size();j+=app) {
+            nbrd.push_back(brd[j]);
+        }
+        brd = nbrd;
+        borders[i] = brd;
+        
+        int count = brd.size();
+        vector<Point> dangerBorder; // промежуток вогнутости
+        int count_of_edges = 0; // кол-во промежутков вогнутости
+        bool fLastWas = false; // флаг сигнализирующий о том проходим ли мы сейчас по промежутку вогнутости
+        
+        /// ищем промежутки вогнутости на границах
+        for (int j=l;j<count + l;++j) {
+            Point pl = brd[(j-l)%count];    /// [pl]-----[p]----[pr] // три точки образуют угол
+            Point p = brd[j%count];         ///   |___l___|__l___| растояние между тремя точками
+            Point pr = brd[(j+l)%count];
+            
+            /// берем среднюю точку и смотрим между краевыми pl и pr
+            Point pmid = Point( 0.5*(pl.x + pr.x), 0.5*(pl.y + pr.y));
+            
+            /// и проверяем лежит ли она вне объекта
+            if (mImageRoi(pmid) == mEmptyColor) {
+                // если вне объекта значит начался промежуток вогнутости
+                dangerBorder.push_back(p);
+                fLastWas = true; // включаем флаг
+            } else {
+                /// если не лежит, завершаем промежуток вогнутости,
+                /// если такое был, конечно
+                if (fLastWas) {
+                    // необходимо зафиксировать медианую точку промежутка вогнутости
+                    // медианную потому что весь промежуток нас не интересует, вообще говоря
+//                    Point avgPoint = dangerBorder[dangerBorder.size()/2];
+//                    edges.push_back(avgPoint);
+                    count_of_edges++;
+                    
+                    dangerBorder.clear();
+                }
+                // сбрасываем флаг
+                fLastWas = false;
+            }
+        }
+        
+        // заполняем массив простых объектов
+        if (count_of_edges <= 1) {
+            single_objects.push_back(brd);
+        } else if (count_of_edges >= 2 && count_of_edges <= 3) {
+            tuples.push_back(brd);
+        } else {
+            complex.push_back(brd);
         }
     }
     
-    emit progressChanged(progress++,progressMax,
-                         tr("Bluring values"));
+    emit progressChanged(++progress,progressMax, QString("spliting complex objects"));
+    /// TODO spliting complex objects
     
-    // размываю индексы симметрии
-    cv::GaussianBlur(valueImageOrigin, valueImageOrigin,cv::Size(5, 5), 3);
-
-    emit progressChanged(progress++,progressMax,
-                         tr("Looking for symmetry consistent areas"));
+    emit progressChanged(++progress,progressMax, QString("forming key points"));
     
-    int countOfPointsWithGreaterValue;
-    // Ищем точки, в радиусе depth от которых 
-    // нету точек с большим значением
-    int depth = 5;
-    foreach (QList<Point> area, blackAreas) {
-        foreach(Point p, area) {
-            countOfPointsWithGreaterValue = 0;
-            for (int i=-depth; i<depth; ++i) {
-                for (int j=-depth;j<depth; ++j) {
-                    if (fCancel) return;
-                    cv::Point neigh(p.x+j, p.y+i);
-                    if(OpenCVUtils::isInside(valueImage, neigh)) {
-                        if (valueImage(p) < valueImage(neigh)) {
-                            countOfPointsWithGreaterValue++;
-                            goto stop;
-                        }
-                    }
-                }
-            }
-            stop:
-            if (countOfPointsWithGreaterValue == 0) {
-                extremPoints.push_back(p);
-            }
+    vector<vector<Point> >::iterator brd = single_objects.begin();
+    for (;brd != single_objects.end(); ++brd) {
+        Mick::KeyPoint key = fromContour(*brd);
+        
+        QPointF pos = key.pos();
+        pos.setX(pos.x() + boundRoi.x); // учет сдвига если изображение было обрезано
+        pos.setY(pos.y() + boundRoi.y); // учет сдвига если изображение было обрезано
+        key.setPos(pos);
+        key.setMarker(1);
+        // проверяем размеры частицы на допустимость
+        if (key.value() >= mMinRadius && key.value() <= mMaxRadius) {
+            mKeyPoints->addKey(key);
         }
     }
     
-    emit progressChanged(progress++,progressMax,
-                         tr("Building key points set"));
-    
-    // флаги
-    Mat1b flagImage = Mat::zeros(gImage.rows, gImage.cols, CV_8U);
-    
-    // Для каждой области с экстремум выбираем среднюю точку
-    foreach (Point p, extremPoints) {
-        if (fCancel) return;
-        // если пиксел не посещенный
-        if ( !(flagImage(p) & EA_VISITED) ) {
-            // помечаем как посещенный
-            flagImage(p) |= EA_VISITED;
-            
-            // кол-во точек в области
-            int pointsCount = 1;
-            cv::Point avgPoint = p; 
-            
-            // передаем информацию для функции обхода области
-            // ко-во точек, сумма точек, флаги
-            tuple< int *,cv::Point *, cv::Mat1b*>  info;
-            info = make_tuple(&pointsCount, &avgPoint, &flagImage);
-            OpenCVUtils::bypassArea(p, 
-                                    valueImage, 
-                                    valueImage(p),
-                                    info,
-                                    __getAreaPoints);
-            
-            // пересчитываем центр масс
-            avgPoint.x /= pointsCount;
-            avgPoint.y /= pointsCount;
-            
-            // создаем новую ключевую точку 
-            Mick::KeyPoint key;
-            key.setPos(QPointF(avgPoint.x, avgPoint.y));
-            key.setValue(valueImage(p));
-            // проверяем не находится ли центр масс области 
-            // в зоне действия какой-либо другой точки
-            bool fWas = false;
-            for(int i=0;i<keyPoints->count();++i) {
-                Mick::KeyPoint &k = (*keyPoints)[i];
-                int diff = (k.pos() - key.pos()).manhattanLength();
-                if ( diff - k.value() - key.value() < 0 ) {
-                    fWas = true;
-                    break;
-                }
-            }
-            // если наложений не было добавляем точку
-            if (!fWas)
-                keyPoints->addKey(key);
+    brd = tuples.begin();
+    for (;brd!=tuples.end();++brd) {
+        Mick::KeyPoint key = fromContour(*brd);
+
+        QPointF pos = key.pos();
+        pos.setX(pos.x() + boundRoi.x); // учет сдвига если изображение было обрезано
+        pos.setY(pos.y() + boundRoi.y); // учет сдвига если изображение было обрезано
+        key.setPos(pos);
+
+        // проверяем размеры частицы на допустимость
+        if (key.value() >= mMinRadius && key.value() <= mMaxRadius) {
+            if (key.value() >= mMinTupleRadius)
+                key.setMarker(2);
+            else
+                key.setMarker(1);
+            mKeyPoints->addKey(key);
         }
-    }    
-    keyPoints->setType(KeyPoints::Particles);
+    }
+
+    brd = complex.begin();
+    for (;brd!=complex.end();++brd) {
+        Mick::KeyPoint key = fromContour(*brd);
+
+        QPointF pos = key.pos();
+        pos.setX(pos.x() + boundRoi.x); // учет сдвига если изображение было обрезано
+        pos.setY(pos.y() + boundRoi.y); // учет сдвига если изображение было обрезано
+        key.setPos(pos);
+        // проверяем размеры частицы на допустимость
+        if (key.value() >= mMinRadius && key.value() <= mMaxRadius) {
+            if (key.value() >= mMinTupleRadius)
+                key.setMarker(3);
+            else
+                key.setMarker(1);
+            mKeyPoints->addKey(key);
+        }
+    }
+    
+    mKeyPoints->setType(KeyPoints::Particles);
+    
     
     emit progressChanged(progressMax,progressMax);
 }
@@ -405,31 +335,3 @@ void EmisionAnalyzer::cancel()
 {
     fCancel = true;
 }
-
-void EmisionAnalyzer::findBlackAreas(QList<QList<Point> > &areas)
-{
-    if ( gImage.empty() ) {
-        qWarning() << "image is not set!";
-        return;
-    }    
-    
-    OpenCVUtils::getKeyAreas<Mat1b>(areas, EA_BLACK, gImageRef);
-}
-
-void EmisionAnalyzer::findBlackAreas()
-{    
-    QList< QList<cv::Point> > blackAreas;
-    // нахожу заполненые области
-    
-    OpenCVUtils::getKeyAreas<cv::Mat1b>(blackAreas, EA_BLACK, gImageRef);
-    foreach(QList<cv::Point> area, blackAreas) {
-        if (area.count() > 0) {
-            Mick::KeyPoint k;
-            k.setPos(massCenterPoint(area));
-            k.setValue(area.count()); // значение кол-во точек
-            keyPoints->addKey(k);
-        }
-    }
-    keyPoints->setType(KeyPoints::Area);
-}
- 
